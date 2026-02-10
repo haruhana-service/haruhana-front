@@ -12,11 +12,11 @@ export async function submitAnswer(
   dailyProblemId: number,
   data: SubmitSolutionRequest
 ): Promise<SubmissionResponse> {
-  const response = await api.post<SubmissionResponse>(
+  const response = await api.post<{ data: SubmissionResponse }>(
     `/v1/daily-problem/${dailyProblemId}/submissions`,
     data
   )
-  return response.data
+  return response.data.data
 }
 
 /**
@@ -29,9 +29,9 @@ export async function updateAnswer(
   dailyProblemId: number,
   data: SubmitSolutionRequest
 ): Promise<SubmissionResponse> {
-  const response = await api.put<SubmissionResponse>(
+  const response = await api.put<{ data: SubmissionResponse }>(
     `/v1/daily-problem/${dailyProblemId}/submissions`,
     data
   )
-  return response.data
+  return response.data.data
 }

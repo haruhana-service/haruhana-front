@@ -28,8 +28,8 @@ export async function signup(data: SignupRequest): Promise<number> {
  * POST /v1/auth/login
  */
 export async function login(data: LoginRequest): Promise<TokenResponse> {
-  const response = await api.post<TokenResponse>('/v1/auth/login', data)
-  return response.data
+  const response = await api.post<{ data: TokenResponse }>('/v1/auth/login', data)
+  return response.data.data
 }
 
 /**
@@ -37,8 +37,8 @@ export async function login(data: LoginRequest): Promise<TokenResponse> {
  * POST /v1/auth/reissue
  */
 export async function reissueToken(data: TokenReissueRequest): Promise<TokenResponse> {
-  const response = await api.post<TokenResponse>('/v1/auth/reissue', data)
-  return response.data
+  const response = await api.post<{ data: TokenResponse }>('/v1/auth/reissue', data)
+  return response.data.data
 }
 
 /**
@@ -58,8 +58,8 @@ export async function logout(): Promise<void> {
  * GET /v1/members
  */
 export async function getProfile(): Promise<MemberProfileResponse> {
-  const response = await api.get<MemberProfileResponse>('/v1/members')
-  return response.data
+  const response = await api.get<{ data: MemberProfileResponse }>('/v1/members')
+  return response.data.data
 }
 
 /**

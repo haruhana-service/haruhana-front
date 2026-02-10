@@ -17,8 +17,8 @@ import type {
  * GET /v1/daily-problem/today
  */
 export async function getTodayProblem(): Promise<TodayProblemResponse> {
-  const response = await api.get<TodayProblemResponse>('/v1/daily-problem/today')
-  return response.data
+  const response = await api.get<{ data: TodayProblemResponse }>('/v1/daily-problem/today')
+  return response.data.data
 }
 
 /**
@@ -27,8 +27,8 @@ export async function getTodayProblem(): Promise<TodayProblemResponse> {
  */
 export async function getDailyProblem(date?: string): Promise<DailyProblemResponse> {
   const params = date ? { date } : {}
-  const response = await api.get<DailyProblemResponse>('/v1/daily-problem', { params })
-  return response.data
+  const response = await api.get<{ data: DailyProblemResponse }>('/v1/daily-problem', { params })
+  return response.data.data
 }
 
 /**
@@ -36,8 +36,8 @@ export async function getDailyProblem(date?: string): Promise<DailyProblemRespon
  * GET /v1/daily-problem/{dailyProblemId}
  */
 export async function getProblemDetail(dailyProblemId: number): Promise<DailyProblemDetailResponse> {
-  const response = await api.get<DailyProblemDetailResponse>(`/v1/daily-problem/${dailyProblemId}`)
-  return response.data
+  const response = await api.get<{ data: DailyProblemDetailResponse }>(`/v1/daily-problem/${dailyProblemId}`)
+  return response.data.data
 }
 
 /**
@@ -48,11 +48,11 @@ export async function submitSolution(
   dailyProblemId: number,
   data: SubmitSolutionRequest
 ): Promise<SubmissionResponse> {
-  const response = await api.post<SubmissionResponse>(
+  const response = await api.post<{ data: SubmissionResponse }>(
     `/v1/daily-problem/${dailyProblemId}/submissions`,
     data
   )
-  return response.data
+  return response.data.data
 }
 
 // ============================================
@@ -64,6 +64,6 @@ export async function submitSolution(
  * GET /v1/streaks
  */
 export async function getStreak(): Promise<StreakResponse> {
-  const response = await api.get<StreakResponse>('/v1/streaks')
-  return response.data
+  const response = await api.get<{ data: StreakResponse }>('/v1/streaks')
+  return response.data.data
 }

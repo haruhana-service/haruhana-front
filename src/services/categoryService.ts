@@ -10,7 +10,7 @@ import type { CategoryListResponse } from '../types/models'
  * GET /v1/categories
  */
 export async function getCategories(): Promise<CategoryListResponse> {
+  // API 응답: { result: "SUCCESS", data: { categories: [...] }, error: null }
   const response = await api.get<{ data: CategoryListResponse }>('/v1/categories')
-  // API 응답이 { data: { categories: [...] } } 형태로 중첩되어 옴
   return response.data.data
 }
