@@ -7,6 +7,8 @@ import * as problemService from '../features/problem/services/problemService'
 // Mock problem service
 vi.mock('../features/problem/services/problemService', () => ({
   getTodayProblem: vi.fn(),
+  getProblemDetail: vi.fn(),
+  submitSolution: vi.fn(),
 }))
 
 describe('TodayPage', () => {
@@ -88,5 +90,48 @@ describe('TodayPage', () => {
     await waitFor(() => {
       expect(screen.getByText('난이도: 쉬움')).toBeInTheDocument()
     })
+  })
+
+  it('이미 해결한 문제는 기존 답변을 폼에 표시한다', async () => {
+    const solvedProblem = { ...mockProblem, isSolved: true }
+    const problemDetail = {
+      id: 1,
+      difficulty: 'MEDIUM',
+      categoryTopic: 'React',
+      assignedAt: '2026-02-10T00:00:00Z',
+      title: 'React Hooks 이해하기',
+      description: 'useState와 useEffect의 차이점을 설명하세요.',
+      userAnswer: '이전에 작성한 답변입니다.',
+      submittedAt: '2026-02-10T14:30:00Z',
+      aiAnswer: null,
+    }
+
+    vi.mocked(problemService.getTodayProblem).mockResolvedValue(solvedProblem)
+    vi.mocked(problemService.getProblemDetail).mockResolvedValue(problemDetail)
+
+    render(<TodayPage />)
+
+    // 기존 답변이 폼에 표시되어야 함
+    await waitFor(() => {
+      const textarea = screen.getByRole('textbox', { name: /답변/i })
+      expect(textarea).toHaveValue('이전에 작성한 답변입니다.')
+    })
+
+    // 답변 수정 제목 확인
+    expect(screen.getByText('답변 수정')).toBeInTheDocument()
+  })
+
+  it('해결하지 않은 문제는 빈 폼을 표시한다', async () => {
+    vi.mocked(problemService.getTodayProblem).mockResolvedValue(mockProblem)
+
+    render(<TodayPage />)
+
+    await waitFor(() => {
+      const textarea = screen.getByRole('textbox', { name: /답변/i })
+      expect(textarea).toHaveValue('')
+    })
+
+    // 답변 작성 제목 확인
+    expect(screen.getByText('답변 작성')).toBeInTheDocument()
   })
 })

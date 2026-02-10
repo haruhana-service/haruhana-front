@@ -1,4 +1,5 @@
 import { useTodayProblem } from '../features/problem/hooks/useTodayProblem'
+import { useProblemDetail } from '../features/problem/hooks/useProblemDetail'
 import { ProblemCard } from '../features/problem/components/ProblemCard'
 import { SubmissionForm } from '../features/submission/components/SubmissionForm'
 import { submitSolution } from '../features/problem/services/problemService'
@@ -6,12 +7,21 @@ import { submitSolution } from '../features/problem/services/problemService'
 export function TodayPage() {
   const { data: problem, isLoading, error } = useTodayProblem()
 
+  // 문제가 이미 해결되었으면 상세 정보를 가져옴 (기존 답변 포함)
+  const {
+    data: problemDetail,
+    isLoading: isDetailLoading,
+  } = useProblemDetail(problem?.isSolved ? problem.id : null)
+
   const handleSubmit = async (answer: string) => {
     if (!problem) {
       throw new Error('문제 정보를 찾을 수 없습니다')
     }
     return await submitSolution(problem.id, { userAnswer: answer })
   }
+
+  // 기존 답변이 있으면 사용, 없으면 null
+  const existingAnswer = problemDetail?.userAnswer || null
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-6 lg:py-8">
@@ -27,12 +37,12 @@ export function TodayPage() {
         </div>
 
         {/* Loading State */}
-        {isLoading && (
+        {(isLoading || isDetailLoading) && (
           <div className="rounded-lg bg-white p-8 sm:p-12 shadow-md">
             <div className="flex flex-col items-center justify-center">
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
               <p className="mt-4 text-sm sm:text-base text-gray-600">
-                오늘의 문제를 불러오는 중...
+                {isLoading ? '오늘의 문제를 불러오는 중...' : '답변을 불러오는 중...'}
               </p>
             </div>
           </div>
@@ -68,12 +78,15 @@ export function TodayPage() {
         )}
 
         {/* Problem Display */}
-        {problem && !isLoading && !error && (
+        {problem && !isLoading && !error && !isDetailLoading && (
           <div className="space-y-6 sm:space-y-8">
             <ProblemCard problem={problem} />
 
             {/* Submission Form */}
-            <SubmissionForm onSubmit={handleSubmit} />
+            <SubmissionForm
+              existingAnswer={existingAnswer}
+              onSubmit={handleSubmit}
+            />
           </div>
         )}
       </div>
