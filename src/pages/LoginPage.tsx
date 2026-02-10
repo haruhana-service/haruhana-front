@@ -7,6 +7,7 @@ import { login as loginApi } from '../features/auth/services/authService'
 import { loginSchema, type LoginFormData } from '../lib/validations'
 import { ROUTES } from '../constants'
 import { isApiError } from '../services/api'
+import { Button } from '../components/ui/Button'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -26,15 +27,12 @@ export function LoginPage() {
       setIsSubmitting(true)
       setApiError(undefined)
 
-      // 1. 로그인 API 호출하여 토큰 받기
       const tokenResponse = await loginApi({
         loginId: data.loginId,
         password: data.password,
       })
 
-      // 2. AuthContext의 login 메서드로 토큰 설정 + 프로필 가져오기
       await login(tokenResponse)
-      // 성공 시 AuthContext에서 자동으로 /today로 리다이렉트
     } catch (error) {
       console.error('Login failed:', error)
       if (isApiError(error)) {
@@ -48,74 +46,98 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
+    <div className="flex flex-col items-center justify-center min-h-screen px-6 animate-fade-in bg-haru-900 relative overflow-hidden">
+      {/* Soft Background Glows */}
+      <div className="absolute top-[-15%] right-[-15%] w-96 h-96 bg-haru-500/20 rounded-full blur-[120px]"></div>
+      <div className="absolute bottom-[-15%] left-[-15%] w-96 h-96 bg-haru-700/10 rounded-full blur-[120px]"></div>
+
+      <div className="relative z-10 w-full max-w-sm">
         {/* Header */}
-        <div>
-          <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
-            로그인
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            HaruHaru에 오신 것을 환영합니다
+        <div className="text-center mb-14">
+          <p className="text-haru-300/60 text-sm font-bold tracking-tight mb-3">
+            나를 지키는 작은 습관
           </p>
+          <h1 className="text-7xl font-black text-white tracking-tighter italic">haru:</h1>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 rounded-lg bg-white p-8 shadow-md">
+        {/* Icon with Speech Bubble */}
+        <div className="relative mb-20 mx-auto w-52 h-52 bg-haru-800/40 rounded-[40px] border border-white/10 flex items-center justify-center shadow-2xl overflow-visible">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-[40px]"></div>
+          <div className="text-8xl animate-float">🎯</div>
+
+          <div className="absolute -top-6 -left-12 bg-haru-500 text-white text-[11px] font-black px-4 py-2 rounded-full rounded-bl-none shadow-xl border border-white/10 animate-pulse">
+            나랑 같이 챌린지 안할래??
+          </div>
+        </div>
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* API Error */}
           {apiError && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{apiError}</p>
+            <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-4 backdrop-blur-sm">
+              <p className="text-sm text-red-200 font-medium text-center">{apiError}</p>
             </div>
           )}
 
           {/* 로그인 ID */}
-          <div>
-            <label htmlFor="loginId" className="block text-sm font-medium text-gray-700">
-              로그인 ID
+          <div className="space-y-1.5">
+            <label htmlFor="loginId" className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1">
+              아이디
             </label>
             <input
               {...register('loginId')}
               type="text"
               id="loginId"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="로그인 ID를 입력하세요"
+              className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm rounded-xl border-2 border-white/10 focus:border-haru-500 focus:bg-white/20 outline-none transition-all font-bold text-white placeholder:text-white/30"
+              placeholder="아이디를 입력하세요"
             />
             {errors.loginId && (
-              <p className="mt-1 text-sm text-red-600">{errors.loginId.message}</p>
+              <p className="mt-1 text-xs text-red-300 ml-1">{errors.loginId.message}</p>
             )}
           </div>
 
           {/* 비밀번호 */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <div className="space-y-1.5">
+            <label htmlFor="password" className="text-[11px] font-black text-white/40 uppercase tracking-widest ml-1">
               비밀번호
             </label>
             <input
               {...register('password')}
               type="password"
               id="password"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm rounded-xl border-2 border-white/10 focus:border-haru-500 focus:bg-white/20 outline-none transition-all font-bold text-white placeholder:text-white/30"
               placeholder="비밀번호를 입력하세요"
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+              <p className="mt-1 text-xs text-red-300 ml-1">{errors.password.message}</p>
             )}
           </div>
 
           {/* Submit Button */}
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-md bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-400"
+            fullWidth
+            size="lg"
+            className="h-16 text-lg rounded-2xl bg-haru-500 hover:bg-haru-400 text-white font-black shadow-2xl shadow-haru-500/20 active:scale-95 transition-all mt-6"
           >
-            {isSubmitting ? '로그인 중...' : '로그인'}
-          </button>
+            {isSubmitting ? '로그인 중...' : '챌린지 시작하기'}
+          </Button>
+
+          {/* Divider */}
+          <div className="flex items-center justify-center gap-3 py-2 opacity-30">
+            <div className="h-[1px] w-8 bg-white"></div>
+            <p className="text-white text-[9px] font-black uppercase tracking-[0.4em]">Persistence</p>
+            <div className="h-[1px] w-8 bg-white"></div>
+          </div>
 
           {/* Signup Link */}
-          <p className="text-center text-sm text-gray-600">
+          <p className="text-center text-sm text-white/60 font-medium">
             아직 계정이 없으신가요?{' '}
-            <Link to={ROUTES.SIGNUP} className="font-medium text-blue-600 hover:text-blue-500">
+            <Link
+              to={ROUTES.SIGNUP}
+              className="font-black text-haru-300 hover:text-haru-200 transition-colors underline underline-offset-4"
+            >
               회원가입
             </Link>
           </p>
