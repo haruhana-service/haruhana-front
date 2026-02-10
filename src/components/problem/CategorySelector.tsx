@@ -19,7 +19,6 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
   const selectedGroup = groups.find((g) => g.id === selectedGroupId)
   const topics = selectedGroup?.topics || []
 
-  // value가 변경되면 해당하는 카테고리/그룹/토픽 찾아서 선택
   useEffect(() => {
     if (value && categories.length > 0) {
       for (const category of categories) {
@@ -38,12 +37,12 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
   const handleCategoryChange = (categoryId: number) => {
     setSelectedCategoryId(categoryId)
     setSelectedGroupId(undefined)
-    onChange(0) // 리셋
+    onChange(0)
   }
 
   const handleGroupChange = (groupId: number) => {
     setSelectedGroupId(groupId)
-    onChange(0) // 리셋
+    onChange(0)
   }
 
   const handleTopicChange = (topicId: number) => {
@@ -52,43 +51,43 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-700">
-          카테고리 선택 <span className="text-red-500">*</span>
+      <div className="space-y-2">
+        <label className="text-[11px] font-black text-haru-500 uppercase tracking-[0.2em] ml-1">
+          카테고리 선택
         </label>
-        <div className="text-sm text-gray-500">카테고리 목록을 불러오는 중...</div>
+        <div className="text-sm text-slate-400 font-medium">카테고리 목록을 불러오는 중...</div>
       </div>
     )
   }
 
   if (isError) {
     return (
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-700">
-          카테고리 선택 <span className="text-red-500">*</span>
+      <div className="space-y-2">
+        <label className="text-[11px] font-black text-haru-500 uppercase tracking-[0.2em] ml-1">
+          카테고리 선택
         </label>
-        <div className="text-sm text-red-600">카테고리 목록을 불러오지 못했습니다</div>
+        <div className="text-sm text-red-500 font-medium">카테고리 목록을 불러오지 못했습니다</div>
       </div>
     )
   }
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-gray-700">
-        카테고리 선택 <span className="text-red-500">*</span>
+      <label className="text-[11px] font-black text-haru-500 uppercase tracking-[0.2em] ml-1">
+        카테고리 선택
       </label>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {/* Step 1: 카테고리 선택 */}
-        <div>
-          <label htmlFor="category" className="block text-xs font-medium text-gray-600 mb-1">
+        <div className="space-y-1.5">
+          <label htmlFor="category" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
             1. 분야
           </label>
           <select
             id="category"
             value={selectedCategoryId || ''}
             onChange={(e) => handleCategoryChange(Number(e.target.value))}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700"
           >
             <option value="">선택하세요</option>
             {categories.map((category) => (
@@ -100,8 +99,8 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
         </div>
 
         {/* Step 2: 그룹 선택 */}
-        <div>
-          <label htmlFor="group" className="block text-xs font-medium text-gray-600 mb-1">
+        <div className="space-y-1.5">
+          <label htmlFor="group" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
             2. 분류
           </label>
           <select
@@ -109,7 +108,7 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
             value={selectedGroupId || ''}
             onChange={(e) => handleGroupChange(Number(e.target.value))}
             disabled={!selectedCategoryId}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <option value="">선택하세요</option>
             {groups.map((group) => (
@@ -121,8 +120,8 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
         </div>
 
         {/* Step 3: 토픽 선택 */}
-        <div>
-          <label htmlFor="topic" className="block text-xs font-medium text-gray-600 mb-1">
+        <div className="space-y-1.5">
+          <label htmlFor="topic" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
             3. 주제
           </label>
           <select
@@ -130,7 +129,7 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
             value={value || ''}
             onChange={(e) => handleTopicChange(Number(e.target.value))}
             disabled={!selectedGroupId}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <option value="">선택하세요</option>
             {topics.map((topic) => (
@@ -142,9 +141,7 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
         </div>
       </div>
 
-      {error && (
-        <p className="text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-500 ml-1 font-medium">{error}</p>}
     </div>
   )
 }
