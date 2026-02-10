@@ -210,6 +210,134 @@ src/
 - **비교 없음** - 타인 통계 숨기기, 개인 진척도만 표시
 - **부드러운 리마인더** - 압박이 아닌 해결 독려 알림
 
+## 🎨 반응형 디자인 (필수)
+
+**모든 컴포넌트와 페이지는 반응형으로 구현해야 합니다.**
+
+### 모바일 퍼스트 원칙
+
+```tsx
+// ✅ 권장: 모바일 기본, 큰 화면은 sm:, md:, lg: 사용
+<div className="w-full px-4 sm:px-6 lg:px-8">
+  <div className="max-w-md sm:max-w-2xl lg:max-w-4xl mx-auto">
+    {/* 콘텐츠 */}
+  </div>
+</div>
+
+// ❌ 피하기: 데스크톱 우선 접근
+<div className="w-1200px sm:w-full">
+```
+
+### Tailwind Breakpoints
+
+```typescript
+// 기본 breakpoints (Tailwind 기본값)
+sm: '640px'   // 태블릿 세로
+md: '768px'   // 태블릿 가로
+lg: '1024px'  // 데스크톱
+xl: '1280px'  // 큰 데스크톱
+```
+
+### 반응형 체크리스트
+
+**모든 컴포넌트/페이지 구현 시 필수 확인:**
+
+- [ ] 모바일 (< 640px) - 레이아웃, 터치 영역, 가독성
+- [ ] 태블릿 (640px - 1024px) - 적절한 간격 활용
+- [ ] 데스크톱 (> 1024px) - 과도한 너비 방지 (max-w 사용)
+
+### 반응형 패턴
+
+**그리드 레이아웃:**
+```tsx
+// 모바일: 1열, 태블릿: 2열, 데스크톱: 3열
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {items.map(item => <Card key={item.id} {...item} />)}
+</div>
+```
+
+**플렉스 레이아웃:**
+```tsx
+// 모바일: 세로, 데스크톱: 가로
+<div className="flex flex-col lg:flex-row gap-4">
+  <aside className="lg:w-64">사이드바</aside>
+  <main className="flex-1">메인 콘텐츠</main>
+</div>
+```
+
+**타이포그래피:**
+```tsx
+// 모바일: 작게, 데스크톱: 크게
+<h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+  제목
+</h1>
+<p className="text-sm sm:text-base lg:text-lg">
+  본문
+</p>
+```
+
+**간격:**
+```tsx
+// 모바일: 좁게, 데스크톱: 넓게
+<div className="p-4 sm:p-6 lg:p-8">
+  <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+    {/* 콘텐츠 */}
+  </div>
+</div>
+```
+
+### 터치 친화적 UI
+
+```tsx
+// ✅ 버튼 최소 크기: 44x44px (터치 영역)
+<button className="min-h-[44px] px-4 py-3">
+  클릭
+</button>
+
+// ✅ 충분한 간격
+<div className="space-y-4">
+  <button>버튼 1</button>
+  <button>버튼 2</button>
+</div>
+
+// ❌ 너무 작은 터치 영역
+<button className="p-1 text-xs">작은 버튼</button>
+```
+
+### 숨기기/보이기
+
+```tsx
+// 모바일에서만 표시
+<div className="block lg:hidden">
+  모바일 네비게이션
+</div>
+
+// 데스크톱에서만 표시
+<div className="hidden lg:block">
+  데스크톱 사이드바
+</div>
+```
+
+### 테스트
+
+**반응형 테스트 방법:**
+1. Chrome DevTools → Toggle Device Toolbar (Cmd+Shift+M)
+2. 주요 디바이스 크기 확인:
+   - iPhone SE (375px)
+   - iPad (768px)
+   - Desktop (1280px)
+3. 세로/가로 모드 모두 확인
+
+**자동 테스트:**
+```typescript
+// 다양한 뷰포트에서 테스트
+test('모바일에서 1열 그리드 표시', () => {
+  window.innerWidth = 375
+  render(<ProblemList />)
+  // 검증
+})
+```
+
 ## 중요 경고사항
 
 ### ⚠️ 클라이언트 시간 절대 신뢰 금지
