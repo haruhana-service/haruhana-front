@@ -2,6 +2,7 @@ import { useTodayProblem } from '../features/problem/hooks/useTodayProblem'
 import { useProblemDetail } from '../features/problem/hooks/useProblemDetail'
 import { ProblemCard } from '../features/problem/components/ProblemCard'
 import { SubmissionForm } from '../features/submission/components/SubmissionForm'
+import { StreakDisplay } from '../features/streak/components/StreakDisplay'
 import { submitSolution } from '../features/problem/services/problemService'
 
 export function TodayPage() {
@@ -80,6 +81,9 @@ export function TodayPage() {
         {/* Problem Display */}
         {problem && !isLoading && !error && !isDetailLoading && (
           <div className="space-y-6 sm:space-y-8">
+            {/* Streak Display */}
+            <StreakDisplay />
+
             <ProblemCard problem={problem} />
 
             {/* Submission Form */}

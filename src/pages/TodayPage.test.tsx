@@ -3,12 +3,18 @@ import { screen, waitFor } from '@testing-library/react'
 import { render } from '../test/utils'
 import { TodayPage } from './TodayPage'
 import * as problemService from '../features/problem/services/problemService'
+import * as streakService from '../features/streak/services/streakService'
 
 // Mock problem service
 vi.mock('../features/problem/services/problemService', () => ({
   getTodayProblem: vi.fn(),
   getProblemDetail: vi.fn(),
   submitSolution: vi.fn(),
+}))
+
+// Mock streak service
+vi.mock('../features/streak/services/streakService', () => ({
+  getStreak: vi.fn(),
 }))
 
 describe('TodayPage', () => {
@@ -23,6 +29,11 @@ describe('TodayPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // 기본 스트릭 모킹
+    vi.mocked(streakService.getStreak).mockResolvedValue({
+      currentStreak: 5,
+      maxStreak: 10,
+    })
   })
 
   it('페이지 헤더가 올바르게 렌더링된다', () => {
