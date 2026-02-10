@@ -326,12 +326,12 @@ src/
 ```
 
 **체크리스트:**
-- [ ] SubmissionForm UI 구현
-- [ ] react-hook-form 검증
-- [ ] useSubmitAnswer 훅 구현
-- [ ] submissionService.submit API 연동
-- [ ] AI 답변 표시 컴포넌트
-- [ ] 테스트 작성 및 통과
+- [x] SubmissionForm UI 구현
+- [x] react-hook-form 검증
+- [x] useSubmitAnswer 훅 구현
+- [x] submissionService.submit API 연동
+- [x] AI 답변 표시 컴포넌트
+- [x] 테스트 작성 및 통과
 
 ### 4.3 답변 수정
 
@@ -344,11 +344,11 @@ src/
 - 수정 후 재제출
 
 **체크리스트:**
-- [ ] 기존 제출 여부 확인
-- [ ] 기존 답변 폼에 표시
-- [ ] useUpdateAnswer 훅 구현
-- [ ] 시간 체크 로직 (수정 가능 여부)
-- [ ] 테스트 작성
+- [x] 기존 제출 여부 확인
+- [x] 기존 답변 폼에 표시
+- [x] useUpdateAnswer 훅 구현
+- [x] 시간 체크 로직 (수정 가능 여부)
+- [x] 테스트 작성
 
 ---
 
