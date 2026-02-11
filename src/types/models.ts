@@ -42,6 +42,7 @@ export interface MemberProfileResponse {
   createdAt: string // date-time
   categoryTopicName: string
   difficulty: string
+  profileImageUrl?: string // 조회용 Presigned URL
 }
 
 export interface ProfileUpdateRequest {
