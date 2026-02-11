@@ -118,3 +118,10 @@ export const SUCCESS_MESSAGES = {
   SUBMIT_SUCCESS: '답변이 제출되었습니다',
   UPDATE_SUCCESS: '수정되었습니다',
 } as const
+
+// ============================================
+// FCM Constants
+// ============================================
+
+export const FCM_TOKEN_KEY = 'haruharu_fcm_token'
+export const FCM_PERMISSION_DENIED_KEY = 'haruharu_fcm_permission_denied'
