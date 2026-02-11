@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { updateProfile } from '../features/auth/services/authService'
+import { uploadProfileImage } from '../services/storageService'
 import { Card } from '../components/ui/Card'
 import { ROUTES } from '../constants'
 import { formatDateKorean } from '../utils/date'
@@ -19,12 +20,29 @@ export function SettingsPage() {
 
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [profileImage, setProfileImage] = useState<string | null>(null)
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null)
   const [editedNickname, setEditedNickname] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // 파일 크기 검증 (예: 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('이미지 파일은 5MB 이하만 업로드 가능합니다.')
+        return
+      }
+
+      // 파일 타입 검증
+      if (!file.type.startsWith('image/')) {
+        toast.error('이미지 파일만 업로드 가능합니다.')
+        return
+      }
+
+      // 파일 객체 저장
+      setProfileImageFile(file)
+
+      // 미리보기를 위한 base64 변환
       const reader = new FileReader()
       reader.onloadend = () => {
         setProfileImage(reader.result as string)
@@ -56,11 +74,31 @@ export function SettingsPage() {
 
     setIsSubmitting(true)
     try {
-      await updateProfile({ nickname: editedNickname })
+      let profileImageKey: string | undefined
+
+      // 프로필 이미지가 변경된 경우 업로드
+      if (profileImageFile) {
+        try {
+          profileImageKey = await uploadProfileImage(profileImageFile)
+        } catch (error) {
+          console.error('Failed to upload profile image:', error)
+          toast.error('프로필 이미지 업로드에 실패했습니다.')
+          setIsSubmitting(false)
+          return
+        }
+      }
+
+      // 프로필 업데이트 (닉네임 + 이미지 키)
+      await updateProfile({
+        nickname: editedNickname,
+        profileImageKey,
+      })
+
       await refetchProfile()
       toast.success('프로필이 성공적으로 업데이트되었습니다.')
       setIsEditingProfile(false)
       setProfileImage(null)
+      setProfileImageFile(null)
     } catch (error) {
       console.error('Failed to update profile:', error)
       toast.error('프로필 업데이트에 실패했습니다.')
@@ -72,6 +110,7 @@ export function SettingsPage() {
   const handleCancelEditProfile = () => {
     setEditedNickname('')
     setProfileImage(null)
+    setProfileImageFile(null)
     setIsEditingProfile(false)
   }
 
