@@ -6,6 +6,7 @@ import type {
   SubmitSolutionRequest,
   SubmissionResponse,
   StreakResponse,
+  ProblemPreferenceUpdateRequest,
 } from '../../../types/models'
 
 // ============================================
@@ -66,4 +67,16 @@ export async function submitSolution(
 export async function getStreak(): Promise<StreakResponse> {
   const response = await api.get<{ data: StreakResponse }>('/v1/streaks')
   return response.data.data
+}
+
+// ============================================
+// Problem Preference API Service
+// ============================================
+
+/**
+ * 문제 설정 변경
+ * PATCH /v1/members/preferences
+ */
+export async function updateProblemPreference(data: ProblemPreferenceUpdateRequest): Promise<void> {
+  await api.patch('/v1/members/preferences', data)
 }
