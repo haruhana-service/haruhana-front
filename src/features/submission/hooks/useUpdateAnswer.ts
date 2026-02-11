@@ -22,6 +22,7 @@ export function useUpdateAnswer(dailyProblemId: number | null) {
       // 수정 성공 시 관련 쿼리 무효화
       queryClient.invalidateQueries({ queryKey: ['todayProblem'] })
       queryClient.invalidateQueries({ queryKey: ['problemDetail', dailyProblemId] })
+      queryClient.invalidateQueries({ queryKey: ['streak'] })
     },
   })
 }

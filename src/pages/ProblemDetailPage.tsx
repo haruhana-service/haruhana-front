@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 import { useProblemDetail } from '../features/problem/hooks/useProblemDetail'
-import { submitSolution } from '../features/problem/services/problemService'
+import { useSubmitAnswer } from '../features/submission/hooks/useSubmitAnswer'
 import { useUpdateAnswer } from '../features/submission/hooks/useUpdateAnswer'
 import { Button } from '../components/ui/Button'
 import type { SubmissionResponse } from '../types/models'
@@ -14,6 +14,7 @@ export function ProblemDetailPage() {
   const navigate = useNavigate()
   const problemId = id ? parseInt(id) : null
   const { data: problem, isLoading, error, refetch } = useProblemDetail(problemId)
+  const { mutateAsync: submitAnswerMutation } = useSubmitAnswer(problemId)
   const { mutateAsync: updateAnswerMutation } = useUpdateAnswer(problemId)
 
   const [isEditing, setIsEditing] = useState(false)
@@ -33,8 +34,9 @@ export function ProblemDetailPage() {
     setIsSubmitting(true)
     setApiError(null)
     try {
-      const result = await submitSolution(problemId, { userAnswer: answer })
+      const result = await submitAnswerMutation(answer)
       setSubmissionResult(result)
+      refetch()
     } catch (err) {
       if (err && typeof err === 'object' && 'message' in err) {
         setApiError(err.message as string)
