@@ -186,8 +186,12 @@ export function SettingsPage() {
                         isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
                       }`}
                     >
-                      {profileImage ? (
-                        <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                      {profileImage || user?.profileImageUrl ? (
+                        <img
+                          src={profileImage || user?.profileImageUrl || ''}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
                         <div className="w-full h-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-xl sm:text-2xl font-bold">
                           {(editedNickname || user?.nickname || 'H')[0]}
@@ -249,8 +253,8 @@ export function SettingsPage() {
                   {/* 프로필 이미지 */}
                   <div className="flex-shrink-0">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg">
-                      {profileImage ? (
-                        <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                      {user?.profileImageUrl ? (
+                        <img src={user.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-xl sm:text-2xl font-bold">
                           {(user?.nickname || 'H')[0]}
