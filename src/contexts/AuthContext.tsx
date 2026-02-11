@@ -1,8 +1,10 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import type { MemberProfileResponse, TokenResponse } from '../types/models'
 import { getAccessToken, setAuthTokens, clearAuthTokens } from '../services/api'
 import { getProfile } from '../features/auth/services/authService'
+import { requestAndSyncFCMToken, deleteFCMToken, onMessageReceived } from '../services/fcmService'
 import { ROUTES } from '../constants'
 
 // ============================================
@@ -56,7 +58,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const token = getAccessToken()
 
     if (token) {
-      fetchProfile().finally(() => setIsLoading(false))
+      fetchProfile()
+        .then(() => {
+          // FCM 토큰 동기화 (비차단적)
+          requestAndSyncFCMToken().catch((error) => {
+            console.error('[Auth] FCM sync failed:', error)
+          })
+        })
+        .finally(() => setIsLoading(false))
     } else {
       setIsLoading(false)
     }
@@ -76,6 +85,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [navigate])
 
+  // FCM 포그라운드 메시지 리스너 (앱이 포커스 상태일 때)
+  useEffect(() => {
+    if (!user) return
+
+    const unsubscribe = onMessageReceived((payload) => {
+      console.log('[Auth] FCM foreground message:', payload)
+
+      const title = payload.notification?.title || '새 알림'
+      const body = payload.notification?.body || ''
+      const problemId = payload.data?.problemId
+
+      toast.info(title, {
+        description: body,
+        duration: 5000,
+        action: problemId
+          ? {
+              label: '보기',
+              onClick: () => navigate(`/problem/${problemId}`),
+            }
+          : undefined,
+      })
+    })
+
+    return unsubscribe
+  }, [user, navigate])
+
   // 로그인 처리
   const login = async (tokenResponse: TokenResponse) => {
     const { accessToken, refreshToken } = tokenResponse
@@ -86,12 +121,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // 프로필 조회
     await fetchProfile()
 
+    // FCM 토큰 동기화 (비차단적)
+    requestAndSyncFCMToken().catch((error) => {
+      console.error('[Auth] FCM sync failed:', error)
+    })
+
     // 오늘의 문제 페이지로 이동
     navigate(ROUTES.TODAY)
   }
 
   // 로그아웃 처리
   const logout = () => {
+    // FCM 토큰 삭제 (비차단적)
+    deleteFCMToken().catch((error) => {
+      console.error('[Auth] FCM deletion failed:', error)
+    })
+
     // 토큰 제거
     clearAuthTokens()
 
