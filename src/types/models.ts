@@ -162,9 +162,15 @@ export interface SubmissionResponse {
 // Streak (스트릭)
 // ============================================
 
+export interface WeeklySolvedStatusResponse {
+  date: string // yyyy-MM-dd
+  isSolved: boolean
+}
+
 export interface StreakResponse {
   currentStreak: number
   maxStreak: number
+  weeklySolvedStatus: WeeklySolvedStatusResponse[]
 }
 
 // ============================================
