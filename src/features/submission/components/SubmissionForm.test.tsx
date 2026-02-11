@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { render } from '../../../test/utils'
@@ -15,10 +15,10 @@ describe('SubmissionForm', () => {
     aiAnswer: 'AI가 생성한 예시 답변입니다.',
   }
 
-  let mockOnSubmit: ReturnType<typeof vi.fn>
+  let mockOnSubmit: Mock<(answer: string) => Promise<SubmissionResponse>>
 
   beforeEach(() => {
-    mockOnSubmit = vi.fn()
+    mockOnSubmit = vi.fn() as Mock<(answer: string) => Promise<SubmissionResponse>>
   })
 
   // ============================================
@@ -29,7 +29,7 @@ describe('SubmissionForm', () => {
     const user = userEvent.setup()
     render(<SubmissionForm onSubmit={mockOnSubmit} />)
 
-    const submitButton = screen.getByRole('button', { name: /제출하기/i })
+    const submitButton = screen.getByRole('button', { name: /오늘의 챌린지 완료/i })
     await user.click(submitButton)
 
     await waitFor(() => {
@@ -42,10 +42,10 @@ describe('SubmissionForm', () => {
     const user = userEvent.setup()
     render(<SubmissionForm onSubmit={mockOnSubmit} />)
 
-    const textarea = screen.getByRole('textbox', { name: /답변/i })
+    const textarea = screen.getByPlaceholderText(/답변을 입력해주세요/i)
     await user.type(textarea, '짧은답변')
 
-    const submitButton = screen.getByRole('button', { name: /제출하기/i })
+    const submitButton = screen.getByRole('button', { name: /오늘의 챌린지 완료/i })
     await user.click(submitButton)
 
     await waitFor(() => {
@@ -60,10 +60,10 @@ describe('SubmissionForm', () => {
 
     render(<SubmissionForm onSubmit={mockOnSubmit} />)
 
-    const textarea = screen.getByRole('textbox', { name: /답변/i })
+    const textarea = screen.getByPlaceholderText(/답변을 입력해주세요/i)
     await user.type(textarea, '이것은 충분히 긴 테스트 답변입니다.')
 
-    const submitButton = screen.getByRole('button', { name: /제출하기/i })
+    const submitButton = screen.getByRole('button', { name: /오늘의 챌린지 완료/i })
     await user.click(submitButton)
 
     await waitFor(() => {
@@ -77,14 +77,14 @@ describe('SubmissionForm', () => {
 
     render(<SubmissionForm onSubmit={mockOnSubmit} />)
 
-    const textarea = screen.getByRole('textbox', { name: /답변/i })
+    const textarea = screen.getByPlaceholderText(/답변을 입력해주세요/i)
     await user.type(textarea, '이것은 충분히 긴 테스트 답변입니다.')
 
-    const submitButton = screen.getByRole('button', { name: /제출하기/i })
+    const submitButton = screen.getByRole('button', { name: /오늘의 챌린지 완료/i })
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('AI 예시 답변')).toBeInTheDocument()
+      expect(screen.getByText('AI 멘토의 인사이트')).toBeInTheDocument()
       expect(screen.getByText('AI가 생성한 예시 답변입니다.')).toBeInTheDocument()
     })
   })
@@ -95,49 +95,49 @@ describe('SubmissionForm', () => {
 
     render(<SubmissionForm onSubmit={mockOnSubmit} />)
 
-    const textarea = screen.getByRole('textbox', { name: /답변/i })
+    const textarea = screen.getByPlaceholderText(/답변을 입력해주세요/i)
     await user.type(textarea, '이것은 충분히 긴 테스트 답변입니다.')
 
-    const submitButton = screen.getByRole('button', { name: /제출하기/i })
+    const submitButton = screen.getByRole('button', { name: /오늘의 챌린지 완료/i })
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('내 답변')).toBeInTheDocument()
-      expect(screen.getByText('답변이 제출되었습니다!')).toBeInTheDocument()
+      expect(screen.getByText('내가 제출한 답변')).toBeInTheDocument()
+      expect(screen.getByText('이것은 충분히 긴 테스트 답변입니다.')).toBeInTheDocument()
     })
   })
 
-  it('제시간 제출(isOnTime=true) 시 스트릭 증가 메시지를 표시한다', async () => {
+  it('제시간 제출(isOnTime=true) 시 AI 답변을 표시한다', async () => {
     const user = userEvent.setup()
     mockOnSubmit.mockResolvedValue({ ...mockSubmissionResponse, isOnTime: true })
 
     render(<SubmissionForm onSubmit={mockOnSubmit} />)
 
-    const textarea = screen.getByRole('textbox', { name: /답변/i })
+    const textarea = screen.getByPlaceholderText(/답변을 입력해주세요/i)
     await user.type(textarea, '이것은 충분히 긴 테스트 답변입니다.')
 
-    const submitButton = screen.getByRole('button', { name: /제출하기/i })
+    const submitButton = screen.getByRole('button', { name: /오늘의 챌린지 완료/i })
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/스트릭이 증가했습니다/)).toBeInTheDocument()
+      expect(screen.getByText('AI 멘토의 인사이트')).toBeInTheDocument()
     })
   })
 
-  it('늦은 제출(isOnTime=false) 시 스트릭 미반영 메시지를 표시한다', async () => {
+  it('늦은 제출(isOnTime=false) 시 AI 답변을 표시한다', async () => {
     const user = userEvent.setup()
     mockOnSubmit.mockResolvedValue({ ...mockSubmissionResponse, isOnTime: false })
 
     render(<SubmissionForm onSubmit={mockOnSubmit} />)
 
-    const textarea = screen.getByRole('textbox', { name: /답변/i })
-    await user.type(textarea, '이것은 충분히 긴 테스트 답변입니다.')
+    const textarea = screen.getByPlaceholderText(/답변을 입력해주세요/i)
+    await user.type(textarea, '이것은 충뵘4히 긴 테스트 답변입니다.')
 
-    const submitButton = screen.getByRole('button', { name: /제출하기/i })
+    const submitButton = screen.getByRole('button', { name: /오늘의 챌린지 완료/i })
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/스트릭에 반영되지 않습니다/)).toBeInTheDocument()
+      expect(screen.getByText('AI 멘토의 인사이트')).toBeInTheDocument()
     })
   })
 
@@ -147,10 +147,10 @@ describe('SubmissionForm', () => {
 
     render(<SubmissionForm onSubmit={mockOnSubmit} />)
 
-    const textarea = screen.getByRole('textbox', { name: /답변/i })
+    const textarea = screen.getByPlaceholderText(/답변을 입력해주세요/i)
     await user.type(textarea, '이것은 충분히 긴 테스트 답변입니다.')
 
-    const submitButton = screen.getByRole('button', { name: /제출하기/i })
+    const submitButton = screen.getByRole('button', { name: /오늘의 챌린지 완료/i })
     await user.click(submitButton)
 
     await waitFor(() => {
@@ -167,10 +167,10 @@ describe('SubmissionForm', () => {
 
     render(<SubmissionForm onSubmit={mockOnSubmit} />)
 
-    const textarea = screen.getByRole('textbox', { name: /답변/i })
-    await user.type(textarea, '이것은 충분히 긴 테스트 답변입니다.')
+    const textarea = screen.getByPlaceholderText(/답변을 입력해주세요/i)
+    await user.type(textarea, '이것은 충뵘4히 긴 테스트 답변입니다.')
 
-    const submitButton = screen.getByRole('button', { name: /제출하기/i })
+    const submitButton = screen.getByRole('button', { name: /오늘의 챌린지 완료/i })
     await user.click(submitButton)
 
     await waitFor(() => {
@@ -191,25 +191,25 @@ describe('SubmissionForm', () => {
       />
     )
 
-    const textarea = screen.getByRole('textbox', { name: /답변/i })
+    const textarea = screen.getByPlaceholderText(/답변을 입력해주세요/i)
     expect(textarea).toHaveValue('기존에 작성했던 답변입니다. 충분히 긴 답변.')
   })
 
-  it('기존 답변이 있으면 "답변 수정" 제목을 표시한다', () => {
+  it('기존 답변이 있으면 "나의 생각 정리하기" 제목을 표시한다', () => {
     render(
       <SubmissionForm
-        existingAnswer="기존에 작성했던 답변입니다. 충분히 긴 답변."
+        existingAnswer="기존에 작성했던 답변입니다. 충뵘4히 긴 당변."
         onSubmit={mockOnSubmit}
       />
     )
 
-    expect(screen.getByText('답변 수정')).toBeInTheDocument()
+    expect(screen.getByText('나의 생각 정리하기')).toBeInTheDocument()
   })
 
-  it('기존 답변이 없으면 "답변 작성" 제목을 표시한다', () => {
+  it('기존 답변이 없으면 "나의 생각 정리하기" 제목을 표시한다', () => {
     render(<SubmissionForm onSubmit={mockOnSubmit} />)
 
-    expect(screen.getByText('답변 작성')).toBeInTheDocument()
+    expect(screen.getByText('나의 생각 정리하기')).toBeInTheDocument()
   })
 
   it('기존 답변이 있으면 "수정 완료" 버튼을 표시한다', () => {
@@ -223,10 +223,10 @@ describe('SubmissionForm', () => {
     expect(screen.getByRole('button', { name: /수정 완료/i })).toBeInTheDocument()
   })
 
-  it('기존 답변이 없으면 "제출하기" 버튼을 표시한다', () => {
+  it('기존 당변이 없으면 "오늘의 챌린지 완료!" 버튼을 표시한다', () => {
     render(<SubmissionForm onSubmit={mockOnSubmit} />)
 
-    expect(screen.getByRole('button', { name: /제출하기/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /오늘의 챌린지 완료/i })).toBeInTheDocument()
   })
 
   it('기존 답변을 수정하여 다시 제출할 수 있다', async () => {
@@ -244,7 +244,7 @@ describe('SubmissionForm', () => {
       />
     )
 
-    const textarea = screen.getByRole('textbox', { name: /답변/i })
+    const textarea = screen.getByPlaceholderText(/답변을 입력해주세요/i)
     await user.clear(textarea)
     await user.type(textarea, '수정된 답변입니다. 충분히 긴 수정된 답변.')
 
@@ -266,7 +266,7 @@ describe('SubmissionForm', () => {
       />
     )
 
-    const textarea = screen.getByRole('textbox', { name: /답변/i })
+    const textarea = screen.getByPlaceholderText(/답변을 입력해주세요/i)
     await user.clear(textarea)
     await user.type(textarea, '짧은')
 
@@ -294,9 +294,9 @@ describe('SubmissionForm', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('AI 예시 답변')).toBeInTheDocument()
+      expect(screen.getByText('AI 멘토의 인사이트')).toBeInTheDocument()
       expect(screen.getByText('AI가 생성한 예시 답변입니다.')).toBeInTheDocument()
-      expect(screen.getByText('답변이 제출되었습니다!')).toBeInTheDocument()
+      expect(screen.getByText('내가 제출한 답변')).toBeInTheDocument()
     })
   })
 })

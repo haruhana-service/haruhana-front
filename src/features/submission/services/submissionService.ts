@@ -21,7 +21,7 @@ export async function submitAnswer(
 
 /**
  * 답변 수정
- * PUT /v1/daily-problem/{dailyProblemId}/submissions
+ * PATCH /v1/daily-problem/{dailyProblemId}/submissions
  *
  * 같은 날(23:59 이전)에만 수정 가능
  */
@@ -29,7 +29,7 @@ export async function updateAnswer(
   dailyProblemId: number,
   data: SubmitSolutionRequest
 ): Promise<SubmissionResponse> {
-  const response = await api.put<{ data: SubmissionResponse }>(
+  const response = await api.patch<{ data: SubmissionResponse }>(
     `/v1/daily-problem/${dailyProblemId}/submissions`,
     data
   )
