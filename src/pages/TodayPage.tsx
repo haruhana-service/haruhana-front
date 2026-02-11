@@ -5,6 +5,13 @@ import { useAuth } from '../hooks/useAuth'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 
+const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const
+
+function getDayLabel(dateString: string): string {
+  const date = new Date(dateString + 'T00:00:00')
+  return DAY_LABELS[date.getDay()]
+}
+
 const DIFFICULTY_LABELS: Record<string, string> = {
   EASY: '쉬움',
   MEDIUM: '보통',
@@ -31,9 +38,6 @@ export function TodayPage() {
   }
 
   const level = getStreakLevel(streak?.currentStreak || 0)
-
-  // 최근 7일간의 학습 현황 (TODO: 실제 API 연결)
-  const recentStatus = [false, true, true, false, true, true, true]
 
   return (
     <div className="max-w-xl mx-auto space-y-6 pb-10">
@@ -79,16 +83,16 @@ export function TodayPage() {
             <div className="relative z-10 mt-6 pt-4 border-t border-white/5">
               <div className="flex justify-between items-end">
                 <div className="flex gap-1.5">
-                  {recentStatus.map((solved, i) => (
-                    <div key={i} className="flex flex-col items-center gap-1.5">
+                  {streak.weeklySolvedStatus.map((status) => (
+                    <div key={status.date} className="flex flex-col items-center gap-1.5">
                       <div
-                        className={`w-5 h-5 rounded-md transition-all duration-500 
-                          ${solved
+                        className={`w-5 h-5 rounded-md transition-all duration-500
+                          ${status.isSolved
                             ? 'bg-haru-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]'
                             : 'bg-white/5 border border-white/5'}`}
                       />
                       <span className="text-[8px] font-extrabold text-white/20">
-                        {['일','월','화','수','목','금','토'][(new Date().getDay() - (6-i) + 7) % 7]}
+                        {getDayLabel(status.date)}
                       </span>
                     </div>
                   ))}
