@@ -207,3 +207,18 @@ export interface ApiError {
   code?: string
   details?: unknown
 }
+
+// 백엔드 에러 응답 구조: { result: "ERROR", data: null, error: { code, message, data } }
+export interface ApiErrorResponse {
+  result: string
+  data: null
+  error?: {
+    code?: string
+    message?: string
+    data?: unknown
+  }
+  // 백엔드가 error 객체 없이 바로 message, code를 반환하는 경우도 처리
+  message?: string
+  code?: string
+  details?: unknown
+}

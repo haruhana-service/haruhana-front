@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance, type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { API_BASE_URL, API_TIMEOUT, TOKEN_KEY, REFRESH_TOKEN_KEY, ERROR_MESSAGES } from '../constants'
-import type { ApiError } from '../types/models'
+import type { ApiError, ApiErrorResponse } from '../types/models'
 
 // ============================================
 // Axios Instance
@@ -41,7 +41,7 @@ api.interceptors.response.use(
   (response) => {
     return response
   },
-  async (error: AxiosError<ApiError>) => {
+  async (error: AxiosError<ApiErrorResponse>) => {
     const originalRequest = error.config
 
     // 401 Unauthorized - 토큰 갱신 시도
