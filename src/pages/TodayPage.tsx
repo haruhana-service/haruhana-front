@@ -1,98 +1,191 @@
+import { useNavigate } from 'react-router-dom'
 import { useTodayProblem } from '../features/problem/hooks/useTodayProblem'
-import { useProblemDetail } from '../features/problem/hooks/useProblemDetail'
-import { ProblemCard } from '../features/problem/components/ProblemCard'
-import { SubmissionForm } from '../features/submission/components/SubmissionForm'
-import { StreakDisplay } from '../features/streak/components/StreakDisplay'
-import { submitSolution } from '../features/problem/services/problemService'
+import { useStreak } from '../features/streak/hooks/useStreak'
+import { useAuth } from '../hooks/useAuth'
+import { Card } from '../components/ui/Card'
+import { Button } from '../components/ui/Button'
+
+const DIFFICULTY_LABELS: Record<string, string> = {
+  EASY: '쉬움',
+  MEDIUM: '보통',
+  HARD: '어려움',
+}
 
 export function TodayPage() {
-  const { data: problem, isLoading, error } = useTodayProblem()
+  const { data: problem, isLoading: problemLoading, error } = useTodayProblem()
+  const { data: streak, isLoading: streakLoading } = useStreak()
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
-  // 문제가 이미 해결되었으면 상세 정보를 가져옴 (기존 답변 포함)
-  const {
-    data: problemDetail,
-    isLoading: isDetailLoading,
-  } = useProblemDetail(problem?.isSolved ? problem.id : null)
-
-  const handleSubmit = async (answer: string) => {
-    if (!problem) {
-      throw new Error('문제 정보를 찾을 수 없습니다')
+  const handleProblemClick = () => {
+    if (problem) {
+      navigate(`/problem/${problem.id}`)
     }
-    return await submitSolution(problem.id, { userAnswer: answer })
   }
 
-  // 기존 답변이 있으면 사용, 없으면 null
-  const existingAnswer = problemDetail?.userAnswer || null
+  const getStreakLevel = (count: number) => {
+    if (count >= 30) return { label: '마스터', color: 'text-purple-400' }
+    if (count >= 14) return { label: '전문가', color: 'text-blue-400' }
+    if (count >= 7) return { label: '성실함', color: 'text-green-400' }
+    return { label: '입문자', color: 'text-haru-300' }
+  }
+
+  const level = getStreakLevel(streak?.currentStreak || 0)
+
+  // 최근 7일간의 학습 현황 (TODO: 실제 API 연결)
+  const recentStatus = [false, true, true, false, true, true, true]
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 lg:py-8">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        {/* Page Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-            오늘의 문제
-          </h1>
-          <p className="mt-2 text-sm sm:text-base text-gray-600">
-            하루 딱 1문제, 가볍게 시작해보세요
-          </p>
-        </div>
+    <div className="max-w-xl mx-auto space-y-6 pb-10">
+      {/* 콤팩트해진 스트릭 카드 */}
+      <Card variant="dark" className="animate-fade-up stagger-1 relative overflow-hidden border-none p-4 min-h-[140px]">
+        {/* 애니메이션 글로우 (크기 축소) */}
+        <div className="absolute top-0 right-0 w-40 h-40 bg-haru-500/20 rounded-full blur-[50px] animate-pulse-glow"></div>
 
-        {/* Loading State */}
-        {(isLoading || isDetailLoading) && (
-          <div className="rounded-lg bg-white p-8 sm:p-12 shadow-md">
-            <div className="flex flex-col items-center justify-center">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
-              <p className="mt-4 text-sm sm:text-base text-gray-600">
-                {isLoading ? '오늘의 문제를 불러오는 중...' : '답변을 불러오는 중...'}
+        {streakLoading ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-3">
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 border-[4px] border-white/10 rounded-full"></div>
+              <div className="absolute inset-0 border-[4px] border-haru-400 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <p className="text-[11px] font-extrabold text-white/50 uppercase tracking-[0.2em] animate-pulse">
+              Loading...
+            </p>
+          </div>
+        ) : streak ? (
+          <>
+            <div className="flex justify-between items-center relative z-10">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-[10px] font-extrabold uppercase tracking-[0.2em] px-2 py-1 rounded bg-white/10 ${level.color}`}>
+                    {level.label}
+                  </span>
+                </div>
+                <p className="text-white/40 text-[11px] font-extrabold uppercase tracking-[0.2em]">연속 학습 리듬</p>
+                <div className="flex items-baseline gap-1.5">
+                  <h2 className="text-5xl font-black tracking-tighter text-white">{streak.currentStreak}</h2>
+                  <span className="text-lg font-extrabold text-haru-400 italic">일째</span>
+                </div>
+              </div>
+
+              {/* 불꽃 아이콘 크기 최적화 */}
+              <div className="relative group flex flex-col items-center mr-2">
+                <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-xl animate-pulse"></div>
+                <div className="text-5xl animate-bounce-soft relative z-10">🔥</div>
+              </div>
+            </div>
+
+            {/* 잔디 심기 (더 작고 세련되게 변경) */}
+            <div className="relative z-10 mt-6 pt-4 border-t border-white/5">
+              <div className="flex justify-between items-end">
+                <div className="flex gap-1.5">
+                  {recentStatus.map((solved, i) => (
+                    <div key={i} className="flex flex-col items-center gap-1.5">
+                      <div
+                        className={`w-5 h-5 rounded-md transition-all duration-500 
+                          ${solved
+                            ? 'bg-haru-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]'
+                            : 'bg-white/5 border border-white/5'}`}
+                      />
+                      <span className="text-[8px] font-extrabold text-white/20">
+                        {['일','월','화','수','목','금','토'][(new Date().getDay() - (6-i) + 7) % 7]}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <span className="text-[9px] font-extrabold text-white/30 uppercase tracking-widest">최고 {streak.maxStreak}일 기록 중</span>
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-full border border-white/5">
+                    <div className="w-1 h-1 rounded-full bg-haru-400 animate-pulse"></div>
+                    <span className="text-[9px] font-extrabold text-haru-400 uppercase tracking-tighter">Live Status</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-3">
+            <div className="text-haru-100">스트릭 정보를 불러올 수 없습니다.</div>
+          </div>
+        )}
+      </Card>
+
+      {/* 학습 정보 필 - 컴팩트 스타일 */}
+      {user?.categoryTopicName && user?.difficulty && (
+        <div className="flex gap-2.5 animate-fade-up stagger-2 px-1">
+          <div className="flex-1 flex items-center gap-3 bg-white px-5 py-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="w-2 h-2 rounded-full bg-haru-500"></div>
+            <div className="flex flex-col">
+              <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1.5">TOPIC</span>
+              <span className="text-[13px] font-bold text-slate-800 truncate max-w-[100px]">{user.categoryTopicName}</span>
+            </div>
+          </div>
+          <div className="flex-1 flex items-center gap-3 bg-white px-5 py-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center">
+              <span className="text-[10px] font-extrabold text-slate-500">LV</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1.5">LEVEL</span>
+              <span className="text-[13px] font-bold text-slate-800">{DIFFICULTY_LABELS[user.difficulty] || user.difficulty}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 오늘의 문제 카드 */}
+      <Card
+        title="오늘의 챌린지"
+        subtitle="매일 조금씩, 당신의 성장을 돕습니다"
+        className="animate-fade-up stagger-3 border-none bg-white relative overflow-hidden group/card"
+      >
+        {problemLoading ? (
+          <div className="py-16 flex flex-col items-center justify-center space-y-4">
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 border-[4px] border-slate-50 rounded-full"></div>
+              <div className="absolute inset-0 border-[4px] border-haru-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.2em] animate-pulse">Loading Next Goal...</p>
+          </div>
+        ) : error ? (
+          <div className="py-10 text-center bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
+            <p className="text-slate-500 text-sm font-semibold">챌린지를 불러올 수 없습니다</p>
+          </div>
+        ) : problem ? (
+          <div className="space-y-6 animate-fade-in relative z-10">
+            <div className="space-y-3">
+              <h4 className="text-[22px] font-extrabold text-slate-900 leading-tight tracking-tight">
+                {problem.title}
+              </h4>
+              <p className="text-slate-500 text-[14px] leading-relaxed font-medium line-clamp-2">
+                {problem.description}
               </p>
             </div>
-          </div>
-        )}
 
-        {/* Error State */}
-        {error && (
-          <div className="rounded-lg bg-red-50 border border-red-200 p-6 sm:p-8">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm sm:text-base font-medium text-red-800">
-                  문제를 불러올 수 없습니다
-                </h3>
-                <p className="mt-1 text-sm text-red-700">
-                  {error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다'}
-                </p>
-              </div>
+            <div className="pt-1">
+              {problem.isSolved ? (
+                <Button fullWidth variant="secondary" onClick={handleProblemClick} className="h-[56px] rounded-2xl bg-green-50 border border-slate-200 text-slate-700 text-[15px] font-semibold">
+                  제출 기록 확인
+                </Button>
+              ) : (
+                <Button fullWidth onClick={handleProblemClick} className="h-[56px] rounded-2xl bg-haru-600 hover:bg-haru-700 text-white shadow-lg shadow-haru-600/15 active:scale-[0.98] group/btn">
+                  <span className="text-[15px] font-bold">챌린지 시작하기</span>
+                  <svg className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                </Button>
+              )}
             </div>
           </div>
-        )}
-
-        {/* Problem Display */}
-        {problem && !isLoading && !error && !isDetailLoading && (
-          <div className="space-y-6 sm:space-y-8">
-            {/* Streak Display */}
-            <StreakDisplay />
-
-            <ProblemCard problem={problem} />
-
-            {/* Submission Form */}
-            <SubmissionForm
-              existingAnswer={existingAnswer}
-              onSubmit={handleSubmit}
-            />
+        ) : (
+          <div className="py-10 text-center bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
+            <p className="text-slate-500 text-sm font-semibold">챌린지를 불러올 수 없습니다</p>
           </div>
         )}
+      </Card>
+
+      <div className="pt-8 pb-12 flex flex-col items-center gap-3 opacity-30">
+        <div className="w-1 h-1 rounded-full bg-slate-300"></div>
+        <p className="text-[10px] text-slate-400 font-extrabold tracking-[0.4em] uppercase italic text-center leading-relaxed">
+          Daily progress leads to<br/>Mastery
+        </p>
       </div>
     </div>
   )
