@@ -16,7 +16,19 @@ describe('StreakDisplay', () => {
 
   it('로딩 중에 로딩 스피너를 표시한다', () => {
     vi.mocked(streakService.getStreak).mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve({ currentStreak: 5, maxStreak: 10 }), 1000))
+      () => new Promise((resolve) => setTimeout(() => resolve({
+        currentStreak: 5,
+        maxStreak: 10,
+        weeklySolvedStatus: [
+          { date: '2025-01-06', isSolved: true },
+          { date: '2025-01-07', isSolved: true },
+          { date: '2025-01-08', isSolved: true },
+          { date: '2025-01-09', isSolved: true },
+          { date: '2025-01-10', isSolved: true },
+          { date: '2025-01-11', isSolved: false },
+          { date: '2025-01-12', isSolved: false },
+        ],
+      }), 1000))
     )
 
     render(<StreakDisplay />)
@@ -28,6 +40,15 @@ describe('StreakDisplay', () => {
     const mockStreak = {
       currentStreak: 5,
       maxStreak: 10,
+      weeklySolvedStatus: [
+        { date: '2025-01-06', isSolved: true },
+        { date: '2025-01-07', isSolved: true },
+        { date: '2025-01-08', isSolved: true },
+        { date: '2025-01-09', isSolved: true },
+        { date: '2025-01-10', isSolved: true },
+        { date: '2025-01-11', isSolved: false },
+        { date: '2025-01-12', isSolved: false },
+      ],
     }
 
     vi.mocked(streakService.getStreak).mockResolvedValue(mockStreak)
@@ -45,6 +66,15 @@ describe('StreakDisplay', () => {
     const mockStreak = {
       currentStreak: 0,
       maxStreak: 0,
+      weeklySolvedStatus: [
+        { date: '2025-01-06', isSolved: false },
+        { date: '2025-01-07', isSolved: false },
+        { date: '2025-01-08', isSolved: false },
+        { date: '2025-01-09', isSolved: false },
+        { date: '2025-01-10', isSolved: false },
+        { date: '2025-01-11', isSolved: false },
+        { date: '2025-01-12', isSolved: false },
+      ],
     }
 
     vi.mocked(streakService.getStreak).mockResolvedValue(mockStreak)
@@ -61,6 +91,15 @@ describe('StreakDisplay', () => {
     const mockStreak = {
       currentStreak: 15,
       maxStreak: 15,
+      weeklySolvedStatus: [
+        { date: '2025-01-06', isSolved: true },
+        { date: '2025-01-07', isSolved: true },
+        { date: '2025-01-08', isSolved: true },
+        { date: '2025-01-09', isSolved: true },
+        { date: '2025-01-10', isSolved: true },
+        { date: '2025-01-11', isSolved: true },
+        { date: '2025-01-12', isSolved: true },
+      ],
     }
 
     vi.mocked(streakService.getStreak).mockResolvedValue(mockStreak)
@@ -88,6 +127,15 @@ describe('StreakDisplay', () => {
     const mockStreak = {
       currentStreak: 7,
       maxStreak: 12,
+      weeklySolvedStatus: [
+        { date: '2025-01-06', isSolved: true },
+        { date: '2025-01-07', isSolved: true },
+        { date: '2025-01-08', isSolved: true },
+        { date: '2025-01-09', isSolved: true },
+        { date: '2025-01-10', isSolved: true },
+        { date: '2025-01-11', isSolved: true },
+        { date: '2025-01-12', isSolved: true },
+      ],
     }
 
     vi.mocked(streakService.getStreak).mockResolvedValue(mockStreak)

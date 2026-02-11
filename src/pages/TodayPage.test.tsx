@@ -45,6 +45,15 @@ describe('TodayPage', () => {
     vi.mocked(streakService.getStreak).mockResolvedValue({
       currentStreak: 5,
       maxStreak: 10,
+      weeklySolvedStatus: [
+        { date: '2025-01-06', isSolved: true },
+        { date: '2025-01-07', isSolved: true },
+        { date: '2025-01-08', isSolved: true },
+        { date: '2025-01-09', isSolved: true },
+        { date: '2025-01-10', isSolved: true },
+        { date: '2025-01-11', isSolved: false },
+        { date: '2025-01-12', isSolved: false },
+      ],
     })
   })
 
