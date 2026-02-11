@@ -26,6 +26,13 @@ export async function createPresignedUrl(data: PresignedCreateRequest): Promise<
  * @param file - 업로드할 파일
  */
 export async function uploadToS3(presignedUrl: string, file: File): Promise<void> {
+  console.log('[S3 Upload] Starting upload...', {
+    fileName: file.name,
+    fileType: file.type,
+    fileSize: file.size,
+    url: presignedUrl.substring(0, 100) + '...',
+  })
+
   const response = await fetch(presignedUrl, {
     method: 'PUT',
     body: file,
@@ -34,9 +41,23 @@ export async function uploadToS3(presignedUrl: string, file: File): Promise<void
     },
   })
 
+  console.log('[S3 Upload] Response:', {
+    status: response.status,
+    statusText: response.statusText,
+    ok: response.ok,
+  })
+
   if (!response.ok) {
-    throw new Error('파일 업로드에 실패했습니다.')
+    const errorText = await response.text()
+    console.error('[S3 Upload] Error details:', {
+      status: response.status,
+      statusText: response.statusText,
+      body: errorText,
+    })
+    throw new Error(`파일 업로드에 실패했습니다. (${response.status} ${response.statusText})`)
   }
+
+  console.log('[S3 Upload] Upload successful!')
 }
 
 /**
@@ -57,17 +78,35 @@ export async function notifyUploadComplete(data: StorageUploadCompleteRequest): 
  * @returns objectKey - 프로필 업데이트 시 사용할 키
  */
 export async function uploadProfileImage(file: File): Promise<string> {
-  // 1. Presigned URL 생성
-  const { presignedUrl, objectKey } = await createPresignedUrl({
+  console.log('[Upload Process] Starting profile image upload...', {
     fileName: file.name,
-    uploadType: 'PROFILE_IMAGE',
+    fileType: file.type,
+    fileSize: file.size,
   })
 
-  // 2. S3에 파일 업로드
-  await uploadToS3(presignedUrl, file)
+  try {
+    // 1. Presigned URL 생성
+    console.log('[Upload Process] Step 1: Creating Presigned URL...')
+    const { presignedUrl, objectKey } = await createPresignedUrl({
+      fileName: file.name,
+      uploadType: 'PROFILE_IMAGE',
+    })
+    console.log('[Upload Process] Presigned URL created:', { objectKey })
 
-  // 3. 업로드 완료 알림
-  await notifyUploadComplete({ objectKey })
+    // 2. S3에 파일 업로드
+    console.log('[Upload Process] Step 2: Uploading to S3...')
+    await uploadToS3(presignedUrl, file)
+    console.log('[Upload Process] S3 upload complete')
 
-  return objectKey
+    // 3. 업로드 완료 알림
+    console.log('[Upload Process] Step 3: Notifying upload complete...')
+    await notifyUploadComplete({ objectKey })
+    console.log('[Upload Process] Upload complete notification sent')
+
+    console.log('[Upload Process] ✅ All steps completed successfully!')
+    return objectKey
+  } catch (error) {
+    console.error('[Upload Process] ❌ Upload failed:', error)
+    throw error
+  }
 }
