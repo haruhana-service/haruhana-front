@@ -1,0 +1,15 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="256" fill="#4a69ff"/>
+  
+  <!-- Sun icon representing daily -->
+  <circle cx="256" cy="200" r="60" fill="#ffffff"/>
+  <path d="M256 100 L256 140 M256 260 L256 300 M356 200 L316 200 M196 200 L156 200 M320 136 L292 164 M220 236 L192 264 M320 264 L292 236 M220 164 L192 136" stroke="#ffffff" stroke-width="16" stroke-linecap="round"/>
+  
+  <!-- Calendar/Date representation -->
+  <rect x="180" y="280" width="152" height="120" rx="12" fill="#ffffff"/>
+  <rect x="180" y="280" width="152" height="32" rx="12" fill="#1a1f36"/>
+  <circle cx="220" cy="350" r="8" fill="#4a69ff"/>
+  <circle cx="256" cy="350" r="8" fill="#4a69ff"/>
+  <circle cx="292" cy="350" r="8" fill="#4a69ff"/>
+</svg>
