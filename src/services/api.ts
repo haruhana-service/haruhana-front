@@ -90,10 +90,14 @@ api.interceptors.response.use(
     }
 
     // 에러 응답 가공
+    // API 응답 형식: { result: "ERROR", data: null, error: { code, message, data } }
+    const responseData = error.response?.data
+    const errorData = responseData?.error
+
     const apiError: ApiError = {
-      message: error.response?.data?.message || getErrorMessage(error.response?.status),
-      code: error.response?.data?.code,
-      details: error.response?.data?.details,
+      message: errorData?.message || responseData?.message || getErrorMessage(error.response?.status),
+      code: errorData?.code || responseData?.code,
+      details: errorData?.data || responseData?.details,
     }
 
     return Promise.reject(apiError)
