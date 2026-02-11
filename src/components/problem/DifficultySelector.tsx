@@ -17,19 +17,19 @@ export function DifficultySelector({ value, onChange, error }: DifficultySelecto
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 px-1">
       <label className="text-[11px] font-black text-haru-500 uppercase tracking-[0.2em] ml-1">
         난이도 선택
       </label>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
         {difficulties.map((difficulty) => (
           <button
             key={difficulty}
             type="button"
             onClick={() => onChange(difficulty)}
             className={`
-              relative flex flex-col items-start rounded-2xl border-2 p-5 text-left transition-all
+              relative flex flex-col items-start rounded-xl border-2 p-4 text-left transition-all
               ${
                 value === difficulty
                   ? 'border-haru-500 bg-haru-50 shadow-md scale-[1.02]'
@@ -38,7 +38,7 @@ export function DifficultySelector({ value, onChange, error }: DifficultySelecto
             `}
           >
             <div className="flex w-full items-center justify-between">
-              <span className={`text-base font-black tracking-tight ${
+              <span className={`text-sm font-bold tracking-tight ${
                 value === difficulty ? 'text-haru-700' : 'text-slate-700'
               }`}>
                 {DIFFICULTY_LABELS[difficulty]}
@@ -51,7 +51,7 @@ export function DifficultySelector({ value, onChange, error }: DifficultySelecto
                 </div>
               )}
             </div>
-            <p className={`mt-1.5 text-xs font-medium ${
+            <p className={`mt-1 text-[11px] font-medium ${
               value === difficulty ? 'text-haru-600/70' : 'text-slate-400'
             }`}>
               {difficultyDescriptions[difficulty]}
