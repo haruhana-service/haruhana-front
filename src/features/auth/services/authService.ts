@@ -54,7 +54,7 @@ export async function logout(): Promise<void> {
 // ============================================
 
 /**
- * 프로필 조회
+ * 내 프로필 조회
  * GET /v1/members
  */
 export async function getProfile(): Promise<MemberProfileResponse> {
@@ -63,15 +63,16 @@ export async function getProfile(): Promise<MemberProfileResponse> {
 }
 
 /**
- * 프로필 수정
+ * 내 프로필 수정
  * PATCH /v1/members
  */
-export async function updateProfile(data: ProfileUpdateRequest): Promise<void> {
-  await api.patch('/v1/members', data)
+export async function updateProfile(data: ProfileUpdateRequest): Promise<MemberProfileResponse> {
+  const response = await api.patch<{ data: MemberProfileResponse }>('/v1/members', data)
+  return response.data.data
 }
 
 /**
- * 학습 설정 수정
+ * 내 학습 설정 수정
  * PATCH /v1/members/preferences
  */
 export async function updatePreference(data: PreferenceUpdateRequest): Promise<void> {
