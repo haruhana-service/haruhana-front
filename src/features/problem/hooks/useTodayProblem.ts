@@ -10,6 +10,8 @@ export function useTodayProblem() {
     queryKey: ['todayProblem'],
     queryFn: getTodayProblem,
     staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
-    // retry는 QueryClient 기본 설정 사용 (테스트: false, 프로덕션: 3)
+    //
+    retry: 3,
+    retryDelay: 2000, // 2초
   })
 }

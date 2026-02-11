@@ -9,6 +9,9 @@ export function useStreak() {
   return useQuery({
     queryKey: ['streak'],
     queryFn: getStreak,
-    staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   })
 }

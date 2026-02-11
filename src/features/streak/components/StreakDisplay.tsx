@@ -1,15 +1,21 @@
 import { useStreak } from '../hooks/useStreak'
 
+const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const
+
+/**
+ * 날짜 문자열에서 요일 라벨을 반환
+ */
+function getDayLabel(dateString: string): string {
+  const date = new Date(dateString + 'T00:00:00')
+  return DAY_LABELS[date.getDay()]
+}
+
 /**
  * 스트릭 정보를 표시하는 컴포넌트
  * 현재 스트릭과 최고 기록을 보여줍니다
  */
 export function StreakDisplay() {
   const { data: streak, isLoading, error } = useStreak()
-
-  // 일주일 요일 데이터
-  const weekDays = ['일', '월', '화', '수', '목', '금', '토']
-  const today = new Date().getDay()
 
   const getStreakLevel = (count: number) => {
     if (count >= 30) return { label: '마스터', color: 'text-purple-400' }
@@ -80,19 +86,19 @@ export function StreakDisplay() {
         </div>
       </div>
 
-      {/* 잔디 심기 */}
+      {/* 잔디 심기 - 서버에서 받은 주간 풀이 현황 */}
       <div className="relative z-10 mt-6 pt-4 border-t border-white/5">
         <div className="flex justify-between items-end">
           <div className="flex gap-1.5">
-            {weekDays.map((day, index) => (
-              <div key={day} className="flex flex-col items-center gap-1.5">
+            {streak.weeklySolvedStatus.map((status) => (
+              <div key={status.date} className="flex flex-col items-center gap-1.5">
                 <div
-                  className={`w-5 h-5 rounded-md transition-all duration-500 
-                    ${index <= today && streak.currentStreak > 0
+                  className={`w-5 h-5 rounded-md transition-all duration-500
+                    ${status.isSolved
                       ? 'bg-haru-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]'
                       : 'bg-white/5 border border-white/5'}`}
                 />
-                <span className="text-[8px] font-extrabold text-white/20">{day}</span>
+                <span className="text-[8px] font-extrabold text-white/20">{getDayLabel(status.date)}</span>
               </div>
             ))}
           </div>
