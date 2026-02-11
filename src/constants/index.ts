@@ -17,13 +17,16 @@ export const REFRESH_TOKEN_KEY = 'haruharu_refresh_token'
 // ============================================
 
 export const ROUTES = {
-  HOME: '/',
+  ROOT: '/',
   LOGIN: '/login',
   SIGNUP: '/signup',
+  SETUP: '/setup',
   TODAY: '/today',
-  HISTORY: '/history',
   PROBLEM_DETAIL: '/problem/:id',
+  HISTORY: '/history',
   SETTINGS: '/settings',
+  PREFERENCE_EDIT: '/settings/preference',
+  PROFILE_EDIT: '/settings/profile',
 } as const
 
 // ============================================

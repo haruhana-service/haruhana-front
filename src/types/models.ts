@@ -132,6 +132,15 @@ export interface DailyProblemDetailResponse {
 }
 
 // ============================================
+// Problem Preference (문제 설정)
+// ============================================
+
+export interface ProblemPreferenceUpdateRequest {
+  categoryTopicId: number
+  difficulty: Difficulty
+}
+
+// ============================================
 // Submission (제출)
 // ============================================
 
