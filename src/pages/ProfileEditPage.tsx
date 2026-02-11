@@ -2,19 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { updateProfile } from '../features/auth/services/authService'
-import { Card } from '../components/ui/Card'
 import { ROUTES } from '../constants'
-import { formatDateKorean } from '../utils/date'
 import { toast } from 'sonner'
+import { formatDateKorean } from '../utils/date'
 
-const DIFFICULTY_LABELS: Record<string, string> = {
-  EASY: '쉬움 (기초)',
-  MEDIUM: '보통 (심화)',
-  HARD: '어려움 (전문가)',
-}
-
-export function SettingsPage() {
-  const { user, logout, refetchProfile } = useAuth()
+export function ProfileEditPage() {
+  const { user, refetchProfile } = useAuth()
   const navigate = useNavigate()
 
   const [isEditingProfile, setIsEditingProfile] = useState(false)
@@ -75,10 +68,30 @@ export function SettingsPage() {
     setIsEditingProfile(false)
   }
 
+  const handleBack = () => {
+    navigate(ROUTES.SETTINGS)
+  }
+
   return (
-    <div className="animate-fade-up flex flex-col items-center pb-20 pt-4">
-      {/* 프로필 헤더 - 프리미엄 디자인 */}
-      <div className="w-full">
+    <div className="space-y-6 max-w-xl mx-auto py-4 sm:py-8 pb-24 animate-fade-in min-w-0">
+      {/* 헤더 */}
+      <div className="flex items-center gap-3 animate-slide-in-left">
+        <button
+          onClick={handleBack}
+          className="p-2 -ml-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all active:scale-95"
+        >
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800">프로필 수정</h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">닉네임과 프로필 사진을 변경할 수 있습니다</p>
+        </div>
+      </div>
+
+      {/* 프로필 카드 - 프리미엄 디자인 */}
+      <div className="animate-slide-in-up min-w-0">
         <div className="relative overflow-hidden bg-gradient-to-br from-haru-500 via-haru-600 to-haru-700 rounded-xl sm:rounded-2xl shadow-premium-lg min-w-0">
           {/* 배경 패턴 */}
           <div className="absolute inset-0 opacity-10 overflow-hidden">
@@ -253,96 +266,27 @@ export function SettingsPage() {
         </div>
       </div>
 
-      {/* 설정 리스트 섹션 */}
-      <div className="w-full space-y-6 mt-8">
-        <section className="space-y-3">
-          <div className="flex items-center justify-between ml-1 pr-1">
-            <h3 className="text-[12px] font-extrabold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-              <span className="w-1 h-4 bg-haru-600 rounded-full"></span>
-              현재 학습 설정
-            </h3>
-            <button
-              onClick={() => navigate(ROUTES.PREFERENCE_EDIT)}
-              className="text-[12px] font-bold text-haru-600 hover:text-haru-700 transition-colors tracking-wide"
-            >
-              변경
-            </button>
-          </div>
-
-          <Card className="!p-0 border-slate-200 overflow-hidden shadow-sm">
-            <div className="divide-y divide-slate-100">
-              <div className="p-4 flex justify-between items-center group transition-colors hover:bg-slate-50/50">
-                <div>
-                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">현재 난이도</p>
-                  <p className="font-bold text-slate-800 text-[15px]">
-                    {user?.difficulty ? DIFFICULTY_LABELS[user.difficulty] || user.difficulty : '-'}
-                  </p>
-                </div>
-                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-haru-600 shadow-sm">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div className="p-4 flex justify-between items-center group transition-colors hover:bg-slate-50/50">
-                <div>
-                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">학습 주제</p>
-                  <p className="font-bold text-slate-800 text-[15px]">{user?.categoryTopicName || '-'}</p>
-                </div>
-                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-haru-600 shadow-sm">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </section>
-
-        <section className="space-y-3">
-          <h3 className="text-[12px] font-extrabold text-slate-400 uppercase tracking-[0.2em] ml-1">나의 계정</h3>
-          <button
-            onClick={logout}
-            className="w-full p-5 bg-white rounded-[20px] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-red-200 hover:bg-red-50/20 transition-all active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7" />
-                </svg>
-              </div>
-              <span className="text-[15px] font-bold text-slate-700 group-hover:text-red-600 transition-colors">
-                서비스 로그아웃
-              </span>
-            </div>
-            <svg
-              className="w-5 h-5 text-slate-300 group-hover:text-red-300 transition-all"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth={2.5}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+      {/* 안내 메시지 */}
+      {!isEditingProfile && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 animate-slide-in-up delay-100">
+          <div className="flex gap-3">
+            <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
-          </button>
-        </section>
-
-        <div className="text-center pt-10 opacity-30">
-          <p className="text-[12px] text-slate-400 font-extrabold tracking-[0.3em] uppercase italic">
-            HaruHaru Intelligence v1.0
-          </p>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-blue-800 mb-1">프로필 수정하기</p>
+              <p className="text-xs text-blue-700 leading-relaxed">
+                우측 상단의 수정 버튼을 클릭하여 프로필 사진과 닉네임을 변경할 수 있습니다.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
