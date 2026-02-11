@@ -3,7 +3,15 @@
     "allow": [
       "Bash(pnpm build:*)",
       "Bash(pnpm test:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: add environment variable configuration\n\n- Add .env.example with API_BASE_URL template\n- Update .gitignore to exclude all .env files\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: add new dependencies for UI and PWA\n\n- Add lucide-react for icons\n- Add react-markdown, remark-gfm, rehype-raw for markdown rendering\n- Add sonner for toast notifications\n- Add vite-plugin-pwa and workbox for PWA support\n- Add sharp for image processing\n- Add vitest coverage support\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: add PWA and test configuration\n\n- Add PWA manifest with icons and theme colors\n- Configure service worker for offline support\n- Add test configuration \\(tsconfig.test.json\\)\n- Update vite.config.ts with PWA plugin\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: add PWA icons and metadata\n\n- Add PWA icons in various sizes \\(64x64, 192x192, 512x512\\)\n- Add maskable icons for adaptive display\n- Add Apple touch icon\n- Update index.html with PWA meta tags and theme color\n- Add icon generation script\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)"
     ]
   }
 }
