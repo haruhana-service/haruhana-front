@@ -29,10 +29,10 @@ describe('LoginPage', () => {
   it('로그인 폼이 올바르게 렌더링된다', () => {
     render(<LoginPage />)
 
-    expect(screen.getByRole('heading', { name: /로그인/i })).toBeInTheDocument()
-    expect(screen.getByLabelText(/로그인 ID/i)).toBeInTheDocument()
+    expect(screen.getByText('haru:')).toBeInTheDocument()
+    expect(screen.getByLabelText(/아이디/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/비밀번호/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /로그인/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /챌린지 시작하기/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /회원가입/i })).toBeInTheDocument()
   })
 
@@ -40,7 +40,7 @@ describe('LoginPage', () => {
     const user = userEvent.setup()
     render(<LoginPage />)
 
-    const submitButton = screen.getByRole('button', { name: /로그인/i })
+    const submitButton = screen.getByRole('button', { name: /챌린지 시작하기/i })
     await user.click(submitButton)
 
     await waitFor(() => {
@@ -52,8 +52,8 @@ describe('LoginPage', () => {
     const user = userEvent.setup()
     render(<LoginPage />)
 
-    const loginIdInput = screen.getByLabelText(/로그인 ID/i)
-    const submitButton = screen.getByRole('button', { name: /로그인/i })
+    const loginIdInput = screen.getByLabelText(/아이디/i)
+    const submitButton = screen.getByRole('button', { name: /챌린지 시작하기/i })
 
     await user.type(loginIdInput, 'testuser')
     await user.click(submitButton)
@@ -75,9 +75,9 @@ describe('LoginPage', () => {
 
     render(<LoginPage />)
 
-    const loginIdInput = screen.getByLabelText(/로그인 ID/i)
+    const loginIdInput = screen.getByLabelText(/아이디/i)
     const passwordInput = screen.getByLabelText(/비밀번호/i)
-    const submitButton = screen.getByRole('button', { name: /로그인/i })
+    const submitButton = screen.getByRole('button', { name: /챌린지 시작하기/i })
 
     await user.type(loginIdInput, 'wronguser')
     await user.type(passwordInput, 'wrongpass')
@@ -109,9 +109,9 @@ describe('LoginPage', () => {
 
     render(<LoginPage />)
 
-    const loginIdInput = screen.getByLabelText(/로그인 ID/i)
+    const loginIdInput = screen.getByLabelText(/아이디/i)
     const passwordInput = screen.getByLabelText(/비밀번호/i)
-    const submitButton = screen.getByRole('button', { name: /로그인/i })
+    const submitButton = screen.getByRole('button', { name: /챌린지 시작하기/i })
 
     await user.type(loginIdInput, 'testuser')
     await user.type(passwordInput, 'Password123')
@@ -136,9 +136,9 @@ describe('LoginPage', () => {
 
     render(<LoginPage />)
 
-    const loginIdInput = screen.getByLabelText(/로그인 ID/i)
+    const loginIdInput = screen.getByLabelText(/아이디/i)
     const passwordInput = screen.getByLabelText(/비밀번호/i)
-    const submitButton = screen.getByRole('button', { name: /로그인/i })
+    const submitButton = screen.getByRole('button', { name: /챌린지 시작하기/i })
 
     await user.type(loginIdInput, 'testuser')
     await user.type(passwordInput, 'Password123')

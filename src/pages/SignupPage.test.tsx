@@ -26,7 +26,7 @@ vi.mock('react-router-dom', async () => {
 })
 
 // Mock alert
-global.alert = vi.fn()
+window.alert = vi.fn()
 
 describe('SignupPage', () => {
   const mockCategories = {
@@ -62,81 +62,98 @@ describe('SignupPage', () => {
     vi.mocked(categoryService.getCategories).mockResolvedValue(mockCategories)
   })
 
-  it('회원가입 폼이 올바르게 렌더링된다', async () => {
+  it('Step 1: 계정 정보 입력 화면이 올바르게 렌더링된다', async () => {
     render(<SignupPage />)
 
-    expect(screen.getByRole('heading', { name: /회원가입/i })).toBeInTheDocument()
+    expect(screen.getByText(/계정을 만들어주세요/i)).toBeInTheDocument()
 
-    // 계정 정보 필드들
-    expect(screen.getByLabelText(/로그인 ID/i)).toBeInTheDocument()
-    expect(screen.getAllByLabelText(/비밀번호/i)).toHaveLength(2) // 비밀번호 + 비밀번호 확인
-    expect(screen.getByLabelText(/닉네임/i)).toBeInTheDocument()
+    // Step 1 필드들만 보여야 함
+    expect(screen.getByLabelText(/^아이디$/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^비밀번호$/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/비밀번호 확인/i)).toBeInTheDocument()
 
-    // 학습 설정
-    expect(screen.getByText(/학습 설정/i)).toBeInTheDocument()
-    expect(screen.getByText(/난이도 선택/i)).toBeInTheDocument()
-    expect(screen.getByText(/카테고리 선택/i)).toBeInTheDocument()
+    // 다음 단계 버튼
+    expect(screen.getByRole('button', { name: /다음 단계로/i })).toBeInTheDocument()
 
-    // 제출 버튼
-    expect(screen.getByRole('button', { name: /회원가입/i })).toBeInTheDocument()
+    // Step 2, 3 필드들은 아직 보이지 않아야 함
+    expect(screen.queryByLabelText(/닉네임/i)).not.toBeInTheDocument()
 
     // 로그인 링크
     expect(screen.getByRole('link', { name: /로그인/i })).toBeInTheDocument()
   })
 
-  it('로그인 ID 미입력 시 에러 메시지를 표시한다', async () => {
+  it('Step 1: 로그인 ID 미입력 시 에러 메시지를 표시한다', async () => {
     const user = userEvent.setup()
     render(<SignupPage />)
 
-    const submitButton = screen.getByRole('button', { name: /회원가입/i })
-    await user.click(submitButton)
+    const nextButton = screen.getByRole('button', { name: /다음 단계로/i })
+    await user.click(nextButton)
 
     await waitFor(() => {
       expect(screen.getByText(/로그인 ID를 입력해주세요/i)).toBeInTheDocument()
     })
   })
 
-  it('비밀번호 불일치 시 에러 메시지를 표시한다', async () => {
+  it('Step 1 완료 후 Step 2로 이동한다', async () => {
     const user = userEvent.setup()
     render(<SignupPage />)
 
-    const loginIdInput = screen.getByLabelText(/로그인 ID/i)
-    const [passwordInput, passwordConfirmInput] = screen.getAllByLabelText(/비밀번호/i)
-    const nicknameInput = screen.getByLabelText(/닉네임/i)
-    const submitButton = screen.getByRole('button', { name: /회원가입/i })
-
-    await user.type(loginIdInput, 'testuser')
-    await user.type(passwordInput, 'Password123')
-    await user.type(passwordConfirmInput, 'DifferentPassword123')
-    await user.type(nicknameInput, 'Test User')
-    await user.click(submitButton)
-
-    await waitFor(() => {
-      expect(screen.getByText(/비밀번호가 일치하지 않습니다/i)).toBeInTheDocument()
-    })
-  })
-
-  it('난이도 미선택 시 에러 메시지를 표시한다', async () => {
-    const user = userEvent.setup()
-    render(<SignupPage />)
-
-    const loginIdInput = screen.getByLabelText(/로그인 ID/i)
-    const [passwordInput, passwordConfirmInput] = screen.getAllByLabelText(/비밀번호/i)
-    const nicknameInput = screen.getByLabelText(/닉네임/i)
-    const submitButton = screen.getByRole('button', { name: /회원가입/i })
+    // Step 1 입력
+    const loginIdInput = screen.getByLabelText(/^아이디$/i)
+    const passwordInput = screen.getByLabelText(/^비밀번호$/i)
+    const passwordConfirmInput = screen.getByLabelText(/비밀번호 확인/i)
 
     await user.type(loginIdInput, 'testuser')
     await user.type(passwordInput, 'Password123')
     await user.type(passwordConfirmInput, 'Password123')
-    await user.type(nicknameInput, 'Test User')
-    await user.click(submitButton)
 
+    // 다음 단계로 이동
+    const nextButton = screen.getByRole('button', { name: /다음 단계로/i })
+    await user.click(nextButton)
+
+    // Step 2 화면 확인
     await waitFor(() => {
-      expect(screen.getByText(/난이도를 선택해주세요/i)).toBeInTheDocument()
+      expect(screen.getByText(/프로필을/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/닉네임/i)).toBeInTheDocument()
+    })
+
+    // Step 1 필드들은 더 이상 보이지 않아야 함
+    expect(screen.queryByLabelText(/^아이디$/i)).not.toBeInTheDocument()
+  })
+
+  it('Step 2에서 이전 단계로 돌아갈 수 있다', async () => {
+    const user = userEvent.setup()
+    render(<SignupPage />)
+
+    // Step 1 완료
+    const loginIdInput = screen.getByLabelText(/^아이디$/i)
+    const passwordInput = screen.getByLabelText(/^비밀번호$/i)
+    const passwordConfirmInput = screen.getByLabelText(/비밀번호 확인/i)
+
+    await user.type(loginIdInput, 'testuser')
+    await user.type(passwordInput, 'Password123')
+    await user.type(passwordConfirmInput, 'Password123')
+
+    const nextButton = screen.getByRole('button', { name: /다음 단계로/i })
+    await user.click(nextButton)
+
+    // Step 2 확인
+    await waitFor(() => {
+      expect(screen.getByLabelText(/닉네임/i)).toBeInTheDocument()
+    })
+
+    // 이전 단계로 버튼 클릭
+    const prevButton = screen.getByRole('button', { name: /이전 단계로/i })
+    await user.click(prevButton)
+
+    // Step 1로 돌아왔는지 확인
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^아이디$/i)).toBeInTheDocument()
+      expect(screen.queryByLabelText(/닉네임/i)).not.toBeInTheDocument()
     })
   })
 
-  it('회원가입 성공 시 /login으로 리다이렉트한다', async () => {
+  it('전체 회원가입 플로우를 완료하고 /login으로 리다이렉트한다', async () => {
     const user = userEvent.setup()
 
     // Mock successful signup
@@ -144,20 +161,38 @@ describe('SignupPage', () => {
 
     render(<SignupPage />)
 
-    // Wait for categories to load
-    await waitFor(() => {
-      expect(screen.getByRole('combobox', { name: /1. 분야/i })).toBeInTheDocument()
-    })
-
-    // Fill in account info
-    const loginIdInput = screen.getByLabelText(/로그인 ID/i)
-    const [passwordInput, passwordConfirmInput] = screen.getAllByLabelText(/비밀번호/i)
-    const nicknameInput = screen.getByLabelText(/닉네임/i)
+    // Step 1: 계정 정보
+    const loginIdInput = screen.getByLabelText(/^아이디$/i)
+    const passwordInput = screen.getByLabelText(/^비밀번호$/i)
+    const passwordConfirmInput = screen.getByLabelText(/비밀번호 확인/i)
 
     await user.type(loginIdInput, 'testuser')
     await user.type(passwordInput, 'Password123')
     await user.type(passwordConfirmInput, 'Password123')
+
+    const nextButton1 = screen.getByRole('button', { name: /다음 단계로/i })
+    await user.click(nextButton1)
+
+    // Step 2: 프로필 설정
+    await waitFor(() => {
+      expect(screen.getByLabelText(/닉네임/i)).toBeInTheDocument()
+    })
+
+    const nicknameInput = screen.getByLabelText(/닉네임/i)
     await user.type(nicknameInput, 'Test User')
+
+    const nextButton2 = screen.getByRole('button', { name: /다음 단계로/i })
+    await user.click(nextButton2)
+
+    // Step 3: 학습 설정
+    await waitFor(() => {
+      expect(screen.getByRole('combobox', { name: /1. 분야/i })).toBeInTheDocument()
+    })
+
+    // Wait for categories to load
+    await waitFor(() => {
+      expect(screen.getByRole('combobox', { name: /1. 분야/i })).toBeInTheDocument()
+    })
 
     // Select category (Category → Group → Topic)
     const categorySelect = screen.getByRole('combobox', { name: /1. 분야/i })
@@ -182,7 +217,7 @@ describe('SignupPage', () => {
     await user.click(mediumButton)
 
     // Submit form
-    const submitButton = screen.getByRole('button', { name: /회원가입/i })
+    const submitButton = screen.getByRole('button', { name: /하루하루 시작하기/i })
     await user.click(submitButton)
 
     await waitFor(() => {
@@ -193,7 +228,7 @@ describe('SignupPage', () => {
         categoryTopicId: 1,
         difficulty: 'MEDIUM',
       })
-      expect(global.alert).toHaveBeenCalledWith(expect.stringContaining('회원가입'))
+      expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('회원가입'))
       expect(mockNavigate).toHaveBeenCalledWith('/login')
     })
   })
@@ -210,20 +245,34 @@ describe('SignupPage', () => {
 
     render(<SignupPage />)
 
-    // Wait for categories to load
-    await waitFor(() => {
-      expect(screen.getByRole('combobox', { name: /1. 분야/i })).toBeInTheDocument()
-    })
-
-    // Fill in all fields
-    const loginIdInput = screen.getByLabelText(/로그인 ID/i)
-    const [passwordInput, passwordConfirmInput] = screen.getAllByLabelText(/비밀번호/i)
-    const nicknameInput = screen.getByLabelText(/닉네임/i)
+    // Step 1: 계정 정보
+    const loginIdInput = screen.getByLabelText(/^아이디$/i)
+    const passwordInput = screen.getByLabelText(/^비밀번호$/i)
+    const passwordConfirmInput = screen.getByLabelText(/비밀번호 확인/i)
 
     await user.type(loginIdInput, 'duplicateuser')
     await user.type(passwordInput, 'Password123')
     await user.type(passwordConfirmInput, 'Password123')
+
+    const nextButton1 = screen.getByRole('button', { name: /다음 단계로/i })
+    await user.click(nextButton1)
+
+    // Step 2: 프로필 설정
+    await waitFor(() => {
+      expect(screen.getByLabelText(/닉네임/i)).toBeInTheDocument()
+    })
+
+    const nicknameInput = screen.getByLabelText(/닉네임/i)
     await user.type(nicknameInput, 'Test User')
+
+    const nextButton2 = screen.getByRole('button', { name: /다음 단계로/i })
+    await user.click(nextButton2)
+
+    // Step 3: 학습 설정
+    // Wait for categories to load
+    await waitFor(() => {
+      expect(screen.getByRole('combobox', { name: /1. 분야/i })).toBeInTheDocument()
+    })
 
     // Select category
     const categorySelect = screen.getByRole('combobox', { name: /1. 분야/i })
@@ -248,7 +297,7 @@ describe('SignupPage', () => {
     await user.click(mediumButton)
 
     // Submit form
-    const submitButton = screen.getByRole('button', { name: /회원가입/i })
+    const submitButton = screen.getByRole('button', { name: /하루하루 시작하기/i })
     await user.click(submitButton)
 
     await waitFor(() => {

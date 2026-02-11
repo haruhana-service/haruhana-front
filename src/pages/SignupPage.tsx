@@ -10,8 +10,15 @@ import { ROUTES, SUCCESS_MESSAGES } from '../constants'
 import { isApiError } from '../services/api'
 import { Button } from '../components/ui/Button'
 
+const STEPS = [
+  { id: 1, title: '계정 정보', description: '아이디와 비밀번호를 입력해주세요' },
+  { id: 2, title: '프로필 설정', description: '닉네임을 입력해주세요' },
+  { id: 3, title: '학습 설정', description: '학습 주제와 난이도를 선택해주세요' },
+]
+
 export function SignupPage() {
   const navigate = useNavigate()
+  const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState<string>()
 
@@ -19,10 +26,32 @@ export function SignupPage() {
     register,
     control,
     handleSubmit,
+    trigger,
     formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
+    mode: 'onChange',
   })
+
+  const handleNext = async () => {
+    let isValid = false
+    
+    if (currentStep === 1) {
+      isValid = await trigger(['loginId', 'password', 'passwordConfirm'])
+    } else if (currentStep === 2) {
+      isValid = await trigger(['nickname'])
+    }
+    
+    if (isValid) {
+      setCurrentStep(prev => prev + 1)
+      setApiError(undefined)
+    }
+  }
+
+  const handlePrev = () => {
+    setCurrentStep(prev => prev - 1)
+    setApiError(undefined)
+  }
 
   const onSubmit = async (data: SignupFormData) => {
     try {
@@ -51,166 +80,190 @@ export function SignupPage() {
     }
   }
 
+
   return (
-    <div className="min-h-screen bg-[#F8FAFF] px-6 py-12 animate-fade-in">
-      <div className="w-full max-w-md mx-auto">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-5xl font-black text-slate-900 tracking-tighter italic mb-3">haru:</h1>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-2">
-            환영합니다!
-          </h2>
-          <p className="text-sm text-slate-500 font-medium">
-            꾸준함을 기르는 첫 걸음을 시작하세요
-          </p>
+    <div className="flex flex-col h-screen max-w-md mx-auto px-6 py-6 animate-fade-in bg-white">
+      {/* Step Indicator - bar style */}
+      <div className="shrink-0 mb-6">
+        <div className="flex items-center gap-1.5 mb-5">
+          {STEPS.map((step) => (
+            <div
+              key={step.id}
+              className={`h-1 flex-1 rounded-full transition-all duration-500 ${
+                currentStep >= step.id ? 'bg-haru-500' : 'bg-slate-100'
+              }`}
+            />
+          ))}
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <div className="min-h-[48px]">
+          {currentStep === 1 && <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">반가워요!<br/>계정을 만들어주세요</h2>}
+          {currentStep === 2 && <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">프로필을<br/>설정해볼까요?</h2>}
+          {currentStep === 3 && <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">나에게 딱 맞는<br/>학습 설정</h2>}
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="flex-1 overflow-y-auto no-scrollbar pr-1">
+        <form onSubmit={handleSubmit(onSubmit)} id="signup-form" className="h-full">
           {/* API Error */}
           {apiError && (
-            <div className="rounded-xl bg-red-50 border border-red-200 p-4">
+            <div className="rounded-xl bg-red-50 border border-red-200 p-4 animate-fade-in mb-5">
               <p className="text-sm text-red-700 font-medium text-center">{apiError}</p>
             </div>
           )}
 
-          {/* 계정 정보 섹션 */}
-          <div className="space-y-5">
-            <h3 className="text-[11px] font-black text-haru-500 uppercase tracking-[0.2em] ml-1">
-              계정 정보
-            </h3>
-
-            {/* 로그인 ID */}
-            <div className="space-y-1.5">
-              <label htmlFor="loginId" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                아이디
-              </label>
-              <input
-                {...register('loginId')}
-                type="text"
-                id="loginId"
-                className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
-                placeholder="아이디를 입력하세요"
-              />
-              {errors.loginId && (
-                <p className="text-xs text-red-500 ml-1 font-medium">{errors.loginId.message}</p>
-              )}
-            </div>
-
-            {/* 비밀번호 */}
-            <div className="space-y-1.5">
-              <label htmlFor="password" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                비밀번호
-              </label>
-              <input
-                {...register('password')}
-                type="password"
-                id="password"
-                className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
-                placeholder="8자 이상, 대소문자+숫자 포함"
-              />
-              {errors.password && (
-                <p className="text-xs text-red-500 ml-1 font-medium">{errors.password.message}</p>
-              )}
-            </div>
-
-            {/* 비밀번호 확인 */}
-            <div className="space-y-1.5">
-              <label htmlFor="passwordConfirm" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                비밀번호 확인
-              </label>
-              <input
-                {...register('passwordConfirm')}
-                type="password"
-                id="passwordConfirm"
-                className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
-                placeholder="비밀번호를 다시 입력하세요"
-              />
-              {errors.passwordConfirm && (
-                <p className="text-xs text-red-500 ml-1 font-medium">{errors.passwordConfirm.message}</p>
-              )}
-            </div>
-
-            {/* 닉네임 */}
-            <div className="space-y-1.5">
-              <label htmlFor="nickname" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                닉네임
-              </label>
-              <input
-                {...register('nickname')}
-                type="text"
-                id="nickname"
-                className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
-                placeholder="닉네임을 입력하세요"
-              />
-              {errors.nickname && (
-                <p className="text-xs text-red-500 ml-1 font-medium">{errors.nickname.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* 학습 설정 섹션 */}
-          <div className="space-y-5">
-            <div>
-              <h3 className="text-[11px] font-black text-haru-500 uppercase tracking-[0.2em] ml-1 mb-1">
-                학습 설정
-              </h3>
-              <p className="text-xs text-slate-400 font-medium ml-1">
-                나에게 맞는 문제 주제와 난이도를 선택해주세요
-              </p>
-            </div>
-
-            {/* 카테고리 선택 */}
-            <Controller
-              name="categoryTopicId"
-              control={control}
-              render={({ field }) => (
-                <CategorySelector
-                  value={field.value}
-                  onChange={field.onChange}
-                  error={errors.categoryTopicId?.message}
+          {/* Step 1: 계정 정보 */}
+          {currentStep === 1 && (
+            <div className="space-y-5 animate-fade-in">
+              <div className="space-y-1.5">
+                <label htmlFor="loginId" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                  아이디
+                </label>
+                <input
+                  {...register('loginId')}
+                  type="text"
+                  id="loginId"
+                  className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
+                  placeholder="아이디를 입력하세요"
+                  autoFocus
                 />
-              )}
-            />
+                {errors.loginId && (
+                  <p className="text-xs text-red-500 ml-1 font-medium">{errors.loginId.message}</p>
+                )}
+              </div>
 
-            {/* 난이도 선택 */}
-            <Controller
-              name="difficulty"
-              control={control}
-              render={({ field }) => (
-                <DifficultySelector
-                  value={field.value}
-                  onChange={field.onChange}
-                  error={errors.difficulty?.message}
+              <div className="space-y-1.5">
+                <label htmlFor="password" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                  비밀번호
+                </label>
+                <input
+                  {...register('password')}
+                  type="password"
+                  id="password"
+                  className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
+                  placeholder="8자 이상, 대소문자+숫자 포함"
                 />
-              )}
-            />
-          </div>
+                {errors.password && (
+                  <p className="text-xs text-red-500 ml-1 font-medium">{errors.password.message}</p>
+                )}
+              </div>
 
-          {/* Submit Button */}
-          <div className="space-y-4 pt-4">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              fullWidth
-              size="lg"
-              className="h-14 rounded-2xl font-black shadow-lg shadow-haru-100"
-            >
-              {isSubmitting ? '가입 중...' : '하루하루 시작하기'}
-            </Button>
+              <div className="space-y-1.5">
+                <label htmlFor="passwordConfirm" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                  비밀번호 확인
+                </label>
+                <input
+                  {...register('passwordConfirm')}
+                  type="password"
+                  id="passwordConfirm"
+                  className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
+                  placeholder="비밀번호를 다시 입력하세요"
+                />
+                {errors.passwordConfirm && (
+                  <p className="text-xs text-red-500 ml-1 font-medium">{errors.passwordConfirm.message}</p>
+                )}
+              </div>
+            </div>
+          )}
 
-            {/* Login Link */}
-            <p className="text-center text-sm text-slate-500 font-medium">
-              이미 계정이 있으신가요?{' '}
-              <Link
-                to={ROUTES.LOGIN}
-                className="font-black text-haru-600 hover:text-haru-500 transition-colors underline underline-offset-4"
-              >
-                로그인
-              </Link>
-            </p>
-          </div>
+          {/* Step 2: 프로필 설정 */}
+          {currentStep === 2 && (
+            <div className="space-y-5 animate-fade-in">
+              <div className="space-y-1.5">
+                <label htmlFor="nickname" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                  닉네임
+                </label>
+                <input
+                  {...register('nickname')}
+                  type="text"
+                  id="nickname"
+                  className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
+                  placeholder="활동할 닉네임을 입력하세요"
+                  autoFocus
+                />
+                {errors.nickname && (
+                  <p className="text-xs text-red-500 ml-1 font-medium">{errors.nickname.message}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: 학습 설정 */}
+          {currentStep === 3 && (
+            <div className="space-y-5 animate-fade-in">
+              <Controller
+                name="categoryTopicId"
+                control={control}
+                render={({ field }) => (
+                  <CategorySelector
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.categoryTopicId?.message}
+                  />
+                )}
+              />
+
+              <Controller
+                name="difficulty"
+                control={control}
+                render={({ field }) => (
+                  <DifficultySelector
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.difficulty?.message}
+                  />
+                )}
+              />
+            </div>
+          )}
         </form>
+      </div>
+
+      {/* Footer Navigation */}
+      <div className="shrink-0 mt-6 space-y-3">
+        {currentStep < STEPS.length ? (
+          <Button
+            type="button"
+            onClick={handleNext}
+            fullWidth
+            size="lg"
+            className="h-14 rounded-2xl text-[17px] font-black shadow-lg shadow-haru-100 active:scale-95 transition-transform"
+          >
+            다음 단계로
+          </Button>
+        ) : (
+          <Button
+            type="submit"
+            form="signup-form"
+            disabled={isSubmitting}
+            fullWidth
+            size="lg"
+            className="h-14 rounded-2xl text-[17px] font-black shadow-lg shadow-haru-100 active:scale-95 transition-transform"
+          >
+            {isSubmitting ? '가입 중...' : '하루하루 시작하기'}
+          </Button>
+        )}
+        {currentStep > 1 && (
+          <button
+            type="button"
+            onClick={handlePrev}
+            className="w-full py-1 text-slate-400 font-bold text-xs hover:text-slate-600 transition-colors"
+          >
+            이전 단계로
+          </button>
+        )}
+
+        {/* Login Link */}
+        <p className="text-center text-sm text-slate-500 font-medium pt-2">
+          이미 계정이 있으신가요?{' '}
+          <Link
+            to={ROUTES.LOGIN}
+            className="font-black text-haru-600 hover:text-haru-500 transition-colors underline underline-offset-4"
+          >
+            로그인
+          </Link>
+        </p>
       </div>
     </div>
   )
