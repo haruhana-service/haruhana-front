@@ -14,7 +14,11 @@
       "Bash(git commit:*)",
       "Bash(brew reinstall:*)",
       "Bash(DYLD_LIBRARY_PATH=\"/opt/homebrew/opt/curl/lib:$DYLD_LIBRARY_PATH\" git push:*)",
-      "Bash(pnpm approve-builds:*)"
+      "Bash(pnpm approve-builds:*)",
+      "WebFetch(domain:api.haruharu.online)",
+      "Bash(ls:*)",
+      "Bash(CI=true pnpm install:*)",
+      "Bash(pnpm lint:*)"
     ]
   }
 }
