@@ -21,7 +21,7 @@ describe('StreakDisplay', () => {
 
     render(<StreakDisplay />)
 
-    expect(screen.getByText('스트릭 로딩 중...')).toBeInTheDocument()
+    expect(screen.getByText('Loading...')).toBeInTheDocument()
   })
 
   it('스트릭 데이터를 올바르게 표시한다', async () => {
@@ -36,9 +36,8 @@ describe('StreakDisplay', () => {
 
     await waitFor(() => {
       expect(screen.getByText('5')).toBeInTheDocument()
-      expect(screen.getByText('일 연속')).toBeInTheDocument()
-      expect(screen.getByText('최고 기록:')).toBeInTheDocument()
-      expect(screen.getByText('10일')).toBeInTheDocument()
+      expect(screen.getByText('일째')).toBeInTheDocument()
+      expect(screen.getByText(/최고 10일 기록 중/)).toBeInTheDocument()
     })
   })
 
@@ -54,7 +53,7 @@ describe('StreakDisplay', () => {
 
     await waitFor(() => {
       expect(screen.getByText('0')).toBeInTheDocument()
-      expect(screen.getByText('일 연속')).toBeInTheDocument()
+      expect(screen.getByText('일째')).toBeInTheDocument()
     })
   })
 
@@ -70,9 +69,7 @@ describe('StreakDisplay', () => {
 
     await waitFor(() => {
       expect(screen.getByText('15')).toBeInTheDocument()
-      expect(screen.getByText('최고 기록:')).toBeInTheDocument()
-      expect(screen.getByText('15일')).toBeInTheDocument()
-      expect(screen.getByText(/신기록/i)).toBeInTheDocument()
+      expect(screen.getByText(/최고 15일 기록 중/)).toBeInTheDocument()
     })
   })
 
