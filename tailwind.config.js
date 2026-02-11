@@ -6,35 +6,51 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        haru: {
-          50: '#f5f7ff',
-          100: '#ebf0ff',
-          200: '#ccd8ff',
-          300: '#99b3ff',
-          400: '#668cff',
-          500: '#4a69ff', // Primary - Vibrant Blue
-          600: '#3c58ff',
-          700: '#2e44cc',
-          800: '#1e2c85',
-          900: '#1a1f36', // Deep Navy
-        }
+      fontWeight: {
+        'medium': '500',
+        'semibold': '600',
+        'bold': '700',
+        'extrabold': '800',
+        'black': '900',
+      },
+      fontSize: {
+        'xs': ['0.75rem', { lineHeight: '1.25', letterSpacing: '-0.01em' }],
+        'sm': ['0.875rem', { lineHeight: '1.5', letterSpacing: '-0.01em' }],
+        'base': ['1rem', { lineHeight: '1.6', letterSpacing: '-0.01em' }],
+        'lg': ['1.125rem', { lineHeight: '1.6', letterSpacing: '-0.015em' }],
+        'xl': ['1.25rem', { lineHeight: '1.5', letterSpacing: '-0.02em' }],
+        '2xl': ['1.5rem', { lineHeight: '1.4', letterSpacing: '-0.02em' }],
+        '3xl': ['1.875rem', { lineHeight: '1.3', letterSpacing: '-0.025em' }],
+        '4xl': ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.025em' }],
       },
       animation: {
-        'fade-in': 'fadeIn 0.3s ease-out',
-        'float': 'float 3s ease-in-out infinite',
+        'slide-in-left': 'slideInLeft 0.3s ease-out',
+        'slide-in-up': 'slideInUp 0.3s ease-out',
+        'pulse-glow': 'pulseGlow 2s infinite',
       },
       keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
+        slideInLeft: {
+          '0%': { transform: 'translateX(-20px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
         },
-        float: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-10px)' },
-        }
-      }
+        slideInUp: {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        pulseGlow: {
+          '0%, 100%': { opacity: '0.5' },
+          '50%': { opacity: '1' },
+        },
+      },
+      boxShadow: {
+        'premium': '0 4px 20px rgba(74, 105, 255, 0.1)',
+        'premium-lg': '0 8px 30px rgba(74, 105, 255, 0.15)',
+        'card': '0 1px 3px rgba(0, 0, 0, 0.05)',
+        'card-hover': '0 4px 12px rgba(0, 0, 0, 0.08)',
+      },
+      transitionDelay: {
+        '100': '100ms',
+      },
     },
   },
-  plugins: [],
 }
