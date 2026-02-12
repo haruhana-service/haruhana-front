@@ -10,8 +10,5 @@ export function useTodayProblem() {
     queryKey: ['todayProblem'],
     queryFn: getTodayProblem,
     staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
-    //
-    retry: 3,
-    retryDelay: 2000, // 2초
   })
 }
