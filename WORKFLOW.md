@@ -693,7 +693,7 @@ docs: WORKFLOW.md 업데이트
 
 ## 다음 단계
 
-현재 위치: **Phase 2 완료** ✅
+현재 위치: **핵심 기능 완료, 품질 개선 단계**
 
 **완료된 Phase:**
 - ✅ Phase 0: 프로젝트 초기 설정
@@ -710,11 +710,50 @@ docs: WORKFLOW.md 업데이트
 
 **🎉 모든 핵심 기능 완료!**
 
-**선택적 개선 항목:**
-- Phase 8: 알림 기능 (푸시 알림 추가)
-- Phase 9.1: 컴포넌트 테스트 작성
-- Phase 10: 추가 최적화 및 접근성 개선
-- Phase 11: Sentry 에러 추적 설정
+---
+
+## Phase 12: 품질 개선 및 마무리 🚧 진행 중
+
+### 12.1 알림 설정 UI (Phase 8 완성) ✅ 완료
+
+- [x] SettingsPage에 알림 설정 섹션 추가
+  - 알림 권한 상태 표시 (허용/차단/미설정)
+  - 알림 켜기/끄기 토글 (FCM 토큰 기반 상태 관리)
+  - 차단 시 브라우저 설정 안내 메시지
+- [x] main.tsx의 PWA Service Worker 등록 코드 활성화
+- [x] Firebase 초기화 graceful error handling (null 반환)
+- [x] 로그아웃 시 FCM 토큰 삭제 후 로그아웃 처리 (순서 보장)
+- [x] AuthContext에서 context 정의 분리 (react-refresh 규칙 준수)
+
+### 12.2 캘린더 완성 (Phase 6.3 마무리) ✅ 완료
+
+- [x] 날짜 셀에 호버 툴팁 추가 (`title`: 날짜 + 제출 여부)
+- [x] 캘린더 날짜 셀 접근성 개선 (`aria-label`: 날짜 + 완료/오늘 상태)
+- [x] 오늘 날짜에 `aria-current="date"` 추가
+
+### 12.3 토스트 알림 확대 적용 (Phase 9.3 마무리)
+
+- [x] 답변 제출 성공/실패 시 토스트 추가 (ProblemDetailPage)
+- [x] 답변 수정 성공/실패 시 토스트 추가 (ProblemDetailPage)
+- [x] 설정 변경(난이도/카테고리) 성공/실패 시 토스트 추가 (PreferenceEditPage, alert → toast 교체)
+- [x] 네트워크 에러 시 각 페이지 catch 블록에서 토스트 처리
+
+### 12.4 접근성 개선 (Phase 10.3)
+
+- [x] 스킵 네비게이션 링크 추가 (MainLayout, "본문으로 건너뛰기")
+- [x] SVG 아이콘에 `aria-hidden="true"` 추가 (TabBar 네비게이션)
+- [x] 난이도 선택에 `aria-pressed` 추가 (DifficultySelector)
+- [x] 캘린더 날짜 셀 `aria-label`, `aria-current="date"` (12.2에서 완료)
+- [ ] 색상 대비 검사 (WCAG AA 이상) - 추후 Lighthouse로 확인
+
+### 12.5 테스트 보강 ✅ 완료
+
+- [x] 기존 실패 테스트 5개 수정 → 142개 전체 통과
+  - useTodayProblem: `retry: 3` 제거 (QueryClient 기본값에 위임)
+  - useStreak: 캐싱 테스트를 현재 설정(staleTime: 0)에 맞게 수정
+  - SignupPage: `trigger()` 후 `errors` 객체 직접 참조 대신 `isValid` 사용
+- [ ] HistoryPage 테스트 (캘린더 네비게이션, 날짜 선택) - 추후
+- [ ] SettingsPage 테스트 (설정 변경 플로우) - 추후
 
 ---
 
@@ -729,6 +768,7 @@ docs: WORKFLOW.md 업데이트
 6. **UI/UX** - 반응형 레이아웃, 애니메이션, 모바일 최적화
 7. **배포 준비** - 환경 변수 설정, 에러 바운더리, 프로덕션 빌드
 8. **공통 컴포넌트** - Button, Card, Input, TextArea, Modal, LoadingSpinner, ErrorMessage
+9. **FCM 인프라** - Firebase 초기화, 토큰 관리, 백그라운드/포그라운드 메시지, AuthContext 연동
 
 ### 📊 테스트 커버리지
 - **17개 테스트 파일** ✅
@@ -751,10 +791,10 @@ docs: WORKFLOW.md 업데이트
 - React Hook Form + Zod (폼 관리)
 - Tailwind CSS v4 (스타일링)
 - Vitest (테스트)
+- Firebase (FCM 푸시 알림)
+- Sonner (토스트 알림)
 
 ### 📝 API 연동 상태
 - 베이스 URL: `api.haruahru.online`
 - Swagger 문서 참조
 - 모든 API 엔드포인트 구현 완료
-
-작업을 계속 진행할 준비가 되었습니다! 🚀
