@@ -1,31 +1,13 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import type { MemberProfileResponse, TokenResponse } from '../types/models'
+import type { MemberProfileResponse } from '../types/models'
+import type { TokenResponse } from '../types/models'
 import { getAccessToken, setAuthTokens, clearAuthTokens } from '../services/api'
 import { getProfile } from '../features/auth/services/authService'
 import { requestAndSyncFCMToken, deleteFCMToken, onMessageReceived } from '../services/fcmService'
 import { ROUTES } from '../constants'
-
-// ============================================
-// AuthContext Types
-// ============================================
-
-interface AuthContextType {
-  user: MemberProfileResponse | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  login: (tokenResponse: TokenResponse) => Promise<void>
-  logout: () => void
-  updateUser: (user: MemberProfileResponse) => void
-  refetchProfile: () => Promise<void>
-}
-
-// ============================================
-// AuthContext
-// ============================================
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined)
+import { AuthContext, type AuthContextType } from './authContextDef'
 
 // ============================================
 // AuthProvider
@@ -58,14 +40,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const token = getAccessToken()
 
     if (token) {
-      fetchProfile()
-        .then(() => {
-          // FCM 토큰 동기화 (비차단적)
-          requestAndSyncFCMToken().catch((error) => {
-            console.error('[Auth] FCM sync failed:', error)
-          })
-        })
-        .finally(() => setIsLoading(false))
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 마운트 시 비동기 초기화 패턴
+      fetchProfile().finally(() => setIsLoading(false))
     } else {
       setIsLoading(false)
     }
@@ -108,7 +84,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       })
     })
 
-    return unsubscribe
+    return () => {
+      unsubscribe?.()
+    }
   }, [user, navigate])
 
   // 로그인 처리
@@ -131,11 +109,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   // 로그아웃 처리
-  const logout = () => {
-    // FCM 토큰 삭제 (비차단적)
-    deleteFCMToken().catch((error) => {
+  const logout = async () => {
+    // FCM 토큰 삭제 (로그아웃 전에 처리)
+    try {
+      await deleteFCMToken()
+    } catch (error) {
       console.error('[Auth] FCM deletion failed:', error)
-    })
+    }
 
     // 토큰 제거
     clearAuthTokens()
@@ -168,16 +148,4 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-// ============================================
-// useAuth Hook
-// ============================================
-
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
 }
