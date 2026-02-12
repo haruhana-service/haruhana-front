@@ -7,6 +7,7 @@ import { useProblemDetail } from '../features/problem/hooks/useProblemDetail'
 import { useSubmitAnswer } from '../features/submission/hooks/useSubmitAnswer'
 import { useUpdateAnswer } from '../features/submission/hooks/useUpdateAnswer'
 import { Button } from '../components/ui/Button'
+import { toast } from 'sonner'
 import type { SubmissionResponse } from '../types/models'
 
 export function ProblemDetailPage() {
@@ -37,12 +38,14 @@ export function ProblemDetailPage() {
       const result = await submitAnswerMutation(answer)
       setSubmissionResult(result)
       refetch()
+      toast.success('답변이 제출되었습니다.')
     } catch (err) {
       if (err && typeof err === 'object' && 'message' in err) {
         setApiError(err.message as string)
       } else {
         setApiError('답변 제출에 실패했습니다')
       }
+      toast.error('답변 제출에 실패했습니다.')
     } finally {
       setIsSubmitting(false)
     }
@@ -63,12 +66,14 @@ export function ProblemDetailPage() {
       await updateAnswerMutation(editAnswer)
       setIsEditing(false)
       refetch()
+      toast.success('답변이 수정되었습니다.')
     } catch (err) {
       if (err && typeof err === 'object' && 'message' in err) {
         setApiError(err.message as string)
       } else {
         setApiError('답변 수정에 실패했습니다')
       }
+      toast.error('답변 수정에 실패했습니다.')
     } finally {
       setIsSubmitting(false)
     }
