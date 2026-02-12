@@ -28,6 +28,7 @@ export function DifficultySelector({ value, onChange, error }: DifficultySelecto
             key={difficulty}
             type="button"
             onClick={() => onChange(difficulty)}
+            aria-pressed={value === difficulty}
             className={`
               relative flex flex-col items-start rounded-xl border-2 p-4 text-left transition-all
               ${

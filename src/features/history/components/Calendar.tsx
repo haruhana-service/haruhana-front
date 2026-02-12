@@ -25,7 +25,7 @@ export function Calendar({ selectedDate, onDateSelect, completedDates = new Set(
   endDate.setDate(endDate.getDate() + (6 - endDate.getDay()))
 
   const weeks: Date[][] = []
-  let currentDate = new Date(startDate)
+  const currentDate = new Date(startDate)
 
   while (currentDate <= endDate) {
     const week: Date[] = []
@@ -134,11 +134,17 @@ export function Calendar({ selectedDate, onDateSelect, completedDates = new Set(
               const isTodayDate = isToday(date)
               const isCompletedDate = isCompleted(date)
 
+              const dateLabel = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일${isCompletedDate ? ' (완료)' : ''}${isTodayDate ? ' (오늘)' : ''}`
+              const tooltip = `${date.getMonth() + 1}월 ${date.getDate()}일${isCompletedDate ? ' - 풀이 완료' : ''}`
+
               return (
                 <button
                   key={dateIndex}
                   onClick={() => handleDateClick(date)}
                   disabled={!isCurrentMonthDate}
+                  aria-label={isCurrentMonthDate ? dateLabel : undefined}
+                  aria-current={isTodayDate ? 'date' : undefined}
+                  title={isCurrentMonthDate ? tooltip : undefined}
                   className={`
                     aspect-square rounded-lg sm:rounded-xl text-sm sm:text-base font-medium
                     transition-all duration-200
