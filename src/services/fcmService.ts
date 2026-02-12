@@ -84,6 +84,10 @@ export async function requestAndSyncFCMToken(): Promise<string | null> {
 
     // FCM 토큰 획득
     const messaging = getFirebaseMessaging()
+    if (!messaging) {
+      console.warn('[FCM] Firebase Messaging not available')
+      return null
+    }
     const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
 
     const swRegistration = await getServiceWorkerRegistration()
@@ -129,6 +133,11 @@ export async function requestAndSyncFCMToken(): Promise<string | null> {
 export async function deleteFCMToken(): Promise<void> {
   try {
     const messaging = getFirebaseMessaging()
+    if (!messaging) {
+      // Firebase 미사용 환경에서는 로컬 토큰만 정리
+      localStorage.removeItem(FCM_TOKEN_KEY)
+      return
+    }
     await deleteToken(messaging)
 
     // 백엔드에서도 토큰 삭제
@@ -161,8 +170,12 @@ export function getSavedFCMToken(): string | null {
  * @param callback 메시지 수신 시 호출할 콜백
  * @returns 리스너 해제 함수
  */
-export function onMessageReceived(callback: MessageCallback): Unsubscribe {
+export function onMessageReceived(callback: MessageCallback): Unsubscribe | null {
   const messaging = getFirebaseMessaging()
+  if (!messaging) {
+    console.warn('[FCM] Firebase Messaging not available, skipping foreground listener')
+    return null
+  }
   return onMessage(messaging, (payload) => {
     console.log('[FCM] Foreground message received:', payload)
     callback(payload)
