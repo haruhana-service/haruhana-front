@@ -98,7 +98,7 @@ describe('useStreak', () => {
     expect(result.current.data?.maxStreak).toBe(15)
   })
 
-  it('staleTime이 설정되어 캐싱된다', async () => {
+  it('항상 최신 데이터를 가져온다 (staleTime: 0, refetchOnMount: always)', async () => {
     const mockStreak = {
       currentStreak: 3,
       maxStreak: 8,
@@ -121,18 +121,7 @@ describe('useStreak', () => {
       expect(result.current.isSuccess).toBe(true)
     })
 
-    // 첫 번째 호출 확인
     expect(streakService.getStreak).toHaveBeenCalledTimes(1)
-
-    // 같은 훅을 다시 렌더링해도 캐시된 데이터 사용 (staleTime 내)
-    const { result: result2 } = renderHook(() => useStreak(), { wrapper })
-
-    await waitFor(() => {
-      expect(result2.current.isSuccess).toBe(true)
-    })
-
-    // staleTime 내에서는 추가 호출이 없어야 함
-    expect(streakService.getStreak).toHaveBeenCalledTimes(1)
-    expect(result2.current.data).toEqual(mockStreak)
+    expect(result.current.data).toEqual(mockStreak)
   })
 })

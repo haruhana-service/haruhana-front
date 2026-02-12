@@ -49,34 +49,11 @@ export function SignupPage() {
       // Step 1: 계정 정보 검증
       const isValid = await trigger(['loginId', 'password', 'passwordConfirm'])
 
-      console.log('Step 1 Validation:', {
-        isValid,
-        errors: {
-          loginId: errors.loginId?.message,
-          password: errors.password?.message,
-          passwordConfirm: errors.passwordConfirm?.message,
-        }
-      })
-
-      // 개별 필드 에러 확인
-      if (errors.loginId) {
-        setApiError(errors.loginId.message || '아이디를 확인해주세요')
-        return
-      }
-      if (errors.password) {
-        setApiError(errors.password.message || '비밀번호를 확인해주세요')
-        return
-      }
-      if (errors.passwordConfirm) {
-        setApiError(errors.passwordConfirm.message || '비밀번호 확인을 입력해주세요')
-        return
-      }
+      if (!isValid) return
 
       // 수동으로 비밀번호 일치 확인 (Zod refine 대신)
       const password = getValues('password')
       const passwordConfirm = getValues('passwordConfirm')
-
-      console.log('Password match check:', { password, passwordConfirm, match: password === passwordConfirm })
 
       if (password !== passwordConfirm) {
         setApiError('비밀번호가 일치하지 않습니다')
@@ -89,33 +66,14 @@ export function SignupPage() {
       // Step 2: 닉네임 검증
       const isValid = await trigger(['nickname'])
 
-      console.log('Step 2 Validation:', { isValid, error: errors.nickname?.message })
-
-      if (!isValid || errors.nickname) {
-        setApiError(errors.nickname?.message || '닉네임을 확인해주세요')
-        return
-      }
+      if (!isValid) return
 
       setCurrentStep(prev => prev + 1)
     } else if (currentStep === 3) {
       // Step 3: 학습 설정 검증
       const isValid = await trigger(['categoryTopicId', 'difficulty'])
 
-      console.log('Step 3 Validation:', {
-        isValid,
-        errors: {
-          categoryTopicId: errors.categoryTopicId?.message,
-          difficulty: errors.difficulty?.message,
-        }
-      })
-
-      if (!isValid) {
-        const firstError = errors.categoryTopicId?.message
-          || errors.difficulty?.message
-          || '선택값을 다시 확인해주세요'
-        setApiError(firstError)
-        return
-      }
+      if (!isValid) return
 
       // 마지막 단계는 submit으로 진행
       setApiError(undefined)
