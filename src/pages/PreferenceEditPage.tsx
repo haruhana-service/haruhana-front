@@ -11,6 +11,7 @@ import { Card } from '../components/ui/Card'
 import { updateProblemPreference } from '../features/problem/services/problemService'
 import { isApiError } from '../services/api'
 import { ROUTES } from '../constants'
+import { toast } from 'sonner'
 import type { Difficulty } from '../types/models'
 
 const preferenceSchema = z.object({
@@ -51,7 +52,7 @@ export function PreferenceEditPage() {
       await refetchProfile()
 
       // 설정 페이지로 돌아가기
-      alert('학습 설정이 변경되었습니다.\n다음 날 00:00부터 적용됩니다.')
+      toast.success('학습 설정이 변경되었습니다. 다음 날 00:00부터 적용됩니다.')
       navigate(ROUTES.SETTINGS)
     } catch (error) {
       console.error('Preference update failed:', error)
@@ -60,6 +61,7 @@ export function PreferenceEditPage() {
       } else {
         setApiError('설정 변경 중 오류가 발생했습니다')
       }
+      toast.error('설정 변경에 실패했습니다.')
     } finally {
       setIsSubmitting(false)
     }
