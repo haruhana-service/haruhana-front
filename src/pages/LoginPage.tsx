@@ -54,7 +54,7 @@ export function LoginPage() {
       <div className="relative z-10 w-full max-w-sm">
         {/* Header */}
         <div className="text-center mb-16">
-          <p className="text-haru-300/60 text-[15px] font-semibold tracking-tight mb-3">
+          <p className="text-haru-300 text-[15px] font-semibold tracking-tight mb-3">
             나를 지키는 작은 습관
           </p>
           <h1 className="text-7xl font-black text-white tracking-tighter italic">haru:</h1>
@@ -81,14 +81,14 @@ export function LoginPage() {
 
           {/* 로그인 ID */}
           <div className="space-y-2">
-            <label htmlFor="loginId" className="text-[12px] font-bold text-white/40 uppercase tracking-widest ml-1">
+            <label htmlFor="loginId" className="text-[12px] font-bold text-white/60 uppercase tracking-widest ml-1">
               아이디
             </label>
             <input
               {...register('loginId')}
               type="text"
               id="loginId"
-              className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm rounded-xl border-2 border-white/10 focus:border-haru-500 focus:bg-white/20 outline-none transition-all font-semibold text-white placeholder:text-white/30"
+              className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm rounded-xl border-2 border-white/10 focus:border-haru-500 focus:bg-white/20 outline-none transition-all font-semibold text-white placeholder:text-white/50"
               placeholder="아이디를 입력하세요"
             />
             {errors.loginId && (
@@ -98,14 +98,14 @@ export function LoginPage() {
 
           {/* 비밀번호 */}
           <div className="space-y-2">
-            <label htmlFor="password" className="text-[12px] font-bold text-white/40 uppercase tracking-widest ml-1">
+            <label htmlFor="password" className="text-[12px] font-bold text-white/60 uppercase tracking-widest ml-1">
               비밀번호
             </label>
             <input
               {...register('password')}
               type="password"
               id="password"
-              className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm rounded-xl border-2 border-white/10 focus:border-haru-500 focus:bg-white/20 outline-none transition-all font-semibold text-white placeholder:text-white/30"
+              className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm rounded-xl border-2 border-white/10 focus:border-haru-500 focus:bg-white/20 outline-none transition-all font-semibold text-white placeholder:text-white/50"
               placeholder="비밀번호를 입력하세요"
             />
             {errors.password && (

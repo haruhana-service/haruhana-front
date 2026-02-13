@@ -265,7 +265,7 @@ export function SettingsPage() {
                       type="text"
                       value={editedNickname}
                       onChange={(e) => setEditedNickname(e.target.value)}
-                      className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm sm:text-base placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm sm:text-base placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="닉네임 입력"
                       autoFocus
                       disabled={isSubmitting}
