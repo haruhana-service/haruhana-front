@@ -20,6 +20,7 @@
     "date-fns": "^4.1.0",
     "firebase": "^12.9.0",
     "lucide-react": "^0.563.0",
+    "markdown-to-jsx": "^9.7.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.71.1",
