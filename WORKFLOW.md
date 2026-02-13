@@ -712,7 +712,7 @@ docs: WORKFLOW.md 업데이트
 
 ---
 
-## Phase 12: 품질 개선 및 마무리 🚧 진행 중
+## Phase 12: 품질 개선 및 마무리 ✅ 완료
 
 ### 12.1 알림 설정 UI (Phase 8 완성) ✅ 완료
 
@@ -738,13 +738,16 @@ docs: WORKFLOW.md 업데이트
 - [x] 설정 변경(난이도/카테고리) 성공/실패 시 토스트 추가 (PreferenceEditPage, alert → toast 교체)
 - [x] 네트워크 에러 시 각 페이지 catch 블록에서 토스트 처리
 
-### 12.4 접근성 개선 (Phase 10.3)
+### 12.4 접근성 개선 (Phase 10.3) ✅ 완료
 
 - [x] 스킵 네비게이션 링크 추가 (MainLayout, "본문으로 건너뛰기")
 - [x] SVG 아이콘에 `aria-hidden="true"` 추가 (TabBar 네비게이션)
 - [x] 난이도 선택에 `aria-pressed` 추가 (DifficultySelector)
 - [x] 캘린더 날짜 셀 `aria-label`, `aria-current="date"` (12.2에서 완료)
-- [ ] 색상 대비 검사 (WCAG AA 이상) - 추후 Lighthouse로 확인
+- [x] 색상 대비 검사 (WCAG AA 이상)
+  - 다크 배경(mesh-gradient) 저대비 텍스트 수정: `text-white/20~40` → `/50~60`
+  - LoginPage 라벨·플레이스홀더 대비 개선: `text-white/40` → `/60`, `placeholder:text-white/30` → `/50`
+  - SettingsPage 프로필 수정 플레이스홀더 대비 개선
 
 ### 12.5 테스트 보강 ✅ 완료
 
@@ -752,8 +755,8 @@ docs: WORKFLOW.md 업데이트
   - useTodayProblem: `retry: 3` 제거 (QueryClient 기본값에 위임)
   - useStreak: 캐싱 테스트를 현재 설정(staleTime: 0)에 맞게 수정
   - SignupPage: `trigger()` 후 `errors` 객체 직접 참조 대신 `isValid` 사용
-- [ ] HistoryPage 테스트 (캘린더 네비게이션, 날짜 선택) - 추후
-- [ ] SettingsPage 테스트 (설정 변경 플로우) - 추후
+- [x] HistoryPage 테스트 (10개): 캘린더 월 네비게이션, 날짜 선택, 문제 표시, 완료/미완료 상태
+- [x] SettingsPage 테스트 (13개): 프로필 표시/수정, 학습 설정, 알림 섹션, 로그아웃, 이미지 업로드
 
 ---
 
