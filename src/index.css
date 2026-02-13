@@ -2,11 +2,16 @@
 
 /* Base Typography Styles */
 @layer base {
+  html {
+    background-color: #F8FAFC;
+  }
+
   body {
     @apply font-medium text-[15px] leading-relaxed;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overscroll-behavior-y: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
