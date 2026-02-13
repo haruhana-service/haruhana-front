@@ -65,7 +65,7 @@ export function TodayPage() {
                     {level.label}
                   </span>
                 </div>
-                <p className="text-white/40 text-[11px] font-extrabold uppercase tracking-[0.2em]">연속 학습 리듬</p>
+                <p className="text-white/60 text-[11px] font-extrabold uppercase tracking-[0.2em]">연속 학습 리듬</p>
                 <div className="flex items-baseline gap-1.5">
                   <h2 className="text-5xl font-black tracking-tighter text-white">{streak.currentStreak}</h2>
                   <span className="text-lg font-extrabold text-haru-400 italic">일째</span>
@@ -91,14 +91,14 @@ export function TodayPage() {
                             ? 'bg-haru-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]'
                             : 'bg-white/5 border border-white/5'}`}
                       />
-                      <span className="text-[8px] font-extrabold text-white/20">
+                      <span className="text-[8px] font-extrabold text-white/50">
                         {getDayLabel(status.date)}
                       </span>
                     </div>
                   ))}
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <span className="text-[9px] font-extrabold text-white/30 uppercase tracking-widest">최고 {streak.maxStreak}일 기록 중</span>
+                  <span className="text-[9px] font-extrabold text-white/60 uppercase tracking-widest">최고 {streak.maxStreak}일 기록 중</span>
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-full border border-white/5">
                     <div className="w-1 h-1 rounded-full bg-haru-400 animate-pulse"></div>
                     <span className="text-[9px] font-extrabold text-haru-400 uppercase tracking-tighter">Live Status</span>
