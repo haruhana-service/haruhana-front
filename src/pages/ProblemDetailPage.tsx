@@ -1,14 +1,310 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeRaw from 'rehype-raw'
+import Markdown from 'markdown-to-jsx'
 import { useProblemDetail } from '../features/problem/hooks/useProblemDetail'
 import { useSubmitAnswer } from '../features/submission/hooks/useSubmitAnswer'
 import { useUpdateAnswer } from '../features/submission/hooks/useUpdateAnswer'
 import { Button } from '../components/ui/Button'
 import { toast } from 'sonner'
 import type { SubmissionResponse } from '../types/models'
+
+// Markdown 렌더러 옵션
+const markdownOptions = {
+  overrides: {
+    h1: {
+      component: ({ children }: any) => (
+        <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 mt-5 sm:mt-6 text-slate-800">
+          {children}
+        </h1>
+      ),
+    },
+    h2: {
+      component: ({ children }: any) => (
+        <h2 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 mt-4 sm:mt-5 text-slate-800">
+          {children}
+        </h2>
+      ),
+    },
+    h3: {
+      component: ({ children }: any) => (
+        <h3 className="text-base sm:text-lg font-bold mb-2 mt-3 sm:mt-4 text-slate-700">
+          {children}
+        </h3>
+      ),
+    },
+    h4: {
+      component: ({ children }: any) => (
+        <h4 className="text-sm sm:text-base font-bold mb-2 mt-2 sm:mt-3 text-slate-700">
+          {children}
+        </h4>
+      ),
+    },
+    p: {
+      component: ({ children }: any) => (
+        <p className="mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base text-slate-700">
+          {children}
+        </p>
+      ),
+    },
+    ul: {
+      component: ({ children }: any) => (
+        <ul className="list-disc list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-slate-700">
+          {children}
+        </ul>
+      ),
+    },
+    ol: {
+      component: ({ children }: any) => (
+        <ol className="list-decimal list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-slate-700">
+          {children}
+        </ol>
+      ),
+    },
+    li: {
+      component: ({ children }: any) => (
+        <li className="leading-relaxed marker:text-slate-500">{children}</li>
+      ),
+    },
+    code: {
+      component: ({ children, inline }: any) => {
+        if (inline) {
+          return (
+            <code className="px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono bg-slate-100 text-slate-800 border border-slate-200">
+              {children}
+            </code>
+          )
+        }
+        return (
+          <code className="text-xs sm:text-sm">{children}</code>
+        )
+      },
+    },
+    pre: {
+      component: ({ children }: any) => (
+        <pre className="p-3 sm:p-4 rounded-lg sm:rounded-xl overflow-x-auto mb-3 sm:mb-4 border bg-slate-50 border-slate-200">
+          {children}
+        </pre>
+      ),
+    },
+    blockquote: {
+      component: ({ children }: any) => (
+        <blockquote className="border-l-4 pl-3 sm:pl-4 py-2 my-3 sm:my-4 italic text-sm sm:text-base border-haru-400 bg-haru-50/30 text-slate-600">
+          {children}
+        </blockquote>
+      ),
+    },
+    a: {
+      component: ({ children, href }: any) => (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium underline decoration-2 underline-offset-2 transition-colors text-sm sm:text-base break-words text-haru-600 hover:text-haru-700 decoration-haru-400/50"
+        >
+          {children}
+        </a>
+      ),
+    },
+    hr: {
+      component: () => <hr className="my-4 sm:my-6 border-t border-slate-300" />,
+    },
+    table: {
+      component: ({ children }: any) => (
+        <div className="overflow-x-auto mb-3 sm:mb-4 -mx-2 sm:mx-0">
+          <table className="min-w-full border-collapse text-xs sm:text-sm border-slate-200">
+            {children}
+          </table>
+        </div>
+      ),
+    },
+    thead: {
+      component: ({ children }: any) => (
+        <thead className="bg-slate-50">{children}</thead>
+      ),
+    },
+    tbody: {
+      component: ({ children }: any) => (
+        <tbody className="divide-slate-200">{children}</tbody>
+      ),
+    },
+    tr: {
+      component: ({ children }: any) => (
+        <tr className="border-b border-slate-200">{children}</tr>
+      ),
+    },
+    th: {
+      component: ({ children }: any) => (
+        <th className="px-2 sm:px-4 py-1.5 sm:py-2 text-left font-semibold text-slate-700">
+          {children}
+        </th>
+      ),
+    },
+    td: {
+      component: ({ children }: any) => (
+        <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-slate-600">{children}</td>
+      ),
+    },
+    strong: {
+      component: ({ children }: any) => (
+        <strong className="font-bold text-slate-800">{children}</strong>
+      ),
+    },
+    em: {
+      component: ({ children }: any) => (
+        <em className="text-slate-700">{children}</em>
+      ),
+    },
+  },
+}
+
+// Dark 모드 마크다운 옵션
+const darkMarkdownOptions = {
+  overrides: {
+    h1: {
+      component: ({ children }: any) => (
+        <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 mt-5 sm:mt-6 text-haru-200">
+          {children}
+        </h1>
+      ),
+    },
+    h2: {
+      component: ({ children }: any) => (
+        <h2 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 mt-4 sm:mt-5 text-haru-200">
+          {children}
+        </h2>
+      ),
+    },
+    h3: {
+      component: ({ children }: any) => (
+        <h3 className="text-base sm:text-lg font-bold mb-2 mt-3 sm:mt-4 text-haru-300">
+          {children}
+        </h3>
+      ),
+    },
+    h4: {
+      component: ({ children }: any) => (
+        <h4 className="text-sm sm:text-base font-bold mb-2 mt-2 sm:mt-3 text-haru-300">
+          {children}
+        </h4>
+      ),
+    },
+    p: {
+      component: ({ children }: any) => (
+        <p className="mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base text-haru-100">
+          {children}
+        </p>
+      ),
+    },
+    ul: {
+      component: ({ children }: any) => (
+        <ul className="list-disc list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-haru-100">
+          {children}
+        </ul>
+      ),
+    },
+    ol: {
+      component: ({ children }: any) => (
+        <ol className="list-decimal list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-haru-100">
+          {children}
+        </ol>
+      ),
+    },
+    li: {
+      component: ({ children }: any) => (
+        <li className="leading-relaxed marker:text-haru-400">{children}</li>
+      ),
+    },
+    code: {
+      component: ({ children, inline }: any) => {
+        if (inline) {
+          return (
+            <code className="px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono bg-slate-700 text-haru-200 border border-slate-600">
+              {children}
+            </code>
+          )
+        }
+        return (
+          <code className="text-xs sm:text-sm">{children}</code>
+        )
+      },
+    },
+    pre: {
+      component: ({ children }: any) => (
+        <pre className="p-3 sm:p-4 rounded-lg sm:rounded-xl overflow-x-auto mb-3 sm:mb-4 border bg-slate-900 border-slate-700">
+          {children}
+        </pre>
+      ),
+    },
+    blockquote: {
+      component: ({ children }: any) => (
+        <blockquote className="border-l-4 pl-3 sm:pl-4 py-2 my-3 sm:my-4 italic text-sm sm:text-base border-haru-400 bg-slate-800/50 text-haru-100">
+          {children}
+        </blockquote>
+      ),
+    },
+    a: {
+      component: ({ children, href }: any) => (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium underline decoration-2 underline-offset-2 transition-colors text-sm sm:text-base break-words text-haru-300 hover:text-haru-200 decoration-haru-400/50"
+        >
+          {children}
+        </a>
+      ),
+    },
+    hr: {
+      component: () => <hr className="my-4 sm:my-6 border-t border-slate-700" />,
+    },
+    table: {
+      component: ({ children }: any) => (
+        <div className="overflow-x-auto mb-3 sm:mb-4 -mx-2 sm:mx-0">
+          <table className="min-w-full border-collapse text-xs sm:text-sm border-slate-700">
+            {children}
+          </table>
+        </div>
+      ),
+    },
+    thead: {
+      component: ({ children }: any) => (
+        <thead className="bg-slate-800">{children}</thead>
+      ),
+    },
+    tbody: {
+      component: ({ children }: any) => (
+        <tbody className="divide-slate-700">{children}</tbody>
+      ),
+    },
+    tr: {
+      component: ({ children }: any) => (
+        <tr className="border-b border-slate-700">{children}</tr>
+      ),
+    },
+    th: {
+      component: ({ children }: any) => (
+        <th className="px-2 sm:px-4 py-1.5 sm:py-2 text-left font-semibold text-haru-200">
+          {children}
+        </th>
+      ),
+    },
+    td: {
+      component: ({ children }: any) => (
+        <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-haru-100">{children}</td>
+      ),
+    },
+    strong: {
+      component: ({ children }: any) => (
+        <strong className="font-bold text-white">{children}</strong>
+      ),
+    },
+    em: {
+      component: ({ children }: any) => (
+        <em className="text-white/90">{children}</em>
+      ),
+    },
+  },
+}
 
 export function ProblemDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -164,117 +460,9 @@ export function ProblemDetailPage() {
             </div>
             <div className="p-4">
               <div className="prose prose-slate max-w-none text-slate-600 [&_p]:text-[14px] [&_p]:leading-[1.6] [&_p]:mb-3 last:[&_p]:mb-0 [&_code]:bg-slate-50 [&_code]:p-1 [&_code]:rounded [&_pre]:bg-[#f4f7ff] [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-indigo-50/40">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeRaw]}
-                  components={{
-                    h1: ({ children }) => (
-                      <h1 className={`text-xl sm:text-2xl font-bold mb-3 sm:mb-4 mt-5 sm:mt-6 text-slate-800`}>
-                        {children}
-                      </h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className={`text-lg sm:text-xl font-bold mb-2 sm:mb-3 mt-4 sm:mt-5 text-slate-800`}>
-                        {children}
-                      </h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 className={`text-base sm:text-lg font-bold mb-2 mt-3 sm:mt-4 text-slate-700`}>
-                        {children}
-                      </h3>
-                    ),
-                    h4: ({ children }) => (
-                      <h4 className={`text-sm sm:text-base font-bold mb-2 mt-2 sm:mt-3 text-slate-700`}>
-                        {children}
-                      </h4>
-                    ),
-                    p: ({ children }) => (
-                      <p className={`mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base text-slate-700`}>
-                        {children}
-                      </p>
-                    ),
-                    ul: ({ children }) => (
-                      <ul className={`list-disc list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-slate-700`}>
-                        {children}
-                      </ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol className={`list-decimal list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-slate-700`}>
-                        {children}
-                      </ol>
-                    ),
-                    li: ({ children }) => (
-                      <li className={`leading-relaxed marker:text-slate-500`}>
-                        {children}
-                      </li>
-                    ),
-                    code: ({ inline, className, children, ...props }: any) => {
-                      if (inline) {
-                        return (
-                          <code
-                            className={`px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono bg-slate-100 text-slate-800 border border-slate-200`}
-                            {...props}
-                          >
-                            {children}
-                          </code>
-                        )
-                      }
-                      return (
-                        <code className={`${className} text-xs sm:text-sm`} {...props}>
-                          {children}
-                        </code>
-                      )
-                    },
-                    pre: ({ children }) => (
-                      <pre className={`p-3 sm:p-4 rounded-lg sm:rounded-xl overflow-x-auto mb-3 sm:mb-4 border bg-slate-50 border-slate-200`}>
-                        {children}
-                      </pre>
-                    ),
-                    blockquote: ({ children }) => (
-                      <blockquote className={`border-l-4 pl-3 sm:pl-4 py-2 my-3 sm:my-4 italic text-sm sm:text-base border-haru-400 bg-haru-50/30 text-slate-600`}>
-                        {children}
-                      </blockquote>
-                    ),
-                    a: ({ children, href }) => (
-                      <a href={href} target="_blank" rel="noopener noreferrer" className={`font-medium underline decoration-2 underline-offset-2 transition-colors text-sm sm:text-base break-words text-haru-600 hover:text-haru-700 decoration-haru-400/50`}>
-                        {children}
-                      </a>
-                    ),
-                    hr: () => (
-                      <hr className={`my-4 sm:my-6 border-t border-slate-300`} />
-                    ),
-                    table: ({ children }) => (
-                      <div className="overflow-x-auto mb-3 sm:mb-4 -mx-2 sm:mx-0">
-                        <table className={`min-w-full border-collapse text-xs sm:text-sm border-slate-200`}>
-                          {children}
-                        </table>
-                      </div>
-                    ),
-                    thead: ({ children }) => (
-                      <thead className={`bg-slate-50`}>{children}</thead>
-                    ),
-                    tbody: ({ children }) => (
-                      <tbody className={`divide-slate-200`}>{children}</tbody>
-                    ),
-                    tr: ({ children }) => (
-                      <tr className={`border-b border-slate-200`}>{children}</tr>
-                    ),
-                    th: ({ children }) => (
-                      <th className={`px-2 sm:px-4 py-1.5 sm:py-2 text-left font-semibold text-slate-700`}>{children}</th>
-                    ),
-                    td: ({ children }) => (
-                      <td className={`px-2 sm:px-4 py-1.5 sm:py-2 text-slate-600`}>{children}</td>
-                    ),
-                    strong: ({ children }) => (
-                      <strong className={`font-bold text-slate-800`}>{children}</strong>
-                    ),
-                    em: ({ children }) => (
-                      <em className={`text-slate-700`}>{children}</em>
-                    ),
-                  }}
-                >
+                <Markdown options={markdownOptions}>
                   {problem.description}
-                </ReactMarkdown>
+                </Markdown>
               </div>
             </div>
           </div>
@@ -395,112 +583,9 @@ export function ProblemDetailPage() {
                     </div>
                   </div>
                   <div className="prose prose-invert max-w-none text-white/80 [&_p]:text-[16px] [&_p]:leading-[1.9] [&_p]:mb-5 last:[&_p]:mb-0 [&_h2]:mt-4 [&_h2]:mb-4 [&_h2]:leading-tight [&_h3]:mt-3 [&_h3]:mb-3">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeRaw]}
-                      components={{
-                        h1: ({ children }) => (
-                          <h1 className={`text-xl sm:text-2xl font-bold mb-3 sm:mb-4 mt-5 sm:mt-6 text-haru-200`}>
-                            {children}
-                          </h1>
-                        ),
-                        h2: ({ children }) => (
-                          <h2 className={`text-lg sm:text-xl font-bold mb-2 sm:mb-3 mt-4 sm:mt-5 text-haru-200`}>
-                            {children}
-                          </h2>
-                        ),
-                        h3: ({ children }) => (
-                          <h3 className={`text-base sm:text-lg font-bold mb-2 mt-3 sm:mt-4 text-haru-300`}>
-                            {children}
-                          </h3>
-                        ),
-                        h4: ({ children }) => (
-                          <h4 className={`text-sm sm:text-base font-bold mb-2 mt-2 sm:mt-3 text-haru-300`}>
-                            {children}
-                          </h4>
-                        ),
-                        p: ({ children }) => (
-                          <p className={`mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base text-haru-100`}>
-                            {children}
-                          </p>
-                        ),
-                        ul: ({ children }) => (
-                          <ul className={`list-disc list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-haru-100`}>
-                            {children}
-                          </ul>
-                        ),
-                        ol: ({ children }) => (
-                          <ol className={`list-decimal list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-haru-100`}>
-                            {children}
-                          </ol>
-                        ),
-                        li: ({ children }) => (
-                          <li className={`leading-relaxed marker:text-haru-400`}>
-                            {children}
-                          </li>
-                        ),
-                        code: ({ inline, className, children, ...props }: any) => {
-                          if (inline) {
-                            return (
-                              <code className={`px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono bg-slate-700 text-haru-200 border border-slate-600`} {...props}>
-                                {children}
-                              </code>
-                            )
-                          }
-                          return (
-                            <code className={`${className} text-xs sm:text-sm`} {...props}>{children}</code>
-                          )
-                        },
-                        pre: ({ children }) => (
-                          <pre className={`p-3 sm:p-4 rounded-lg sm:rounded-xl overflow-x-auto mb-3 sm:mb-4 border bg-slate-900 border-slate-700`}>
-                            {children}
-                          </pre>
-                        ),
-                        blockquote: ({ children }) => (
-                          <blockquote className={`border-l-4 pl-3 sm:pl-4 py-2 my-3 sm:my-4 italic text-sm sm:text-base border-haru-400 bg-slate-800/50 text-haru-100`}>
-                            {children}
-                          </blockquote>
-                        ),
-                        a: ({ children, href }) => (
-                          <a href={href} target="_blank" rel="noopener noreferrer" className={`font-medium underline decoration-2 underline-offset-2 transition-colors text-sm sm:text-base break-words text-haru-300 hover:text-haru-200 decoration-haru-400/50`}>
-                            {children}
-                          </a>
-                        ),
-                        hr: () => (
-                          <hr className={`my-4 sm:my-6 border-t border-slate-700`} />
-                        ),
-                        table: ({ children }) => (
-                          <div className="overflow-x-auto mb-3 sm:mb-4 -mx-2 sm:mx-0">
-                            <table className={`min-w-full border-collapse text-xs sm:text-sm border-slate-700`}>
-                              {children}
-                            </table>
-                          </div>
-                        ),
-                        thead: ({ children }) => (
-                          <thead className={`bg-slate-800`}>{children}</thead>
-                        ),
-                        tbody: ({ children }) => (
-                          <tbody className={`divide-slate-700`}>{children}</tbody>
-                        ),
-                        tr: ({ children }) => (
-                          <tr className={`border-b border-slate-700`}>{children}</tr>
-                        ),
-                        th: ({ children }) => (
-                          <th className={`px-2 sm:px-4 py-1.5 sm:py-2 text-left font-semibold text-haru-200`}>{children}</th>
-                        ),
-                        td: ({ children }) => (
-                          <td className={`px-2 sm:px-4 py-1.5 sm:py-2 text-haru-100`}>{children}</td>
-                        ),
-                        strong: ({ children }) => (
-                          <strong className={`font-bold text-white`}>{children}</strong>
-                        ),
-                        em: ({ children }) => (
-                          <em className={`text-white/90`}>{children}</em>
-                        ),
-                      }}
-                    >
+                    <Markdown options={darkMarkdownOptions}>
                       {aiAnswer}
-                    </ReactMarkdown>
+                    </Markdown>
                   </div>
                 </div>
               )}
