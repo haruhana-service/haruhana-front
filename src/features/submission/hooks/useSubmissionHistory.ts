@@ -22,7 +22,7 @@ export function useSubmissionHistory(month: Date) {
           const dateStr = format(day, 'yyyy-MM-dd')
           const problem = await getDailyProblem(dateStr)
           return { date: dateStr, problem }
-        } catch (error) {
+        } catch {
           // 해당 날짜에 문제가 없으면 null 반환
           return { date: format(day, 'yyyy-MM-dd'), problem: null }
         }
