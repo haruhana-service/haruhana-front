@@ -1,5 +1,4 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { CategorySelector } from './CategorySelector'
 import * as categoryHooks from '../../hooks/useCategories'
 
@@ -7,6 +6,10 @@ import * as categoryHooks from '../../hooks/useCategories'
 vi.mock('../../hooks/useCategories', () => ({
   useCategories: vi.fn(),
 }))
+
+function mockUseCategories(overrides: Partial<ReturnType<typeof categoryHooks.useCategories>>) {
+  vi.mocked(categoryHooks.useCategories).mockReturnValue(overrides as ReturnType<typeof categoryHooks.useCategories>)
+}
 
 const mockCategoriesData = {
   categories: [
@@ -57,11 +60,11 @@ describe('CategorySelector', () => {
   })
 
   it('로딩 상태를 표시한다', () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: undefined,
       isLoading: true,
       isError: false,
-    } as any)
+    })
 
     render(
       <CategorySelector
@@ -74,11 +77,11 @@ describe('CategorySelector', () => {
   })
 
   it('에러 상태를 표시한다', () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: undefined,
       isLoading: false,
       isError: true,
-    } as any)
+    })
 
     render(
       <CategorySelector
@@ -91,11 +94,11 @@ describe('CategorySelector', () => {
   })
 
   it('카테고리 드롭다운을 렌더링한다', () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
-    } as any)
+    })
 
     render(
       <CategorySelector
@@ -111,11 +114,11 @@ describe('CategorySelector', () => {
   })
 
   it('그룹 드롭다운은 카테고리 선택 전에는 비활성화된다', () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
-    } as any)
+    })
 
     render(
       <CategorySelector
@@ -129,11 +132,11 @@ describe('CategorySelector', () => {
   })
 
   it('토픽 드롭다운은 그룹 선택 전에는 비활성화된다', () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
-    } as any)
+    })
 
     render(
       <CategorySelector
@@ -147,11 +150,11 @@ describe('CategorySelector', () => {
   })
 
   it('카테고리 선택 시 그룹 드롭다운이 활성화된다', async () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
-    } as any)
+    })
 
     render(
       <CategorySelector
@@ -168,11 +171,11 @@ describe('CategorySelector', () => {
   })
 
   it('그룹 선택 시 토픽 드롭다운이 활성화된다', async () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
-    } as any)
+    })
 
     render(
       <CategorySelector
@@ -192,11 +195,11 @@ describe('CategorySelector', () => {
   })
 
   it('토픽 선택 시 onChange를 호출한다', async () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
-    } as any)
+    })
 
     render(
       <CategorySelector
@@ -218,11 +221,11 @@ describe('CategorySelector', () => {
   })
 
   it('에러 메시지를 표시한다', () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
-    } as any)
+    })
 
     render(
       <CategorySelector
@@ -236,11 +239,11 @@ describe('CategorySelector', () => {
   })
 
   it('토픽 ID가 주어지면 해당 카테고리와 그룹을 자동 선택한다', async () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
-    } as any)
+    })
 
     const { rerender } = render(
       <CategorySelector
@@ -267,11 +270,11 @@ describe('CategorySelector', () => {
   })
 
   it('여러 그룹 중에서 올바른 그룹을 선택한다', async () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
-    } as any)
+    })
 
     render(
       <CategorySelector
@@ -288,11 +291,11 @@ describe('CategorySelector', () => {
   })
 
   it('전체 선택 흐름을 완료할 수 있다', async () => {
-    vi.mocked(categoryHooks.useCategories).mockReturnValue({
+    mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
-    } as any)
+    })
 
     render(
       <CategorySelector
