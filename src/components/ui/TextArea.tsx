@@ -1,4 +1,4 @@
-import { forwardRef, type TextareaHTMLAttributes, useState, useEffect } from 'react'
+import { forwardRef, type TextareaHTMLAttributes, useState } from 'react'
 
 interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string
@@ -28,13 +28,10 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     },
     ref
   ) => {
-    const [charCount, setCharCount] = useState(0)
-
-    useEffect(() => {
-      if (value && typeof value === 'string') {
-        setCharCount(value.length)
-      }
-    }, [value])
+    const [charCount, setCharCount] = useState(() =>
+      value && typeof value === 'string' ? value.length : 0
+    )
+    const displayCount = value && typeof value === 'string' ? value.length : charCount
 
     const baseStyles = 'w-full px-4 py-3 rounded-xl font-medium transition-all outline-none resize-none'
     
@@ -122,9 +119,9 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           {/* Character Count */}
           {showCharCount && (
             <p className={`text-sm font-medium flex-shrink-0 ${
-              maxLength && charCount > maxLength ? 'text-red-600' : 'text-slate-400'
+              maxLength && displayCount > maxLength ? 'text-red-600' : 'text-slate-400'
             }`}>
-              {charCount}{maxLength && ` / ${maxLength}`}
+              {displayCount}{maxLength && ` / ${maxLength}`}
             </p>
           )}
         </div>
