@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Markdown from 'markdown-to-jsx'
 import { useProblemDetail } from '../features/problem/hooks/useProblemDetail'
@@ -8,65 +8,79 @@ import { Button } from '../components/ui/Button'
 import { toast } from 'sonner'
 import type { SubmissionResponse } from '../types/models'
 
+interface ChildrenProps {
+  children: ReactNode
+}
+
+interface LinkProps {
+  children: ReactNode
+  href?: string
+}
+
+interface CodeProps {
+  children: ReactNode
+  inline?: boolean
+}
+
 // Markdown 렌더러 옵션
 const markdownOptions = {
   overrides: {
     h1: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 mt-5 sm:mt-6 text-slate-800">
           {children}
         </h1>
       ),
     },
     h2: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <h2 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 mt-4 sm:mt-5 text-slate-800">
           {children}
         </h2>
       ),
     },
     h3: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <h3 className="text-base sm:text-lg font-bold mb-2 mt-3 sm:mt-4 text-slate-700">
           {children}
         </h3>
       ),
     },
     h4: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <h4 className="text-sm sm:text-base font-bold mb-2 mt-2 sm:mt-3 text-slate-700">
           {children}
         </h4>
       ),
     },
     p: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <p className="mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base text-slate-700">
           {children}
         </p>
       ),
     },
     ul: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <ul className="list-disc list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-slate-700">
           {children}
         </ul>
       ),
     },
     ol: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <ol className="list-decimal list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-slate-700">
           {children}
         </ol>
       ),
     },
     li: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <li className="leading-relaxed marker:text-slate-500">{children}</li>
       ),
     },
     code: {
-      component: ({ children, inline }: any) => {
+      component: ({ children, inline }: CodeProps) => {
         if (inline) {
           return (
             <code className="px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono bg-slate-100 text-slate-800 border border-slate-200">
@@ -80,21 +94,21 @@ const markdownOptions = {
       },
     },
     pre: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <pre className="p-3 sm:p-4 rounded-lg sm:rounded-xl overflow-x-auto mb-3 sm:mb-4 border bg-slate-50 border-slate-200">
           {children}
         </pre>
       ),
     },
     blockquote: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <blockquote className="border-l-4 pl-3 sm:pl-4 py-2 my-3 sm:my-4 italic text-sm sm:text-base border-haru-400 bg-haru-50/30 text-slate-600">
           {children}
         </blockquote>
       ),
     },
     a: {
-      component: ({ children, href }: any) => (
+      component: ({ children, href }: LinkProps) => (
         <a
           href={href}
           target="_blank"
@@ -109,7 +123,7 @@ const markdownOptions = {
       component: () => <hr className="my-4 sm:my-6 border-t border-slate-300" />,
     },
     table: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <div className="overflow-x-auto mb-3 sm:mb-4 -mx-2 sm:mx-0">
           <table className="min-w-full border-collapse text-xs sm:text-sm border-slate-200">
             {children}
@@ -118,39 +132,39 @@ const markdownOptions = {
       ),
     },
     thead: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <thead className="bg-slate-50">{children}</thead>
       ),
     },
     tbody: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <tbody className="divide-slate-200">{children}</tbody>
       ),
     },
     tr: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <tr className="border-b border-slate-200">{children}</tr>
       ),
     },
     th: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <th className="px-2 sm:px-4 py-1.5 sm:py-2 text-left font-semibold text-slate-700">
           {children}
         </th>
       ),
     },
     td: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-slate-600">{children}</td>
       ),
     },
     strong: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <strong className="font-bold text-slate-800">{children}</strong>
       ),
     },
     em: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <em className="text-slate-700">{children}</em>
       ),
     },
@@ -161,61 +175,61 @@ const markdownOptions = {
 const darkMarkdownOptions = {
   overrides: {
     h1: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 mt-5 sm:mt-6 text-haru-200">
           {children}
         </h1>
       ),
     },
     h2: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <h2 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 mt-4 sm:mt-5 text-haru-200">
           {children}
         </h2>
       ),
     },
     h3: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <h3 className="text-base sm:text-lg font-bold mb-2 mt-3 sm:mt-4 text-haru-300">
           {children}
         </h3>
       ),
     },
     h4: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <h4 className="text-sm sm:text-base font-bold mb-2 mt-2 sm:mt-3 text-haru-300">
           {children}
         </h4>
       ),
     },
     p: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <p className="mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base text-haru-100">
           {children}
         </p>
       ),
     },
     ul: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <ul className="list-disc list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-haru-100">
           {children}
         </ul>
       ),
     },
     ol: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <ol className="list-decimal list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-haru-100">
           {children}
         </ol>
       ),
     },
     li: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <li className="leading-relaxed marker:text-haru-400">{children}</li>
       ),
     },
     code: {
-      component: ({ children, inline }: any) => {
+      component: ({ children, inline }: CodeProps) => {
         if (inline) {
           return (
             <code className="px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono bg-slate-700 text-haru-200 border border-slate-600">
@@ -229,21 +243,21 @@ const darkMarkdownOptions = {
       },
     },
     pre: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <pre className="p-3 sm:p-4 rounded-lg sm:rounded-xl overflow-x-auto mb-3 sm:mb-4 border bg-slate-900 border-slate-700">
           {children}
         </pre>
       ),
     },
     blockquote: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <blockquote className="border-l-4 pl-3 sm:pl-4 py-2 my-3 sm:my-4 italic text-sm sm:text-base border-haru-400 bg-slate-800/50 text-haru-100">
           {children}
         </blockquote>
       ),
     },
     a: {
-      component: ({ children, href }: any) => (
+      component: ({ children, href }: LinkProps) => (
         <a
           href={href}
           target="_blank"
@@ -258,7 +272,7 @@ const darkMarkdownOptions = {
       component: () => <hr className="my-4 sm:my-6 border-t border-slate-700" />,
     },
     table: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <div className="overflow-x-auto mb-3 sm:mb-4 -mx-2 sm:mx-0">
           <table className="min-w-full border-collapse text-xs sm:text-sm border-slate-700">
             {children}
@@ -267,39 +281,39 @@ const darkMarkdownOptions = {
       ),
     },
     thead: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <thead className="bg-slate-800">{children}</thead>
       ),
     },
     tbody: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <tbody className="divide-slate-700">{children}</tbody>
       ),
     },
     tr: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <tr className="border-b border-slate-700">{children}</tr>
       ),
     },
     th: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <th className="px-2 sm:px-4 py-1.5 sm:py-2 text-left font-semibold text-haru-200">
           {children}
         </th>
       ),
     },
     td: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-haru-100">{children}</td>
       ),
     },
     strong: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <strong className="font-bold text-white">{children}</strong>
       ),
     },
     em: {
-      component: ({ children }: any) => (
+      component: ({ children }: ChildrenProps) => (
         <em className="text-white/90">{children}</em>
       ),
     },
