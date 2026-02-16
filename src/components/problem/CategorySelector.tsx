@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useCategories } from '../../hooks/useCategories'
 
 interface CategorySelectorProps {
@@ -13,26 +13,39 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
   const [selectedCategoryId, setSelectedCategoryId] = useState<number>()
   const [selectedGroupId, setSelectedGroupId] = useState<number>()
 
-  const categories = categoriesData?.categories || []
-  const selectedCategory = categories.find((c) => c.id === selectedCategoryId)
-  const groups = selectedCategory?.groups || []
-  const selectedGroup = groups.find((g) => g.id === selectedGroupId)
-  const topics = selectedGroup?.topics || []
+  const categories = useMemo(() => categoriesData?.categories || [], [categoriesData])
 
-  useEffect(() => {
+  // value가 주어지면 해당 카테고리와 그룹을 찾아서 자동 선택
+  const resolvedCategoryId = useMemo(() => {
     if (value && categories.length > 0) {
       for (const category of categories) {
         for (const group of category.groups) {
-          const topic = group.topics.find((t) => t.id === value)
-          if (topic) {
-            setSelectedCategoryId(category.id)
-            setSelectedGroupId(group.id)
-            return
+          if (group.topics.find((t) => t.id === value)) {
+            return category.id
           }
         }
       }
     }
-  }, [value, categories])
+    return selectedCategoryId
+  }, [value, categories, selectedCategoryId])
+
+  const resolvedGroupId = useMemo(() => {
+    if (value && categories.length > 0) {
+      for (const category of categories) {
+        for (const group of category.groups) {
+          if (group.topics.find((t) => t.id === value)) {
+            return group.id
+          }
+        }
+      }
+    }
+    return selectedGroupId
+  }, [value, categories, selectedGroupId])
+
+  const selectedCategory = categories.find((c) => c.id === resolvedCategoryId)
+  const groups = selectedCategory?.groups || []
+  const selectedGroup = groups.find((g) => g.id === resolvedGroupId)
+  const topics = selectedGroup?.topics || []
 
   const handleCategoryChange = (categoryId: number) => {
     setSelectedCategoryId(categoryId)
@@ -85,7 +98,7 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
           </label>
           <select
             id="category"
-            value={selectedCategoryId || ''}
+            value={resolvedCategoryId || ''}
             onChange={(e) => handleCategoryChange(Number(e.target.value))}
             className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700"
           >
@@ -105,9 +118,9 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
           </label>
           <select
             id="group"
-            value={selectedGroupId || ''}
+            value={resolvedGroupId || ''}
             onChange={(e) => handleGroupChange(Number(e.target.value))}
-            disabled={!selectedCategoryId}
+            disabled={!resolvedCategoryId}
             className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <option value="">선택하세요</option>
@@ -128,7 +141,7 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
             id="topic"
             value={value || ''}
             onChange={(e) => handleTopicChange(Number(e.target.value))}
-            disabled={!selectedGroupId}
+            disabled={!resolvedGroupId}
             className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <option value="">선택하세요</option>
