@@ -2,7 +2,7 @@
 // API Constants
 // ============================================
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api-staging.haruharu.online'
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.haruharu.online'
 export const API_TIMEOUT = 10000 // 10 seconds
 
 // ============================================
