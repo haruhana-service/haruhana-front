@@ -71,7 +71,7 @@ describe('useCategories', () => {
     ],
   }
 
-  it('카테고리 목록을 성공적으로 조회한다', async () => {
+  it('을 성공적으로 조회한다', async () => {
     vi.mocked(categoryService.getCategories).mockResolvedValue(mockCategories)
 
     const { result } = renderHook(() => useCategories(), { wrapper })
@@ -122,7 +122,7 @@ describe('useCategories', () => {
     expect(result.current.data).toBeUndefined()
   })
 
-  it('빈 카테고리 목록을 처리한다', async () => {
+  it('빈 을 처리한다', async () => {
     const emptyCategories: CategoryListResponse = {
       categories: [],
     }

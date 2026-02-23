@@ -1,9 +1,10 @@
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useTodayProblem } from '../features/problem/hooks/useTodayProblem'
 import { useStreak } from '../features/streak/hooks/useStreak'
 import { useAuth } from '../hooks/useAuth'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
+import { ROUTES } from '../constants'
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const
 
@@ -41,6 +42,29 @@ export function TodayPage() {
 
   return (
     <div className="max-w-xl mx-auto space-y-6 pb-10">
+      {/* Mobile Top Navigation */}
+      <div className="lg:hidden sticky top-0 z-10 -mx-4 px-4 pt-2 pb-3 bg-[#F8FAFC]/90 backdrop-blur border-b border-slate-100">
+        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-white border border-slate-200 p-1 shadow-sm">
+          {[
+            { path: ROUTES.TODAY, label: '챌린지' },
+            { path: ROUTES.HISTORY, label: '성장 기록' },
+            { path: ROUTES.SETTINGS, label: '설정' },
+          ].map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `text-center text-[12px] font-black rounded-xl py-2 transition-colors ${
+                  isActive ? 'bg-haru-600 text-white' : 'text-slate-500 hover:text-slate-700'
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </div>
+      </div>
+
       {/* 콤팩트해진 스트릭 카드 */}
       <Card variant="dark" className="animate-fade-up stagger-1 relative overflow-hidden border-none p-4 min-h-[140px]">
         {/* 애니메이션 글로우 (크기 축소) */}

@@ -81,6 +81,38 @@
   }
 }
 
+@keyframes thinkerFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes thinkerBulb {
+  0%, 100% { transform: scale(0.92); opacity: 0.75; }
+  50% { transform: scale(1); opacity: 1; }
+}
+
+.thinker-person {
+  animation: thinkerFloat 3.2s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.thinker-bulb {
+  animation: thinkerBulb 2.6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.thinker-bulb-glow {
+  fill: #f7d65a;
+  opacity: 0.1;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  filter: blur(6px);
+}
+
+.thinker-bulb--active .thinker-bulb-glow {
+  opacity: 0.85;
+  filter: blur(12px);
+}
+
 /* Safe Area for mobile devices (iOS notch, home indicator) */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom);

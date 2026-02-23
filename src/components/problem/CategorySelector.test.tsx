@@ -73,7 +73,7 @@ describe('CategorySelector', () => {
       />
     )
 
-    expect(screen.getByText('카테고리 목록을 불러오는 중...')).toBeInTheDocument()
+    expect(screen.getByText('을 불러오는 중...')).toBeInTheDocument()
   })
 
   it('에러 상태를 표시한다', () => {
@@ -90,7 +90,7 @@ describe('CategorySelector', () => {
       />
     )
 
-    expect(screen.getByText('카테고리 목록을 불러오지 못했습니다')).toBeInTheDocument()
+    expect(screen.getByText('을 불러오지 못했습니다')).toBeInTheDocument()
   })
 
   it('카테고리 드롭다운을 렌더링한다', () => {

@@ -6,11 +6,12 @@ import type { CategoryListResponse } from '../types/models'
 // ============================================
 
 /**
- * 카테고리 목록 조회
+ *  조회
  * GET /v1/categories
  */
 export async function getCategories(): Promise<CategoryListResponse> {
   // API 응답: { result: "SUCCESS", data: { categories: [...] }, error: null }
   const response = await api.get<{ data: CategoryListResponse }>('/v1/categories')
+  console.log(JSON.stringify(response))
   return response.data.data
 }

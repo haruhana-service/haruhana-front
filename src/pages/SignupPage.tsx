@@ -28,6 +28,8 @@ export function SignupPage() {
     handleSubmit,
     trigger,
     getValues,
+    watch,
+    setError,
     formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -41,6 +43,14 @@ export function SignupPage() {
       difficulty: undefined,
     },
   })
+
+  const loginId = watch('loginId')
+  const password = watch('password')
+  const passwordConfirm = watch('passwordConfirm')
+  const hasLoginIdInput = loginId.length > 0
+  const hasKoreanInLoginId = /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(loginId)
+  const hasPasswordInput = password.length > 0 || passwordConfirm.length > 0
+  const isPasswordMatch = password.length > 0 && passwordConfirm.length > 0 && password === passwordConfirm
 
   const handleNext = async () => {
     setApiError(undefined)
@@ -80,6 +90,22 @@ export function SignupPage() {
     }
   }
 
+  const handleFinalSubmit = async () => {
+    const categoryTopicId = getValues('categoryTopicId')
+    if (!categoryTopicId) {
+      await trigger('categoryTopicId')
+      return
+    }
+
+    const difficulty = getValues('difficulty')
+    if (!difficulty) {
+      await trigger('difficulty')
+      return
+    }
+
+    await handleSubmit(onSubmit)()
+  }
+
   const handlePrev = () => {
     setCurrentStep(prev => prev - 1)
     setApiError(undefined)
@@ -106,7 +132,27 @@ export function SignupPage() {
       // API 에러 처리 - interceptor에서 가공된 에러
       if (isApiError(error)) {
         console.error('API Error:', { message: error.message, code: error.code })
-        setApiError(error.message || '회원가입 중 오류가 발생했습니다')
+        const message = error.message || '회원가입 중 오류가 발생했습니다'
+        const combined = `${error.code ?? ''} ${error.message ?? ''} ${JSON.stringify(error.details ?? '')}`.toLowerCase()
+        const isLoginIdDuplicate =
+          combined.includes('loginid') || combined.includes('login_id') || combined.includes('아이디')
+        const isNicknameDuplicate = combined.includes('nickname') || combined.includes('닉네임')
+
+        if (isLoginIdDuplicate) {
+          setError('loginId', { type: 'server', message })
+          setApiError(undefined)
+          setCurrentStep(1)
+          return
+        }
+
+        if (isNicknameDuplicate) {
+          setError('nickname', { type: 'server', message })
+          setApiError(undefined)
+          setCurrentStep(2)
+          return
+        }
+
+        setApiError(message)
       } else if (error instanceof Error) {
         console.error('Error:', error.message)
         setApiError(error.message || '회원가입 중 오류가 발생했습니다')
@@ -167,6 +213,9 @@ export function SignupPage() {
                   placeholder="아이디를 입력하세요"
                   autoFocus
                 />
+                {hasLoginIdInput && hasKoreanInLoginId && (
+                  <p className="text-xs text-red-500 ml-1 font-medium">영어로 입력해주세요</p>
+                )}
                 {errors.loginId && (
                   <p className="text-xs text-red-500 ml-1 font-medium">{errors.loginId.message}</p>
                 )}
@@ -199,6 +248,15 @@ export function SignupPage() {
                   className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300"
                   placeholder="비밀번호를 다시 입력하세요"
                 />
+                {hasPasswordInput && (
+                  <p
+                    className={`text-xs ml-1 font-medium ${
+                      isPasswordMatch ? 'text-emerald-600' : 'text-red-500'
+                    }`}
+                  >
+                    {isPasswordMatch ? '비밀번호가 일치합니다' : '비밀번호가 일치하지 않습니다'}
+                  </p>
+                )}
                 {errors.passwordConfirm && (
                   <p className="text-xs text-red-500 ml-1 font-medium">{errors.passwordConfirm.message}</p>
                 )}
@@ -273,8 +331,8 @@ export function SignupPage() {
           </Button>
         ) : (
           <Button
-            type="submit"
-            form="signup-form"
+            type="button"
+            onClick={handleFinalSubmit}
             disabled={isSubmitting}
             fullWidth
             size="lg"

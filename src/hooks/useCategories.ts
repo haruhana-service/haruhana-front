@@ -3,7 +3,7 @@ import { getCategories } from '../services/categoryService'
 import { QUERY_KEYS } from '../constants'
 
 /**
- * 카테고리 목록 조회 훅
+ *  조회 훅
  */
 export function useCategories() {
   return useQuery({

@@ -64,7 +64,7 @@ export function SetupPage() {
       <div className="mx-auto max-w-2xl space-y-10">
         {/* 헤더 */}
         <div>
-          <h1 className="text-2xl font-black text-slate-900">카테고리 선택</h1>
+          <h1 className="text-2xl font-black text-slate-900"></h1>
         </div>
 
         <div className="space-y-6">

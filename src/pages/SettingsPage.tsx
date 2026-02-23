@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { updateProfile } from '../features/auth/services/authService'
 import { uploadProfileImage } from '../services/storageService'
 import { Card } from '../components/ui/Card'
+import { ConfirmDialog } from '../components/ui/Modal'
 import { ROUTES } from '../constants'
 import { formatDateKorean } from '../utils/date'
 import { toast } from 'sonner'
 import { getNotificationPermission, requestAndSyncFCMToken, deleteFCMToken, getSavedFCMToken } from '../services/fcmService'
+import { getTodayProblem } from '../features/problem/services/problemService'
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   EASY: '쉬움 (기초)',
@@ -24,6 +26,11 @@ export function SettingsPage() {
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null)
   const [editedNickname, setEditedNickname] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
+  const [logoutDialogTitle, setLogoutDialogTitle] = useState('')
+  const [logoutDialogMessage, setLogoutDialogMessage] = useState('')
+  const [isCheckingTodayProblem, setIsCheckingTodayProblem] = useState(false)
+  const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false)
 
   // 알림 설정 상태
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default')
@@ -159,8 +166,52 @@ export function SettingsPage() {
     setIsEditingProfile(false)
   }
 
+  const handleLogoutClick = async () => {
+    if (isCheckingTodayProblem) return
+    setIsCheckingTodayProblem(true)
+
+    try {
+      const todayProblem = await getTodayProblem()
+      if (todayProblem.isSolved) {
+        setLogoutDialogTitle('오늘도 수고하였습니다')
+        setLogoutDialogMessage('오늘의 문제를 무사히 풀었습니다. 로그아웃하시겠어요?')
+      } else {
+        setLogoutDialogTitle('오늘의 문제 안내')
+        setLogoutDialogMessage('오늘의 문제를 아직 풀지 않았습니다. 로그아웃하시겠어요?')
+      }
+    } catch {
+      setLogoutDialogTitle('로그아웃 안내')
+      setLogoutDialogMessage('오늘의 문제 상태를 확인하지 못했습니다. 로그아웃하시겠어요?')
+    } finally {
+      setIsCheckingTodayProblem(false)
+      setIsLogoutDialogOpen(true)
+    }
+  }
+
   return (
     <div className="animate-fade-up flex flex-col items-center pb-20 pt-4">
+      {/* Mobile Top Navigation */}
+      <div className="lg:hidden sticky top-0 z-10 -mx-4 px-4 pt-2 pb-3 bg-[#F8FAFC]/90 backdrop-blur border-b border-slate-100 w-full">
+        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-white border border-slate-200 p-1 shadow-sm">
+          {[
+            { path: ROUTES.TODAY, label: '챌린지' },
+            { path: ROUTES.HISTORY, label: '성장 기록' },
+            { path: ROUTES.SETTINGS, label: '설정' },
+          ].map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `text-center text-[12px] font-black rounded-xl py-2 transition-colors ${
+                  isActive ? 'bg-haru-600 text-white' : 'text-slate-500 hover:text-slate-700'
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </div>
+      </div>
       {/* 프로필 헤더 - 프리미엄 디자인 */}
       <div className="w-full">
         <div className="relative overflow-hidden bg-gradient-to-br from-haru-500 via-haru-600 to-haru-700 rounded-xl sm:rounded-2xl shadow-premium-lg min-w-0">
@@ -173,25 +224,26 @@ export function SettingsPage() {
           <div className="relative px-4 sm:px-6 py-4 sm:py-6 min-w-0">
             {/* 수정 버튼 - 우측 상단 고정 */}
             {!isEditingProfile && (
-              <button
-                onClick={handleStartEditProfile}
-                className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 sm:p-2 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 transition-all group z-10"
-                title="프로필 수정"
-              >
-                <svg
-                  className="w-4 h-4 text-white/80 group-hover:text-white transition-colors"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <>
+                <button
+                  onClick={handleStartEditProfile}
+                  className="hidden sm:flex absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 sm:p-2 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 transition-all group z-10"
+                  title="프로필 수정"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                  />
-                </svg>
-              </button>
+                  <svg className="w-4 h-4 text-white/80 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A4 4 0 019 16h6a4 4 0 013.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => navigate(ROUTES.PROFILE_EDIT)}
+                  className="sm:hidden absolute top-3 right-3 p-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 transition-all z-10 text-white/80"
+                  aria-label="프로필 수정으로 이동"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A4 4 0 019 16h6a4 4 0 013.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+              </>
             )}
 
             {isEditingProfile ? (
@@ -334,6 +386,7 @@ export function SettingsPage() {
                       </div>
                     )}
                   </div>
+
                 </div>
               </div>
             )}
@@ -349,12 +402,24 @@ export function SettingsPage() {
               <span className="w-1 h-4 bg-haru-600 rounded-full"></span>
               현재 학습 설정
             </h3>
-            <button
-              onClick={() => navigate(ROUTES.PREFERENCE_EDIT)}
-              className="text-[12px] font-bold text-haru-600 hover:text-haru-700 transition-colors tracking-wide"
-            >
-              변경
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate(ROUTES.PREFERENCE_EDIT)}
+                className="hidden sm:inline text-[12px] font-bold text-haru-600 hover:text-haru-700 transition-colors tracking-wide"
+              >
+                변경
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(ROUTES.PREFERENCE_EDIT)}
+                className="sm:hidden w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-haru-600 hover:text-haru-700 transition-colors"
+                aria-label="학습 설정 변경으로 이동"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <Card className="!p-0 border-slate-200 overflow-hidden shadow-sm">
@@ -467,8 +532,34 @@ export function SettingsPage() {
         <section className="space-y-3">
           <h3 className="text-[12px] font-extrabold text-slate-400 uppercase tracking-[0.2em] ml-1">나의 계정</h3>
           <button
-            onClick={logout}
-            className="w-full p-5 bg-white rounded-[20px] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-red-200 hover:bg-red-50/20 transition-all active:scale-[0.98]"
+            type="button"
+            onClick={() => setIsWithdrawDialogOpen(true)}
+            className="w-full p-5 bg-white rounded-[20px] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-amber-200 hover:bg-amber-50/30 transition-all active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4m0 4h.01M5.5 19h13a2 2 0 001.8-2.9L13.8 4.6a2 2 0 00-3.6 0L3.7 16.1A2 2 0 005.5 19z" />
+                </svg>
+              </div>
+              <span className="text-[15px] font-bold text-slate-700 group-hover:text-amber-700 transition-colors">
+                회원 탈퇴
+              </span>
+            </div>
+            <svg
+              className="w-5 h-5 text-slate-300 group-hover:text-amber-300 transition-all"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={2.5}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          <button
+            onClick={handleLogoutClick}
+            disabled={isCheckingTodayProblem}
+            className="w-full p-5 bg-white rounded-[20px] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-red-200 hover:bg-red-50/20 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
@@ -477,7 +568,7 @@ export function SettingsPage() {
                 </svg>
               </div>
               <span className="text-[15px] font-bold text-slate-700 group-hover:text-red-600 transition-colors">
-                서비스 로그아웃
+                {isCheckingTodayProblem ? '확인 중...' : '서비스 로그아웃'}
               </span>
             </div>
             <svg
@@ -498,6 +589,30 @@ export function SettingsPage() {
           </p>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={isWithdrawDialogOpen}
+        onClose={() => setIsWithdrawDialogOpen(false)}
+        onConfirm={() => {
+          setIsWithdrawDialogOpen(false)
+          toast.info('회원 탈퇴 기능은 준비 중입니다.')
+        }}
+        title="회원 탈퇴"
+        message="정말로 탈퇴하시겠어요? 탈퇴 시 모든 데이터가 삭제됩니다."
+        confirmText="탈퇴하기"
+        cancelText="취소"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={isLogoutDialogOpen}
+        onClose={() => setIsLogoutDialogOpen(false)}
+        onConfirm={logout}
+        title={logoutDialogTitle}
+        message={logoutDialogMessage}
+        confirmText="로그아웃"
+        cancelText="취소"
+        variant="warning"
+      />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { render } from '../test/utils'
 import { SettingsPage } from './SettingsPage'
 import * as authService from '../features/auth/services/authService'
 import * as storageService from '../services/storageService'
+import * as problemService from '../features/problem/services/problemService'
 
 // Mock auth service
 vi.mock('../features/auth/services/authService', () => ({
@@ -17,6 +18,11 @@ vi.mock('../features/auth/services/authService', () => ({
 // Mock storage service
 vi.mock('../services/storageService', () => ({
   uploadProfileImage: vi.fn(),
+}))
+
+// Mock problem service
+vi.mock('../features/problem/services/problemService', () => ({
+  getTodayProblem: vi.fn(),
 }))
 
 // Mock useNavigate
@@ -59,6 +65,14 @@ describe('SettingsPage', () => {
     mockNavigate.mockClear()
     mockLogout.mockClear()
     mockRefetchProfile.mockResolvedValue(undefined)
+    vi.mocked(problemService.getTodayProblem).mockResolvedValue({
+      id: 1,
+      title: '오늘의 문제',
+      description: '설명',
+      difficulty: 'EASY',
+      categoryTopicName: 'Spring',
+      isSolved: false,
+    })
 
     // Reset user data
     mockUser.nickname = '테스트유저'
@@ -154,11 +168,14 @@ describe('SettingsPage', () => {
     expect(saveButton).toBeDisabled()
   })
 
-  it('로그아웃 버튼 클릭 시 로그아웃 함수가 호출된다', async () => {
+  it('로그아웃 버튼 클릭 시 안내 모달 후 로그아웃이 호출된다', async () => {
     const user = userEvent.setup()
     render(<SettingsPage />)
 
     await user.click(screen.getByText('서비스 로그아웃'))
+
+    expect(await screen.findByText('오늘의 문제 안내')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '로그아웃' }))
 
     expect(mockLogout).toHaveBeenCalled()
   })

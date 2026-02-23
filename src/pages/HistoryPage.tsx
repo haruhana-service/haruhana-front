@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import { Card } from '../components/ui/Card'
 import { useSubmissionHistory } from '../features/submission/hooks/useSubmissionHistory'
+import { ROUTES } from '../constants'
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   EASY: '쉬움',
@@ -67,6 +68,29 @@ export function HistoryPage() {
 
   return (
     <div className="flex flex-col animate-fade-in">
+      {/* Mobile Top Navigation */}
+      <div className="lg:hidden sticky top-0 z-10 -mx-4 px-4 pt-2 pb-3 bg-[#F8FAFC]/90 backdrop-blur border-b border-slate-100">
+        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-white border border-slate-200 p-1 shadow-sm">
+          {[
+            { path: ROUTES.TODAY, label: '챌린지' },
+            { path: ROUTES.HISTORY, label: '성장 기록' },
+            { path: ROUTES.SETTINGS, label: '설정' },
+          ].map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `text-center text-[12px] font-black rounded-xl py-2 transition-colors ${
+                  isActive ? 'bg-haru-600 text-white' : 'text-slate-500 hover:text-slate-700'
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </div>
+      </div>
+
       <div className="mb-5">
         <h2 className="text-lg font-bold text-slate-800 tracking-tight">나의 기록</h2>
         <p className="text-xs text-slate-500 mt-1 font-medium">날짜를 선택하여 문제 확인하세요.</p>

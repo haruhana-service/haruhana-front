@@ -248,7 +248,7 @@ src/
 - 최종 Topic ID 선택 ✅
 
 **체크리스트:**
-- [x] 카테고리 목록 API 연동
+- [x]  API 연동
 - [x] useCategories 훅 구현
 - [x] 3단계 선택 UI 구현
 - [x] 선택 상태 관리
