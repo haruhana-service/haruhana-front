@@ -4,6 +4,7 @@
 
 // Enums
 export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD'
+export type UserRole = 'ROLE_ADMIN' | 'ROLE_MEMBER' | 'ROLE_GUEST'
 export type UploadType = 'PROFILE_IMAGE'
 
 // ============================================
@@ -42,6 +43,7 @@ export interface MemberProfileResponse {
   createdAt: string // date-time
   categoryTopicName: string
   difficulty: string
+  role: UserRole // 사용자 역할: ADMIN, MEMBER, GUEST
   profileImageUrl?: string // 조회용 Presigned URL
 }
 
