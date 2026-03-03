@@ -52,9 +52,10 @@ export function PublicRoute({ children }: PublicRouteProps) {
     )
   }
 
-  // 이미 로그인했으면 오늘의 문제 페이지로
+  // 이미 로그인했으면 역할에 따라 리다이렉트
   if (user) {
-    return <Navigate to={ROUTES.TODAY} replace />
+    const redirectTo = user.role === 'ROLE_ADMIN' ? ROUTES.ADMIN_DASHBOARD : ROUTES.TODAY
+    return <Navigate to={redirectTo} replace />
   }
 
   // 로그인하지 않았으면 접근 허용

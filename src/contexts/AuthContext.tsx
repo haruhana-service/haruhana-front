@@ -23,15 +23,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const navigate = useNavigate()
 
   // 프로필 조회
-  const fetchProfile = async () => {
+  const fetchProfile = async (isInitialLoad = false): Promise<MemberProfileResponse | null> => {
     try {
       const profile = await getProfile()
       setUser(profile)
+      return profile
     } catch (error) {
       console.error('Failed to fetch profile:', error)
-      // 프로필 조회 실패 시 토큰 제거
-      clearAuthTokens()
+      // 초기 로드 시에만 토큰 제거 (로그인 후 실패는 재시도 가능하도록 유지)
+      if (isInitialLoad) {
+        clearAuthTokens()
+      }
       setUser(null)
+      return null
     }
   }
 
@@ -41,7 +45,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     if (token) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- 마운트 시 비동기 초기화 패턴
-      fetchProfile().finally(() => setIsLoading(false))
+      fetchProfile(true).finally(() => setIsLoading(false))
     } else {
       setIsLoading(false)
     }
@@ -91,21 +95,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // 로그인 처리
   const login = async (tokenResponse: TokenResponse) => {
-    const { accessToken, refreshToken } = tokenResponse
+    try {
+      const { accessToken, refreshToken } = tokenResponse
 
-    // 토큰 저장
-    setAuthTokens(accessToken, refreshToken)
+      console.log('[Auth] Received token response:', { accessToken: !!accessToken, refreshToken: !!refreshToken })
 
-    // 프로필 조회
-    await fetchProfile()
+      // 토큰 저장
+      setAuthTokens(accessToken, refreshToken)
+      console.log('[Auth] Tokens saved to localStorage')
 
-    // FCM 토큰 동기화 (비차단적)
-    requestAndSyncFCMToken().catch((error) => {
-      console.error('[Auth] FCM sync failed:', error)
-    })
+      // 저장 확인
+      const savedToken = localStorage.getItem('haruharu_access_token')
+      console.log('[Auth] Verification - token in localStorage:', !!savedToken)
 
-    // 오늘의 문제 페이지로 이동
-    navigate(ROUTES.TODAY)
+      // 프로필 조회
+      const profile = await fetchProfile()
+      console.log('[Auth] Profile fetched:', { role: profile?.role, loginId: profile?.loginId })
+
+      // FCM 토큰 동기화 (비차단적)
+      requestAndSyncFCMToken().catch((error) => {
+        console.error('[Auth] FCM sync failed:', error)
+      })
+
+      // 역할에 따라 다른 페이지로 이동
+      if (profile?.role === 'ROLE_ADMIN') {
+        console.log('[Auth] Redirecting to admin dashboard')
+        navigate(ROUTES.ADMIN_DASHBOARD)
+      } else {
+        console.log('[Auth] Redirecting to today page')
+        navigate(ROUTES.TODAY)
+      }
+    } catch (error) {
+      console.error('[Auth] Login failed:', error)
+      throw error
+    }
   }
 
   // 로그아웃 처리

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute, PublicRoute } from './ProtectedRoute'
+import { AdminRoute } from './AdminRoute'
 import { ROUTES } from '../constants'
 import { MainLayout } from '../components/layout/MainLayout'
 
@@ -13,6 +14,13 @@ const SettingsPage = lazy(() => import('../pages/SettingsPage').then(m => ({ def
 const ProblemDetailPage = lazy(() => import('../pages/ProblemDetailPage').then(m => ({ default: m.ProblemDetailPage })))
 const PreferenceEditPage = lazy(() => import('../pages/PreferenceEditPage').then(m => ({ default: m.PreferenceEditPage })))
 const ProfileEditPage = lazy(() => import('../pages/ProfileEditPage').then(m => ({ default: m.ProfileEditPage })))
+
+// Admin pages
+const AdminDashboard = lazy(() => import('../pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })))
+const AdminCategoriesPage = lazy(() => import('../pages/AdminCategoriesPage').then(m => ({ default: m.AdminCategoriesPage })))
+const AdminProblemsPage = lazy(() => import('../pages/AdminProblemsPage').then(m => ({ default: m.AdminProblemsPage })))
+const AdminMembersPage = lazy(() => import('../pages/AdminMembersPage').then(m => ({ default: m.AdminMembersPage })))
+const AdminStatsPage = lazy(() => import('../pages/AdminStatsPage').then(m => ({ default: m.AdminStatsPage })))
 
 // Loading fallback component
 function PageLoader() {
@@ -114,6 +122,58 @@ export function AppRoutes() {
               <ProfileEditPage />
             </MainLayout>
           </ProtectedRoute>
+        }
+      />
+
+      {/* Admin Routes - with AdminRoute guard */}
+      <Route
+        path={ROUTES.ADMIN_DASHBOARD}
+        element={
+          <AdminRoute>
+            <MainLayout>
+              <AdminDashboard />
+            </MainLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_CATEGORIES}
+        element={
+          <AdminRoute>
+            <MainLayout>
+              <AdminCategoriesPage />
+            </MainLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_PROBLEMS}
+        element={
+          <AdminRoute>
+            <MainLayout>
+              <AdminProblemsPage />
+            </MainLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_MEMBERS}
+        element={
+          <AdminRoute>
+            <MainLayout>
+              <AdminMembersPage />
+            </MainLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_STATS}
+        element={
+          <AdminRoute>
+            <MainLayout>
+              <AdminStatsPage />
+            </MainLayout>
+          </AdminRoute>
         }
       />
 
