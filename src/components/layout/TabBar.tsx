@@ -1,11 +1,15 @@
 import { NavLink } from 'react-router-dom'
-import { NAV_ITEMS } from '../../constants/navigation'
+import { useAuth } from '../../hooks/useAuth'
+import { NAV_ITEMS, ADMIN_NAV_ITEMS } from '../../constants/navigation'
 
 export function TabBar() {
+  const { user } = useAuth()
+  const navItems = user?.role === 'ROLE_ADMIN' ? ADMIN_NAV_ITEMS : NAV_ITEMS
+
   return (
     <nav className="lg:hidden shrink-0 h-16 glass border-t border-white/40 flex justify-around items-center px-4 fixed bottom-0 left-0 right-0 z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.03)]">
       <div className="mx-auto max-w-md w-full flex justify-around items-center">
-        {NAV_ITEMS.map((tab) => (
+        {navItems.map((tab) => (
           <NavLink
             key={tab.path}
             to={tab.path}

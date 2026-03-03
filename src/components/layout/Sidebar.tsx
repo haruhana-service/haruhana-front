@@ -1,7 +1,11 @@
 import { NavLink } from 'react-router-dom'
-import { NAV_ITEMS } from '../../constants/navigation'
+import { useAuth } from '../../hooks/useAuth'
+import { NAV_ITEMS, ADMIN_NAV_ITEMS } from '../../constants/navigation'
 
 export function Sidebar() {
+  const { user } = useAuth()
+  const navItems = user?.role === 'ROLE_ADMIN' ? ADMIN_NAV_ITEMS : NAV_ITEMS
+
   return (
     <aside className="hidden lg:flex flex-col w-64 h-screen shrink-0 bg-white border-r border-slate-200 sticky top-0">
       {/* Logo */}
@@ -16,7 +20,7 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

@@ -1,4 +1,8 @@
+import { useAuth } from '../../hooks/useAuth'
+
 export function Header() {
+  const { logout } = useAuth()
+
   return (
     <header className="shrink-0 h-16 glass border-b border-white/40 flex items-center justify-between px-6 z-30 sticky top-0">
       <div className="mx-auto max-w-md lg:max-w-none w-full flex items-center justify-between">
@@ -10,12 +14,19 @@ export function Header() {
           <span className="font-extrabold text-xl text-slate-900 tracking-tight italic">haru:</span>
         </div>
 
-        {/* User Icon */}
-        <button className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-90 border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 ml-auto">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-        </button>
+        {/* Right Actions */}
+        <div className="flex items-center gap-2 ml-auto">
+          {/* Logout Button */}
+          <button
+            onClick={logout}
+            className="h-10 px-3 rounded-xl flex items-center gap-1.5 transition-all active:scale-95 border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-sm font-semibold"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span className="hidden sm:inline">로그아웃</span>
+          </button>
+        </div>
       </div>
     </header>
   )
