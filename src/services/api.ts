@@ -21,9 +21,13 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem(TOKEN_KEY)
+    console.log('[API] Request interceptor - token exists:', !!token, 'token length:', token?.length)
 
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
+      console.log('[API] Authorization header set')
+    } else {
+      console.log('[API] Authorization header NOT set - token:', !!token, 'headers:', !!config.headers)
     }
 
     return config
@@ -57,7 +61,7 @@ api.interceptors.response.use(
 
         // 토큰 갱신 API 호출
         const { data } = await axios.post(
-          `${API_BASE_URL}/auth/refresh`,
+          `${API_BASE_URL}/v1/auth/reissue`,
           { refreshToken },
           {
             headers: {
@@ -67,8 +71,12 @@ api.interceptors.response.use(
         )
 
         // 새 토큰 저장
-        const newAccessToken = data.accessToken
+        const newAccessToken = data.data.accessToken
+        const newRefreshToken = data.data.refreshToken
         localStorage.setItem(TOKEN_KEY, newAccessToken)
+        if (newRefreshToken) {
+          localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken)
+        }
 
         // 원래 요청에 새 토큰 적용
         if (originalRequest.headers) {
@@ -132,8 +140,18 @@ function getErrorMessage(status?: number): string {
 // ============================================
 
 export function setAuthTokens(accessToken: string, refreshToken: string): void {
-  localStorage.setItem(TOKEN_KEY, accessToken)
-  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+  try {
+    localStorage.setItem(TOKEN_KEY, accessToken)
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+    console.log('[API] Tokens saved to localStorage successfully')
+
+    // 저장 확인
+    const saved = localStorage.getItem(TOKEN_KEY)
+    console.log('[API] Verification - token saved:', !!saved)
+  } catch (error) {
+    console.error('[API] Failed to save tokens to localStorage:', error)
+    throw error
+  }
 }
 
 export function clearAuthTokens(): void {
