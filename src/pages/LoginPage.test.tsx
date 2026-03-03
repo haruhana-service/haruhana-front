@@ -102,6 +102,7 @@ describe('LoginPage', () => {
       createdAt: '2026-01-01T00:00:00Z',
       categoryTopicName: 'Spring',
       difficulty: 'MEDIUM',
+      role: 'ROLE_MEMBER' as const,
     }
 
     vi.mocked(authService.login).mockResolvedValueOnce(mockTokenResponse)
