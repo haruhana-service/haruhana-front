@@ -72,6 +72,26 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
+  {
+    path: ROUTES.ADMIN_DEBUG,
+    label: '디버그',
+    icon: (isActive) => (
+      <svg
+        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-300'}`}
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2.5}
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M9 3h6m-6 0a2 2 0 00-2 2v2m2-4a2 2 0 012 2v2m0 0h2a2 2 0 012 2v3a4 4 0 11-8 0V9a2 2 0 012-2zm-7 9h4m10 0h4M5 21l3-3m11 3l-3-3"
+        />
+      </svg>
+    ),
+  },
 ]
 
 export const NAV_ITEMS: NavItem[] = [

@@ -26,6 +26,11 @@ const adminMenus = [
     description: '서비스 통계 및 분석',
     path: ROUTES.ADMIN_STATS,
   },
+  {
+    title: '디버그 모드',
+    description: '알림/푸시 테스트',
+    path: ROUTES.ADMIN_DEBUG,
+  },
 ]
 
 export function AdminDashboard() {

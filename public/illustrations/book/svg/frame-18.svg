@@ -1,0 +1,20 @@
+<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pageGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#F3F6FF" />
+      <stop offset="1" stop-color="#F7EFFF" />
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="#6C7DD6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M48 130c22-10 46-10 68 0v44c-22-10-46-10-68 0z" />
+    <path d="M172 130c-22-10-46-10-68 0v44c22-10 46-10 68 0z" />
+    <path d="M62 134c16-6 32-6 48 0" />
+    <path d="M110 134c16-6 32-6 48 0" />
+    <path d="M62 146c16-6 32-6 48 0" />
+    <path d="M110 146c16-6 32-6 48 0" />
+  </g>
+  <path d="M110 126 C 139.3 120.0, 119.7 109.4, 91.1 119.4 L 91.1 180.6 C 119.7 190.6, 139.3 180.0, 110 174 Z" fill="url(#pageGradient)" stroke="#A2AEEA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M97.7 121.4 L 97.7 178.6" stroke="#C7CEF6" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+  <path d="M114.0 136.0 Q 108.5 124.7 83.1 127.4" stroke="#C9D1FF" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7" />
+  <path d="M116.0 148.0 Q 110.5 138.7 81.1 141.4" stroke="#C9D1FF" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6" />
+</svg>

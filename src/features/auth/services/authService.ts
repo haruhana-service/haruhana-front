@@ -8,6 +8,7 @@ import type {
   ProfileUpdateRequest,
   PreferenceUpdateRequest,
   ApiResponseLong,
+  ApiResponse,
 } from '../../../types/models'
 
 // ============================================
@@ -21,6 +22,35 @@ import type {
 export async function signup(data: SignupRequest): Promise<number> {
   const response = await api.post<ApiResponseLong>('/v1/members/sign-up', data)
   return response.data.data // 생성된 회원 ID
+}
+
+/**
+ * 로그인 ID 중복 확인
+ * GET /v1/members/login-id?loginId={loginId}
+ */
+export async function checkLoginIdAvailability(loginId: string): Promise<boolean> {
+  const response = await api.get<ApiResponse<boolean>>(
+    '/v1/members/login-id',
+    {
+      params: { loginId },
+      skipAuth: true,
+    }
+  )
+
+  return response.data.data
+}
+
+/**
+ * 닉네임 중복 확인
+ * GET /v1/members/nickname?nickname={nickname}
+ */
+export async function checkNicknameAvailability(nickname: string): Promise<boolean> {
+  const response = await api.get<ApiResponse<boolean>>('/v1/members/nickname', {
+    params: { nickname },
+    skipAuth: true,
+  })
+
+  return response.data.data
 }
 
 /**
@@ -47,6 +77,14 @@ export async function reissueToken(data: TokenReissueRequest): Promise<TokenResp
  */
 export async function logout(): Promise<void> {
   await api.post('/v1/auth/logout')
+}
+
+/**
+ * 회원 탈퇴
+ * DELETE /v1/members
+ */
+export async function deleteMember(): Promise<void> {
+  await api.delete('/v1/members')
 }
 
 // ============================================

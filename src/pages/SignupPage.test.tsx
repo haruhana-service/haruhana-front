@@ -9,6 +9,7 @@ import * as categoryService from '../services/categoryService'
 // Mock services
 vi.mock('../features/auth/services/authService', () => ({
   signup: vi.fn(),
+  checkLoginIdAvailability: vi.fn(),
 }))
 
 vi.mock('../services/categoryService', () => ({
@@ -58,6 +59,7 @@ describe('SignupPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(authService.checkLoginIdAvailability).mockResolvedValue(true)
     // Mock successful category fetch
     vi.mocked(categoryService.getCategories).mockResolvedValue(mockCategories)
   })
@@ -74,6 +76,7 @@ describe('SignupPage', () => {
 
     // 다음 단계 버튼
     expect(screen.getByRole('button', { name: /다음 단계로/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /중복 확인/i })).toBeInTheDocument()
 
     // Step 2, 3 필드들은 아직 보이지 않아야 함
     expect(screen.queryByLabelText(/닉네임/i)).not.toBeInTheDocument()
@@ -82,12 +85,12 @@ describe('SignupPage', () => {
     expect(screen.getByRole('link', { name: /로그인/i })).toBeInTheDocument()
   })
 
-  it('Step 1: 로그인 ID 미입력 시 에러 메시지를 표시한다', async () => {
+  it('Step 1: 로그인 ID 미입력 상태에서 중복확인을 누르면 에러 메시지를 표시한다', async () => {
     const user = userEvent.setup()
     render(<SignupPage />)
 
-    const nextButton = screen.getByRole('button', { name: /다음 단계로/i })
-    await user.click(nextButton)
+    const checkButton = screen.getByRole('button', { name: /중복 확인/i })
+    await user.click(checkButton)
 
     await waitFor(() => {
       expect(screen.getByText(/로그인 ID를 입력해주세요/i)).toBeInTheDocument()
@@ -106,6 +109,14 @@ describe('SignupPage', () => {
     await user.type(loginIdInput, 'testuser')
     await user.type(passwordInput, 'Password123')
     await user.type(passwordConfirmInput, 'Password123')
+
+    const checkButton = screen.getByRole('button', { name: /중복 확인/i })
+    await user.click(checkButton)
+
+    await waitFor(() => {
+      expect(authService.checkLoginIdAvailability).toHaveBeenCalledWith('testuser')
+      expect(screen.getByText(/사용 가능한 아이디입니다/i)).toBeInTheDocument()
+    })
 
     // 다음 단계로 이동
     const nextButton = screen.getByRole('button', { name: /다음 단계로/i })
@@ -133,6 +144,13 @@ describe('SignupPage', () => {
     await user.type(loginIdInput, 'testuser')
     await user.type(passwordInput, 'Password123')
     await user.type(passwordConfirmInput, 'Password123')
+
+    const checkButton = screen.getByRole('button', { name: /중복 확인/i })
+    await user.click(checkButton)
+
+    await waitFor(() => {
+      expect(authService.checkLoginIdAvailability).toHaveBeenCalledWith('testuser')
+    })
 
     const nextButton = screen.getByRole('button', { name: /다음 단계로/i })
     await user.click(nextButton)
@@ -169,6 +187,13 @@ describe('SignupPage', () => {
     await user.type(loginIdInput, 'testuser')
     await user.type(passwordInput, 'Password123')
     await user.type(passwordConfirmInput, 'Password123')
+
+    const checkButton = screen.getByRole('button', { name: /중복 확인/i })
+    await user.click(checkButton)
+
+    await waitFor(() => {
+      expect(authService.checkLoginIdAvailability).toHaveBeenCalledWith('testuser')
+    })
 
     const nextButton1 = screen.getByRole('button', { name: /다음 단계로/i })
     await user.click(nextButton1)
@@ -254,6 +279,13 @@ describe('SignupPage', () => {
     await user.type(passwordInput, 'Password123')
     await user.type(passwordConfirmInput, 'Password123')
 
+    const checkButton = screen.getByRole('button', { name: /중복 확인/i })
+    await user.click(checkButton)
+
+    await waitFor(() => {
+      expect(authService.checkLoginIdAvailability).toHaveBeenCalledWith('duplicateuser')
+    })
+
     const nextButton1 = screen.getByRole('button', { name: /다음 단계로/i })
     await user.click(nextButton1)
 
@@ -302,6 +334,31 @@ describe('SignupPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/이미 사용 중인 로그인 ID입니다/i)).toBeInTheDocument()
+    })
+  })
+
+  it('Step 1: 중복확인 전에는 다음 단계 버튼이 비활성화된다', async () => {
+    const user = userEvent.setup()
+    render(<SignupPage />)
+
+    const loginIdInput = screen.getByLabelText(/^아이디$/i)
+    const passwordInput = screen.getByLabelText(/^비밀번호$/i)
+    const passwordConfirmInput = screen.getByLabelText(/비밀번호 확인/i)
+    const nextButton = screen.getByRole('button', { name: /다음 단계로/i })
+
+    expect(nextButton).toBeDisabled()
+
+    await user.type(loginIdInput, 'testuser')
+    await user.type(passwordInput, 'Password123')
+    await user.type(passwordConfirmInput, 'Password123')
+
+    expect(nextButton).toBeDisabled()
+
+    const checkButton = screen.getByRole('button', { name: /중복 확인/i })
+    await user.click(checkButton)
+
+    await waitFor(() => {
+      expect(nextButton).toBeEnabled()
     })
   })
 })

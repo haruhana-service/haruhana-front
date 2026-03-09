@@ -1,9 +1,12 @@
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { useTodayProblem } from '../features/problem/hooks/useTodayProblem'
 import { useStreak } from '../features/streak/hooks/useStreak'
 import { useAuth } from '../hooks/useAuth'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
+import { Modal } from '../components/ui/Modal'
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const
 
@@ -18,17 +21,66 @@ const DIFFICULTY_LABELS: Record<string, string> = {
   HARD: '어려움',
 }
 
+const REMINDER_INTERVAL_MS = 60 * 60 * 1000
+const REMINDER_LAST_AT_KEY = 'haruharu_unsolved_reminder_last_at'
+
 export function TodayPage() {
   const { data: problem, isLoading: problemLoading, error } = useTodayProblem()
   const { data: streak, isLoading: streakLoading } = useStreak()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [isReminderOpen, setIsReminderOpen] = useState(false)
+  const hasPromptedRef = useRef(false)
 
   const handleProblemClick = () => {
     if (problem) {
       navigate(`/problem/${problem.id}`)
     }
   }
+
+  useEffect(() => {
+    if (!problem || problem.isSolved) return
+    if (hasPromptedRef.current) return
+
+    hasPromptedRef.current = true
+    setIsReminderOpen(true)
+  }, [problem])
+
+  useEffect(() => {
+    if (!problem || problem.isSolved) return
+
+    const canNotifyNow = () => {
+      const lastAt = Number(localStorage.getItem(REMINDER_LAST_AT_KEY) || 0)
+      return !lastAt || Date.now() - lastAt >= REMINDER_INTERVAL_MS
+    }
+
+    const sendReminder = () => {
+      if (!canNotifyNow()) return
+
+      const title = '오늘의 문제를 아직 풀지 않았어요'
+      const body = '지금 5분만 도전해볼까요?'
+
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        new Notification(title, {
+          body,
+          icon: '/pwa-192x192.png',
+          badge: '/pwa-64x64.png',
+          tag: 'haru-unsolved-reminder',
+        })
+      } else {
+        toast.info(title, { description: body, duration: 6000 })
+      }
+
+      localStorage.setItem(REMINDER_LAST_AT_KEY, String(Date.now()))
+    }
+
+    sendReminder()
+    const intervalId = window.setInterval(sendReminder, REMINDER_INTERVAL_MS)
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [problem])
 
   const getStreakLevel = (count: number) => {
     if (count >= 30) return { label: '마스터', color: 'text-purple-400' }
@@ -40,7 +92,8 @@ export function TodayPage() {
   const level = getStreakLevel(streak?.currentStreak || 0)
 
   return (
-    <div className="max-w-xl mx-auto space-y-6 pb-10">
+    <>
+      <div className="max-w-xl mx-auto space-y-6 pb-10">
       {/* 콤팩트해진 스트릭 카드 */}
       <Card variant="dark" className="animate-fade-up stagger-1 relative overflow-hidden border-none p-4 min-h-[140px]">
         {/* 애니메이션 글로우 (크기 축소) */}
@@ -191,6 +244,36 @@ export function TodayPage() {
           Daily progress leads to<br/>Mastery
         </p>
       </div>
-    </div>
+      </div>
+      <Modal isOpen={isReminderOpen} onClose={() => setIsReminderOpen(false)} title="아직 오늘의 문제를 풀지 않았어요">
+        <div className="space-y-5">
+          <p className="text-sm text-slate-600 leading-relaxed">
+            오늘의 문제를 풀면 성장 리듬이 이어집니다. 지금 바로 도전해볼까요?
+          </p>
+          <p className="text-sm text-slate-500 leading-relaxed">
+            앱을 종료하면 주기 알림이 오지 않습니다. 알림을 받으려면 최소화 상태로 유지해주세요.
+          </p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setIsReminderOpen(false)}
+              className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-95"
+            >
+              나중에
+            </button>
+            <Button
+              type="button"
+              onClick={() => {
+                setIsReminderOpen(false)
+                handleProblemClick()
+              }}
+              className="flex-1 h-12 rounded-xl text-sm font-bold shadow-lg shadow-haru-100 active:scale-95"
+            >
+              지금 풀기
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   )
 }

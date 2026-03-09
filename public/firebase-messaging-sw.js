@@ -12,8 +12,16 @@
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js')
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js')
 
-// Firebase는 앱 측에서 이미 초기화되어 있으므로
-// Service Worker에서는 메시지 핸들러만 등록하면 됩니다
+// Service Worker 환경에서는 앱 초기화를 따로 해줘야 합니다.
+// (public/ 파일은 Vite가 처리하지 않으므로 하드코딩 필요)
+firebase.initializeApp({
+  apiKey: 'AIzaSyB1fyEoXol2OAXgz1YZaS7vhmU1Mv7h4Z4',
+  authDomain: 'haruhana-22767.firebaseapp.com',
+  projectId: 'haruhana-22767',
+  storageBucket: 'haruhana-22767.firebasestorage.app',
+  messagingSenderId: '487581121426',
+  appId: '1:487581121426:web:724307ca7bae68a2679f4b',
+})
 
 // Messaging 초기화는 firebase.messaging() 호출로 자동 처리
 let messaging = null

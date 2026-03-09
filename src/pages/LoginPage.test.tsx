@@ -4,11 +4,16 @@ import userEvent from '@testing-library/user-event'
 import { render } from '../test/utils'
 import { LoginPage } from './LoginPage'
 import * as authService from '../features/auth/services/authService'
+import * as quoteService from '../services/quoteService'
 
 // Mock authService
 vi.mock('../features/auth/services/authService', () => ({
   login: vi.fn(),
   getProfile: vi.fn(),
+}))
+
+vi.mock('../services/quoteService', () => ({
+  getQuotes: vi.fn(),
 }))
 
 // Mock useNavigate
@@ -24,9 +29,16 @@ vi.mock('react-router-dom', async () => {
 describe('LoginPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(quoteService.getQuotes).mockResolvedValue({
+      ids: [1, 2],
+      entities: {
+        1: { id: 1, text: '하루 10분, 평생 습관' },
+        2: { id: 2, text: '오늘도 한 문제 완료' },
+      },
+    })
   })
 
-  it('로그인 폼이 올바르게 렌더링된다', () => {
+  it('로그인 폼이 올바르게 렌더링된다', async () => {
     render(<LoginPage />)
 
     expect(screen.getByText('haru:')).toBeInTheDocument()
@@ -34,6 +46,9 @@ describe('LoginPage', () => {
     expect(screen.getByLabelText(/비밀번호/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /챌린지 시작하기/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /회원가입/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText(/하루 10분, 평생 습관/i)).toBeInTheDocument()
+    })
   })
 
   it('로그인 ID 미입력 시 에러 메시지를 표시한다', async () => {
