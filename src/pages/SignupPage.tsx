@@ -87,6 +87,7 @@ export function SignupPage() {
     isNicknameChecked,
     isNicknameAvailable,
     isCheckingLoginId,
+    isCheckingNickname,
   })
 
   const handleOpenAgreement = () => {
