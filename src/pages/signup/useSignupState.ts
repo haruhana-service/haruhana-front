@@ -25,6 +25,7 @@ interface UseSignupStateParams {
   setIsNicknameChecked: (value: boolean) => void
   setIsNicknameAvailable: (value: boolean | null) => void
   setIsCheckingNickname: (value: boolean) => void
+  isCheckingNickname: boolean
   isNicknameChecked: boolean
   isNicknameAvailable: boolean | null
 }
@@ -52,9 +53,8 @@ export function useSignupState({
   setIsNicknameChecked,
   setIsNicknameAvailable,
   setIsCheckingNickname,
-  isCheckingNickname,
   isNicknameChecked,
-  isNicknameAvailable,
+  isCheckingNickname,
 }: UseSignupStateParams) {
   const [isPasswordMismatch, setIsPasswordMismatch] = useState(false)
 

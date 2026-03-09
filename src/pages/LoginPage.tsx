@@ -19,7 +19,6 @@ export function LoginPage() {
 
   const {
     control,
-    register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
@@ -125,7 +124,6 @@ export function LoginPage() {
 
             <LoginForm
               control={control}
-              register={register}
               errors={errors}
               apiError={apiError}
               isSubmitting={isSubmitting}
@@ -161,7 +159,6 @@ export function LoginPage() {
             <div className="w-full max-w-md">
               <LoginForm
                 control={control}
-                register={register}
                 errors={errors}
                 apiError={apiError}
                 isSubmitting={isSubmitting}
