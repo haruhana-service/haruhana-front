@@ -90,67 +90,89 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
         카테고리 선택
       </label>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {/* Step 1: 카테고리 선택 */}
-        <div className="space-y-1.5">
-          <label htmlFor="category" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-            1. 분야
-          </label>
-          <select
-            id="category"
-            value={resolvedCategoryId || ''}
-            onChange={(e) => handleCategoryChange(Number(e.target.value))}
-            className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700"
-          >
-            <option value="">선택하세요</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+        <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-4">
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">1. 분야</p>
+          <div className="mt-3 space-y-1.5">
+            {categories.map((category) => {
+              const isSelected = category.id === resolvedCategoryId
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => handleCategoryChange(category.id)}
+                  aria-pressed={isSelected}
+                  className={`w-full rounded-xl border px-3 py-2.5 text-left text-sm font-bold transition-all ${
+                    isSelected
+                      ? 'border-haru-500 bg-haru-50 text-haru-700 shadow-sm'
+                      : 'border-transparent bg-slate-50 text-slate-700 hover:border-haru-200 hover:bg-white'
+                  }`}
+                >
+                  {category.name}
+                </button>
+              )
+            })}
+            {categories.length === 0 && (
+              <p className="text-xs text-slate-400 font-medium">선택 가능한 분야가 없습니다</p>
+            )}
+          </div>
         </div>
 
         {/* Step 2: 그룹 선택 */}
-        <div className="space-y-1.5">
-          <label htmlFor="group" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-            2. 분류
-          </label>
-          <select
-            id="group"
-            value={resolvedGroupId || ''}
-            onChange={(e) => handleGroupChange(Number(e.target.value))}
-            disabled={!resolvedCategoryId}
-            className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <option value="">선택하세요</option>
-            {groups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
-            ))}
-          </select>
+        <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-4">
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">2. 분류</p>
+          <div className="mt-3 space-y-1.5">
+            {!resolvedCategoryId && (
+              <p className="text-xs text-slate-400 font-medium">먼저 분야를 선택해주세요</p>
+            )}
+            {resolvedCategoryId &&
+              groups.map((group) => {
+                const isSelected = group.id === resolvedGroupId
+                return (
+                  <button
+                    key={group.id}
+                    type="button"
+                    onClick={() => handleGroupChange(group.id)}
+                    aria-pressed={isSelected}
+                    className={`w-full rounded-xl border px-3 py-2.5 text-left text-sm font-bold transition-all ${
+                      isSelected
+                        ? 'border-haru-500 bg-haru-50 text-haru-700 shadow-sm'
+                        : 'border-transparent bg-slate-50 text-slate-700 hover:border-haru-200 hover:bg-white'
+                    }`}
+                  >
+                    {group.name}
+                  </button>
+                )
+              })}
+          </div>
         </div>
 
         {/* Step 3: 토픽 선택 */}
-        <div className="space-y-1.5">
-          <label htmlFor="topic" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-            3. 주제
-          </label>
-          <select
-            id="topic"
-            value={value || ''}
-            onChange={(e) => handleTopicChange(Number(e.target.value))}
-            disabled={!resolvedGroupId}
-            className="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-haru-500 focus:bg-white outline-none transition-all font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <option value="">선택하세요</option>
-            {topics.map((topic) => (
-              <option key={topic.id} value={topic.id}>
-                {topic.name}
-              </option>
-            ))}
-          </select>
+        <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-4">
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">3. 주제</p>
+          <div className="mt-3 space-y-1.5">
+            {!resolvedGroupId && <p className="text-xs text-slate-400 font-medium">분류를 선택해주세요</p>}
+            {resolvedGroupId &&
+              topics.map((topic) => {
+                const isSelected = topic.id === value
+                return (
+                  <button
+                    key={topic.id}
+                    type="button"
+                    onClick={() => handleTopicChange(topic.id)}
+                    aria-pressed={isSelected}
+                    className={`w-full rounded-xl border px-3 py-2.5 text-left text-sm font-bold transition-all ${
+                      isSelected
+                        ? 'border-haru-500 bg-haru-50 text-haru-700 shadow-sm'
+                        : 'border-transparent bg-slate-50 text-slate-700 hover:border-haru-200 hover:bg-white'
+                    }`}
+                  >
+                    {topic.name}
+                  </button>
+                )
+              })}
+          </div>
         </div>
       </div>
 

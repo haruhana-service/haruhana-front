@@ -61,6 +61,41 @@ export async function uploadToS3(presignedUrl: string, file: File): Promise<void
 }
 
 /**
+ * Presigned URL을 사용하여 S3에 파일 업로드 (진행률 콜백 지원)
+ */
+export async function uploadToS3WithProgress(
+  presignedUrl: string,
+  file: File,
+  onProgress: (percent: number) => void
+): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('PUT', presignedUrl, true)
+    xhr.setRequestHeader('Content-Type', file.type)
+
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return
+      const percent = Math.round((event.loaded / event.total) * 100)
+      onProgress(percent)
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve()
+      } else {
+        reject(new Error(`파일 업로드에 실패했습니다. (${xhr.status} ${xhr.statusText})`))
+      }
+    }
+
+    xhr.onerror = () => {
+      reject(new Error('파일 업로드 중 네트워크 오류가 발생했습니다.'))
+    }
+
+    xhr.send(file)
+  })
+}
+
+/**
  * 업로드 완료 알림
  * POST /v1/storage/upload-complete
  * @param data - objectKey
@@ -77,7 +112,10 @@ export async function notifyUploadComplete(data: StorageUploadCompleteRequest): 
  * @param file - 업로드할 이미지 파일
  * @returns objectKey - 프로필 업데이트 시 사용할 키
  */
-export async function uploadProfileImage(file: File): Promise<string> {
+export async function uploadProfileImage(
+  file: File,
+  onProgress?: (percent: number) => void
+): Promise<string> {
   console.log('[Upload Process] Starting profile image upload...', {
     fileName: file.name,
     fileType: file.type,
@@ -95,7 +133,11 @@ export async function uploadProfileImage(file: File): Promise<string> {
 
     // 2. S3에 파일 업로드
     console.log('[Upload Process] Step 2: Uploading to S3...')
-    await uploadToS3(presignedUrl, file)
+    if (onProgress) {
+      await uploadToS3WithProgress(presignedUrl, file, onProgress)
+    } else {
+      await uploadToS3(presignedUrl, file)
+    }
     console.log('[Upload Process] S3 upload complete')
 
     // 3. 업로드 완료 알림

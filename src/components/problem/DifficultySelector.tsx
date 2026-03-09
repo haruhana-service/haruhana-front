@@ -17,29 +17,26 @@ export function DifficultySelector({ value, onChange, error }: DifficultySelecto
   }
 
   return (
-    <div className="space-y-3 px-1">
+    <div className="space-y-3">
       <label className="text-[11px] font-black text-haru-500 uppercase tracking-[0.2em] ml-1">
         난이도 선택
       </label>
 
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {difficulties.map((difficulty) => (
           <button
             key={difficulty}
             type="button"
             onClick={() => onChange(difficulty)}
             aria-pressed={value === difficulty}
-            className={`
-              relative flex flex-col items-start rounded-xl border-2 p-4 text-left transition-all
-              ${
-                value === difficulty
-                  ? 'border-haru-500 bg-haru-50 shadow-md scale-[1.02]'
-                  : 'border-slate-100 bg-white hover:border-haru-200 shadow-sm'
-              }
-            `}
+            className={`group relative flex flex-col rounded-2xl border p-4 text-left transition-all ${
+              value === difficulty
+                ? 'border-haru-500 bg-haru-50 shadow-md'
+                : 'border-slate-100 bg-white hover:border-haru-200 hover:shadow-sm'
+            }`}
           >
             <div className="flex w-full items-center justify-between">
-              <span className={`text-sm font-bold tracking-tight ${
+              <span className={`text-sm font-black tracking-tight ${
                 value === difficulty ? 'text-haru-700' : 'text-slate-700'
               }`}>
                 {DIFFICULTY_LABELS[difficulty]}
@@ -52,7 +49,7 @@ export function DifficultySelector({ value, onChange, error }: DifficultySelecto
                 </div>
               )}
             </div>
-            <p className={`mt-1 text-[11px] font-medium ${
+            <p className={`mt-2 text-[11px] font-medium ${
               value === difficulty ? 'text-haru-600/70' : 'text-slate-400'
             }`}>
               {difficultyDescriptions[difficulty]}

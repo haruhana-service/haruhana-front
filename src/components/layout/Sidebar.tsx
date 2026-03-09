@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { ROUTES } from '../../constants'
 import { useAuth } from '../../hooks/useAuth'
 import { NAV_ITEMS, ADMIN_NAV_ITEMS } from '../../constants/navigation'
 
@@ -10,12 +11,12 @@ export function Sidebar() {
     <aside className="hidden lg:flex flex-col w-64 h-screen shrink-0 bg-white border-r border-slate-200 sticky top-0">
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-slate-100">
-        <div className="flex items-center gap-2.5 cursor-pointer group">
+        <NavLink to={ROUTES.TODAY} className="flex items-center gap-2.5 cursor-pointer group" aria-label="첫 페이지로 이동">
           <div className="w-9 h-9 bg-haru-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-haru-600/25 group-hover:rotate-12 transition-transform">
             <span className="font-black text-lg">H</span>
           </div>
           <span className="font-extrabold text-xl text-slate-900 tracking-tight italic">haru:</span>
-        </div>
+        </NavLink>
       </div>
 
       {/* Navigation */}

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { updateProfile } from '../features/auth/services/authService'
+import { deleteMember, updateProfile } from '../features/auth/services/authService'
 import { uploadProfileImage } from '../services/storageService'
 import { Card } from '../components/ui/Card'
 import { ROUTES } from '../constants'
 import { formatDateKorean } from '../utils/date'
 import { toast } from 'sonner'
 import { getNotificationPermission, requestAndSyncFCMToken, deleteFCMToken, getSavedFCMToken } from '../services/fcmService'
+import { Modal } from '../components/ui/Modal'
+import { useTodayProblem } from '../features/problem/hooks/useTodayProblem'
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   EASY: '쉬움 (기초)',
@@ -24,12 +26,21 @@ export function SettingsPage() {
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null)
   const [editedNickname, setEditedNickname] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteReason, setDeleteReason] = useState('')
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
 
   // 알림 설정 상태
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default')
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(false)
   const [isNotificationLoading, setIsNotificationLoading] = useState(false)
   const notificationSupported = 'Notification' in window
+  const { data: todayProblem } = useTodayProblem()
 
   useEffect(() => {
     if (notificationSupported) {
@@ -72,6 +83,8 @@ export function SettingsPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setUploadError(null)
+      setUploadProgress(null)
       // 파일 크기 검증 (예: 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error('이미지 파일은 5MB 이하만 업로드 가능합니다.')
@@ -124,12 +137,20 @@ export function SettingsPage() {
       // 프로필 이미지가 변경된 경우 업로드
       if (profileImageFile) {
         try {
-          profileImageKey = await uploadProfileImage(profileImageFile)
+          setIsUploadingImage(true)
+          setUploadProgress(0)
+          profileImageKey = await uploadProfileImage(profileImageFile, (percent) => {
+            setUploadProgress(percent)
+          })
         } catch (error) {
           console.error('Failed to upload profile image:', error)
           toast.error('프로필 이미지 업로드에 실패했습니다.')
+          setUploadError('이미지 업로드에 실패했습니다. 잠시 후 다시 시도해주세요.')
           setIsSubmitting(false)
+          setIsUploadingImage(false)
           return
+        } finally {
+          setIsUploadingImage(false)
         }
       }
 
@@ -144,6 +165,8 @@ export function SettingsPage() {
       setIsEditingProfile(false)
       setProfileImage(null)
       setProfileImageFile(null)
+      setUploadProgress(null)
+      setUploadError(null)
     } catch (error) {
       console.error('Failed to update profile:', error)
       toast.error('프로필 업데이트에 실패했습니다.')
@@ -157,6 +180,39 @@ export function SettingsPage() {
     setProfileImage(null)
     setProfileImageFile(null)
     setIsEditingProfile(false)
+  }
+
+  const handleOpenLogoutDialog = () => {
+    setIsLogoutDialogOpen(true)
+  }
+
+  const handleConfirmLogout = async () => {
+    setIsLogoutDialogOpen(false)
+    await logout()
+  }
+
+  const openDeleteDialog = () => {
+    setDeleteReason('')
+    setDeleteConfirmText('')
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleDeleteAccount = async () => {
+    if (isDeleting) return
+    setIsDeleting(true)
+    try {
+      await deleteMember()
+      await deleteFCMToken()
+      await logout()
+      toast.success('회원 탈퇴가 완료되었습니다.')
+      navigate(ROUTES.LOGIN)
+    } catch (error) {
+      console.error('Failed to delete account:', error)
+      toast.error('회원 탈퇴 중 오류가 발생했습니다.')
+    } finally {
+      setIsDeleting(false)
+      setIsDeleteDialogOpen(false)
+    }
   }
 
   return (
@@ -223,12 +279,12 @@ export function SettingsPage() {
                       accept="image/*"
                       onChange={handleImageUpload}
                       className="hidden"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isUploadingImage}
                     />
                     <label
                       htmlFor="profile-image-upload-edit"
                       className={`block w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg transition-all hover:border-white/50 ${
-                        isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                        isSubmitting || isUploadingImage ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
                       }`}
                     >
                       {profileImage || user?.profileImageUrl ? (
@@ -242,7 +298,7 @@ export function SettingsPage() {
                           {(editedNickname || user?.nickname || 'H')[0]}
                         </div>
                       )}
-                      {!isSubmitting && (
+                      {!isSubmitting && !isUploadingImage && (
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
@@ -268,10 +324,37 @@ export function SettingsPage() {
                       className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm sm:text-base placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="닉네임 입력"
                       autoFocus
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isUploadingImage}
                     />
+                    {isUploadingImage && uploadProgress !== null && (
+                      <div className="mt-2">
+                        <div className="flex items-center justify-between text-[11px] text-white/70 font-medium mb-1">
+                          <span>이미지 업로드 중...</span>
+                          <span>{uploadProgress}%</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-white/20 overflow-hidden">
+                          <div
+                            className="h-full bg-white transition-all duration-300"
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {uploadError && !isUploadingImage && (
+                  <div className="mt-2 flex items-center justify-between rounded-xl border border-red-200/40 bg-red-50/20 px-3 py-2">
+                    <p className="text-[11px] text-red-100 font-semibold">{uploadError}</p>
+                    <button
+                      type="button"
+                      onClick={handleSaveProfile}
+                      className="text-[11px] font-bold text-white underline underline-offset-2"
+                    >
+                      다시 시도
+                    </button>
+                  </div>
+                )}
 
                 {/* 저장 버튼 */}
                 <div className="flex gap-2 pt-1">
@@ -284,10 +367,10 @@ export function SettingsPage() {
                   </button>
                   <button
                     onClick={handleSaveProfile}
-                    disabled={!editedNickname.trim() || isSubmitting}
+                    disabled={!editedNickname.trim() || isSubmitting || isUploadingImage}
                     className="flex-1 px-3 py-2.5 sm:py-3 rounded-xl bg-white text-haru-600 text-sm font-bold hover:bg-white/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting ? '저장 중...' : '저장'}
+                    {isUploadingImage ? '업로드 중...' : isSubmitting ? '저장 중...' : '저장'}
                   </button>
                 </div>
               </div>
@@ -467,7 +550,7 @@ export function SettingsPage() {
         <section className="space-y-3">
           <h3 className="text-[12px] font-extrabold text-slate-400 uppercase tracking-[0.2em] ml-1">나의 계정</h3>
           <button
-            onClick={logout}
+            onClick={handleOpenLogoutDialog}
             className="w-full p-5 bg-white rounded-[20px] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-red-200 hover:bg-red-50/20 transition-all active:scale-[0.98]"
           >
             <div className="flex items-center gap-4">
@@ -490,6 +573,30 @@ export function SettingsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
+          <button
+            onClick={openDeleteDialog}
+            className="w-full p-5 bg-white rounded-[20px] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-red-300 hover:bg-red-50/40 transition-all active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-7 0l1 12a2 2 0 002 2h2a2 2 0 002-2l1-12" />
+                </svg>
+              </div>
+              <span className="text-[15px] font-bold text-slate-700 group-hover:text-red-600 transition-colors">
+                회원 탈퇴
+              </span>
+            </div>
+            <svg
+              className="w-5 h-5 text-slate-300 group-hover:text-red-300 transition-all"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={2.5}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </section>
 
         <div className="text-center pt-10 opacity-30">
@@ -498,6 +605,95 @@ export function SettingsPage() {
           </p>
         </div>
       </div>
+      <Modal isOpen={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)} title="정말 탈퇴하시겠어요?" size="sm">
+        <div className="space-y-5">
+          <p className="text-sm text-slate-600 leading-relaxed">
+            탈퇴하면 모든 학습 기록과 프로필 정보가 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+          </p>
+
+          <div className="space-y-2">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">탈퇴 사유</p>
+            <div className="space-y-2">
+              {['원하는 콘텐츠가 없어요', '사용 빈도가 낮아요', '앱/서비스가 불편해요', '기타'].map((reason) => (
+                <label
+                  key={reason}
+                  className={`flex items-center gap-3 rounded-xl border px-3 py-2 cursor-pointer transition-colors ${
+                    deleteReason === reason ? 'border-red-300 bg-red-50/40' : 'border-slate-200 bg-white'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="deleteReason"
+                    value={reason}
+                    checked={deleteReason === reason}
+                    onChange={() => setDeleteReason(reason)}
+                    className="h-4 w-4 text-red-500 focus:ring-red-400"
+                  />
+                  <span className="text-sm font-medium text-slate-700">{reason}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+              확인 문구 입력
+            </p>
+            <p className="text-xs text-slate-500">아래 문구를 정확히 입력해주세요: <span className="font-bold text-slate-700">탈퇴</span></p>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="탈퇴"
+              className="w-full px-3.5 py-3 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-200"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-95"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              disabled={isDeleting || deleteReason.length === 0 || deleteConfirmText !== '탈퇴'}
+              className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isDeleting ? '처리 중...' : '회원 탈퇴'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={isLogoutDialogOpen} onClose={() => setIsLogoutDialogOpen(false)} title="로그아웃하시겠어요?" size="sm">
+        <div className="space-y-5">
+          <p className="text-sm text-slate-600 leading-relaxed">
+            {todayProblem?.isSolved
+              ? '오늘의 문제를 풀었네요. 정말 잘했어요! 내일도 가볍게 이어가요.'
+              : '아직 오늘의 문제를 풀지 않았어요. 5분만 투자해도 충분해요.'}
+          </p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setIsLogoutDialogOpen(false)}
+              className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-95"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmLogout}
+              className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition-all active:scale-95"
+            >
+              로그아웃
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

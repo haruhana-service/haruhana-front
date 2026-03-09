@@ -21,6 +21,7 @@ const AdminCategoriesPage = lazy(() => import('../pages/AdminCategoriesPage').th
 const AdminProblemsPage = lazy(() => import('../pages/AdminProblemsPage').then(m => ({ default: m.AdminProblemsPage })))
 const AdminMembersPage = lazy(() => import('../pages/AdminMembersPage').then(m => ({ default: m.AdminMembersPage })))
 const AdminStatsPage = lazy(() => import('../pages/AdminStatsPage').then(m => ({ default: m.AdminStatsPage })))
+const AdminDebugPage = lazy(() => import('../pages/AdminDebugPage').then(m => ({ default: m.AdminDebugPage })))
 
 // Loading fallback component
 function PageLoader() {
@@ -172,6 +173,16 @@ export function AppRoutes() {
           <AdminRoute>
             <MainLayout>
               <AdminStatsPage />
+            </MainLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_DEBUG}
+        element={
+          <AdminRoute>
+            <MainLayout>
+              <AdminDebugPage />
             </MainLayout>
           </AdminRoute>
         }

@@ -93,6 +93,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [user, navigate])
 
+  // 로그인 상태 복원/전환 시 FCM 토큰 동기화
+  useEffect(() => {
+    if (!user) return
+    requestAndSyncFCMToken().catch((error) => {
+      console.error('[Auth] FCM sync failed:', error)
+    })
+  }, [user])
+
   // 로그인 처리
   const login = async (tokenResponse: TokenResponse) => {
     try {
@@ -111,11 +119,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // 프로필 조회
       const profile = await fetchProfile()
       console.log('[Auth] Profile fetched:', { role: profile?.role, loginId: profile?.loginId })
-
-      // FCM 토큰 동기화 (비차단적)
-      requestAndSyncFCMToken().catch((error) => {
-        console.error('[Auth] FCM sync failed:', error)
-      })
 
       // 역할에 따라 다른 페이지로 이동
       if (profile?.role === 'ROLE_ADMIN') {

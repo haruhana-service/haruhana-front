@@ -20,6 +20,10 @@ const api: AxiosInstance = axios.create({
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    if (config.skipAuth) {
+      return config
+    }
+
     const token = localStorage.getItem(TOKEN_KEY)
     console.log('[API] Request interceptor - token exists:', !!token, 'token length:', token?.length)
 
@@ -48,17 +52,35 @@ api.interceptors.response.use(
   async (error: AxiosError<ApiErrorResponse>) => {
     const originalRequest = error.config
 
+    if (originalRequest?.skipAuth) {
+      const responseData = error.response?.data
+      const errorData = responseData?.error
+      const apiError: ApiError = {
+        message: errorData?.message || responseData?.message || getErrorMessage(error.response?.status),
+        code: errorData?.code || responseData?.code,
+        details: errorData?.data || responseData?.details,
+      }
+      return Promise.reject(apiError)
+    }
+
     // 401 Unauthorized - 토큰 갱신 시도
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true
+      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
+
+      // refresh token이 없으면 공개 페이지 요청일 수 있으므로 재발급/강제 로그아웃 처리하지 않음
+      if (!refreshToken) {
+        const responseData = error.response?.data
+        const errorData = responseData?.error
+        const apiError: ApiError = {
+          message: errorData?.message || responseData?.message || getErrorMessage(error.response?.status),
+          code: errorData?.code || responseData?.code,
+          details: errorData?.data || responseData?.details,
+        }
+        return Promise.reject(apiError)
+      }
 
       try {
-        const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
-
-        if (!refreshToken) {
-          throw new Error('No refresh token available')
-        }
-
         // 토큰 갱신 API 호출
         const { data } = await axios.post(
           `${API_BASE_URL}/v1/auth/reissue`,
@@ -188,7 +210,12 @@ export default api
 
 // TypeScript 타입 확장 (retry flag)
 declare module 'axios' {
+  export interface AxiosRequestConfig {
+    skipAuth?: boolean
+  }
+
   export interface InternalAxiosRequestConfig {
     _retry?: boolean
+    skipAuth?: boolean
   }
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import { Card } from '../components/ui/Card'
 import { useSubmissionHistory } from '../features/submission/hooks/useSubmissionHistory'
+import { useAuth } from '../hooks/useAuth'
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   EASY: '쉬움',
@@ -12,6 +13,7 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 
 export function HistoryPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string | null>(
     format(new Date(), 'yyyy-MM-dd')
@@ -64,6 +66,12 @@ export function HistoryPage() {
   }
 
   const today = format(new Date(), 'yyyy-MM-dd')
+  const joinedDateKey = user?.createdAt ? format(new Date(user.createdAt), 'yyyy-MM-dd') : null
+  const joinMonthStart = joinedDateKey ? new Date(joinedDateKey + 'T00:00:00') : null
+  const isPrevDisabled =
+    !!joinMonthStart &&
+    currentMonth.getFullYear() === joinMonthStart.getFullYear() &&
+    currentMonth.getMonth() === joinMonthStart.getMonth()
 
   return (
     <div className="flex flex-col animate-fade-in">
@@ -75,7 +83,11 @@ export function HistoryPage() {
       {/* 캘린더 */}
       <Card className="mb-6 !p-4">
         <div className="flex justify-between items-center mb-3">
-          <button onClick={handlePrevMonth} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+          <button
+            onClick={handlePrevMonth}
+            disabled={isPrevDisabled}
+            className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
           </button>
           <h3 className="text-[17px] font-bold text-slate-900">
@@ -97,6 +109,9 @@ export function HistoryPage() {
             if (!date) return <div key={`empty-${idx}`}></div>
 
             const dateStr = format(date, 'yyyy-MM-dd')
+            if (joinedDateKey && dateStr < joinedDateKey) {
+              return <div key={`before-${dateStr}`}></div>
+            }
             const isSelected = selectedDate === dateStr
             const isToday = dateStr === today
 
