@@ -24,6 +24,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const navigate = useNavigate()
   const isLoggingOutRef = useRef(false)
+  const lastSyncedLoginIdRef = useRef<string | null>(null)
 
   // 프로필 조회
   const fetchProfile = async (isInitialLoad = false): Promise<MemberProfileResponse | null> => {
@@ -100,8 +101,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // 로그인 상태 복원/전환 시 FCM 토큰 동기화
   useEffect(() => {
-    if (!user) return
-    requestAndSyncFCMToken().catch((error) => {
+    if (!user) {
+      lastSyncedLoginIdRef.current = null
+      return
+    }
+    if (lastSyncedLoginIdRef.current === user.loginId) return
+    lastSyncedLoginIdRef.current = user.loginId
+    requestAndSyncFCMToken({ forceSync: true }).catch((error) => {
       console.error('[Auth] FCM sync failed:', error)
     })
   }, [user])
