@@ -31,6 +31,12 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
+            src: 'logo-square.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any'
+          },
+          {
             src: 'pwa-64x64.png',
             sizes: '64x64',
             type: 'image/png'
@@ -43,8 +49,7 @@ export default defineConfig({
           {
             src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any'
+            type: 'image/png'
           },
           {
             src: 'maskable-icon-512x512.png',
