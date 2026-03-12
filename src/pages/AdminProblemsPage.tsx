@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import * as adminProblemService from '../services/adminProblemService'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { ErrorMessage } from '../components/ui/ErrorMessage'
+import { formatDateKorean } from '../utils/date'
 
 // ============================================
 // Admin Problems Page
@@ -57,12 +58,15 @@ export function AdminProblemsPage() {
 
       {/* 날짜 필터 */}
       <form onSubmit={handleDateFilter} className="flex gap-2">
-        <input
-          type="date"
-          value={dateInput}
-          onChange={(e) => setDateInput(e.target.value)}
-          className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"
-        />
+        <div className="relative w-44 sm:w-40">
+          <input
+            type="date"
+            value={dateInput}
+            onChange={(e) => setDateInput(e.target.value)}
+            className="admin-date-input w-full rounded-lg border border-slate-200 px-4 py-2 pr-12 text-sm focus:border-slate-400 focus:outline-none"
+            aria-label="날짜 선택"
+          />
+        </div>
         <button
           type="submit"
           className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-700 transition-colors"
@@ -72,13 +76,22 @@ export function AdminProblemsPage() {
         {dateFilter && (
           <button
             type="button"
-            onClick={() => { setDateFilter(''); setDateInput(''); setPage(0) }}
+            onClick={() => {
+              setDateFilter('')
+              setDateInput('')
+              setPage(0)
+            }}
             className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50 transition-colors"
           >
             초기화
           </button>
         )}
       </form>
+      {dateFilter && (
+        <p className="text-xs font-semibold text-slate-500">
+          선택된 날짜: {formatDateKorean(dateFilter)}
+        </p>
+      )}
 
       {/* Problem List */}
       {problems.length === 0 ? (

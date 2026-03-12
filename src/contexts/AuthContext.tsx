@@ -120,6 +120,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const profile = await fetchProfile()
       console.log('[Auth] Profile fetched:', { role: profile?.role, loginId: profile?.loginId })
 
+      // 로그인 직후 사용자 제스처 컨텍스트에서 FCM 토큰 발급 시도
+      void requestAndSyncFCMToken()
+        .then((token) => {
+          if (typeof Notification === 'undefined') return
+          if (token) {
+            toast.success('푸시 알림이 활성화되었습니다.')
+            return
+          }
+          if (Notification.permission === 'denied') {
+            toast.error('알림이 차단되어 있습니다. 브라우저 설정에서 허용해주세요.')
+            return
+          }
+          if (Notification.permission === 'default') {
+            toast.info('알림을 허용하면 중요한 알림을 받아볼 수 있습니다.')
+          }
+        })
+        .catch((error) => {
+          console.error('[Auth] FCM sync failed (login):', error)
+        })
+
       // 역할에 따라 다른 페이지로 이동
       if (profile?.role === 'ROLE_ADMIN') {
         console.log('[Auth] Redirecting to admin dashboard')

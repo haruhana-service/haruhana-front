@@ -107,3 +107,14 @@
 .stagger-1 { animation-delay: 0.1s; }
 .stagger-2 { animation-delay: 0.2s; }
 .stagger-3 { animation-delay: 0.3s; }
+
+/* Keep calendar icon anchored to the right side of admin date input */
+.admin-date-input {
+  position: relative;
+}
+
+.admin-date-input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 0.875rem;
+  cursor: pointer;
+}
