@@ -65,10 +65,14 @@ async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration
  * FCM 토큰 요청 및 백엔드 동기화
  * 1. 권한 요청
  * 2. FCM 토큰 획득
- * 3. 백엔드에 동기화
+ * 3. 백엔드에 동기화 (로그인 시 강제, 그 외에는 변경 시에만)
  * @returns FCM 토큰 또는 null (실패 시)
  */
-export async function requestAndSyncFCMToken(): Promise<string | null> {
+export interface RequestAndSyncFCMTokenOptions {
+  forceSync?: boolean
+}
+
+export async function requestAndSyncFCMToken(options: RequestAndSyncFCMTokenOptions = {}): Promise<string | null> {
   try {
     const currentPermission = getNotificationPermission()
 
@@ -125,14 +129,18 @@ export async function requestAndSyncFCMToken(): Promise<string | null> {
     }
 
     const accessToken = getAccessToken()
+    const savedToken = getSavedFCMToken()
+    const shouldSync = options.forceSync || !savedToken || savedToken !== currentToken
 
-    // 백엔드에 토큰 동기화 (요구사항: 항상 전송)
-    await syncDeviceToken(currentToken, accessToken ?? undefined)
+    if (shouldSync) {
+      await syncDeviceToken(currentToken, accessToken ?? undefined)
+      console.log('[FCM] Token synced successfully')
+    } else {
+      console.log('[FCM] Token unchanged, skipping backend sync')
+    }
 
     // 로컬 스토리지에 저장
     localStorage.setItem(FCM_TOKEN_KEY, currentToken)
-
-    console.log('[FCM] Token synced successfully')
     return currentToken
   } catch (error) {
     console.error('[FCM] Failed to request/sync token:', error)
