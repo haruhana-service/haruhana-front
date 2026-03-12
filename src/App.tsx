@@ -13,7 +13,21 @@ export function App() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <AppRoutes />
-            <Toaster position="top-center" />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                style: {
+                  background: '#ffffff',
+                  border: '1px solid #ebf0ff',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 20px rgba(74, 105, 255, 0.12)',
+                  color: '#1a1f36',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  padding: '12px 16px',
+                },
+              }}
+            />
           </AuthProvider>
         </QueryClientProvider>
       </BrowserRouter>
