@@ -1,10 +1,11 @@
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import type { MemberProfileResponse } from '../types/models'
 import type { TokenResponse } from '../types/models'
 import { getAccessToken, setAuthTokens, clearAuthTokens } from '../services/api'
-import { getProfile } from '../features/auth/services/authService'
+import { clearAllQueries } from '../services/queryClient'
+import { getProfile, logout as logoutApi } from '../features/auth/services/authService'
 import { requestAndSyncFCMToken, deleteFCMToken, onMessageReceived } from '../services/fcmService'
 import { ROUTES } from '../constants'
 import { AuthContext, type AuthContextType } from './authContextDef'
@@ -20,7 +21,9 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<MemberProfileResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const navigate = useNavigate()
+  const isLoggingOutRef = useRef(false)
 
   // 프로필 조회
   const fetchProfile = async (isInitialLoad = false): Promise<MemberProfileResponse | null> => {
@@ -54,8 +57,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // 로그아웃 이벤트 리스너 (토큰 만료 시 자동 로그아웃)
   useEffect(() => {
     const handleLogout = () => {
+      setIsLoggingOut(true)
       setUser(null)
       navigate(ROUTES.LOGIN)
+      setTimeout(() => setIsLoggingOut(false), 0)
     }
 
     window.addEventListener('auth:logout', handleLogout)
@@ -120,26 +125,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const profile = await fetchProfile()
       console.log('[Auth] Profile fetched:', { role: profile?.role, loginId: profile?.loginId })
 
-      // 로그인 직후 사용자 제스처 컨텍스트에서 FCM 토큰 발급 시도
-      void requestAndSyncFCMToken()
-        .then((token) => {
-          if (typeof Notification === 'undefined') return
-          if (token) {
-            toast.success('푸시 알림이 활성화되었습니다.')
-            return
-          }
-          if (Notification.permission === 'denied') {
-            toast.error('알림이 차단되어 있습니다. 브라우저 설정에서 허용해주세요.')
-            return
-          }
-          if (Notification.permission === 'default') {
-            toast.info('알림을 허용하면 중요한 알림을 받아볼 수 있습니다.')
-          }
-        })
-        .catch((error) => {
-          console.error('[Auth] FCM sync failed (login):', error)
-        })
-
       // 역할에 따라 다른 페이지로 이동
       if (profile?.role === 'ROLE_ADMIN') {
         console.log('[Auth] Redirecting to admin dashboard')
@@ -156,21 +141,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // 로그아웃 처리
   const logout = async () => {
-    // FCM 토큰 삭제 (로그아웃 전에 처리)
+    if (isLoggingOutRef.current) return
+    isLoggingOutRef.current = true
+    setIsLoggingOut(true)
+
     try {
-      await deleteFCMToken()
-    } catch (error) {
-      console.error('[Auth] FCM deletion failed:', error)
+      const accessToken = getAccessToken()
+      console.log('[Auth] Logout started')
+
+      // 1) FCM 토큰 삭제 API 호출
+      try {
+        await deleteFCMToken()
+        console.log('[Auth] FCM token deletion finished')
+      } catch (error) {
+        console.error('[Auth] FCM deletion failed:', error)
+      }
+
+      // 2) 서버 로그아웃 API 호출
+      try {
+        await logoutApi(accessToken ?? undefined)
+        console.log('[Auth] Logout API finished')
+      } catch (error) {
+        console.error('[Auth] Logout API failed:', error)
+      }
+
+      // 3) 클라이언트 로그아웃 처리
+      clearAuthTokens()
+      clearAllQueries()
+      setUser(null)
+      navigate(ROUTES.LOGIN)
+      console.log('[Auth] Client logout finished')
+    } finally {
+      console.log('[Auth] Logout flow finished')
+      isLoggingOutRef.current = false
+      setIsLoggingOut(false)
     }
-
-    // 토큰 제거
-    clearAuthTokens()
-
-    // 사용자 정보 제거
-    setUser(null)
-
-    // 로그인 페이지로 이동
-    navigate(ROUTES.LOGIN)
   }
 
   // 사용자 정보 업데이트
@@ -187,6 +192,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     isAuthenticated: !!user,
     isLoading,
+    isLoggingOut,
     login,
     logout,
     updateUser,

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute, PublicRoute } from './ProtectedRoute'
+import { RootRoute } from './RootRoute'
 import { AdminRoute } from './AdminRoute'
 import { ROUTES } from '../constants'
 import { MainLayout } from '../components/layout/MainLayout'
@@ -189,10 +190,10 @@ export function AppRoutes() {
       />
 
       {/* Home Route - 로그인 여부에 따라 리다이렉트 */}
-      <Route path={ROUTES.ROOT} element={<Navigate to={ROUTES.LOGIN} replace />} />
+      <Route path={ROUTES.ROOT} element={<RootRoute />} />
 
       {/* 404 Not Found */}
-      <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
+      <Route path="*" element={<RootRoute />} />
       </Routes>
     </Suspense>
   )

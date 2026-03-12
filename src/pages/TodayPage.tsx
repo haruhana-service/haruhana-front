@@ -25,9 +25,9 @@ const REMINDER_INTERVAL_MS = 60 * 60 * 1000
 const REMINDER_LAST_AT_KEY = 'haruharu_unsolved_reminder_last_at'
 
 export function TodayPage() {
-  const { data: problem, isLoading: problemLoading, error } = useTodayProblem()
-  const { data: streak, isLoading: streakLoading } = useStreak()
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
+  const { data: problem, isLoading: problemLoading, error } = useTodayProblem({ enabled: isAuthenticated })
+  const { data: streak, isLoading: streakLoading } = useStreak({ enabled: isAuthenticated })
   const navigate = useNavigate()
   const [isReminderOpen, setIsReminderOpen] = useState(false)
   const hasPromptedRef = useRef(false)

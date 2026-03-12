@@ -77,6 +77,15 @@ export function LoginPage() {
       setIsSubmitting(true)
       setApiError(undefined)
 
+      // 알림 권한은 사용자 제스처에서 요청해야 브라우저에서 허용됨
+      if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+        try {
+          await Notification.requestPermission()
+        } catch (error) {
+          console.warn('Notification permission request failed:', error)
+        }
+      }
+
       const tokenResponse = await loginApi({
         loginId: data.loginId,
         password: data.password,

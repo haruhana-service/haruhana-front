@@ -2,6 +2,7 @@ import { getToken, onMessage, deleteToken, type MessagePayload, type Unsubscribe
 import { getFirebaseMessaging } from '../utils/firebase'
 import { syncDeviceToken, deleteDeviceToken } from './deviceService'
 import { FCM_TOKEN_KEY, FCM_PERMISSION_DENIED_KEY } from '../constants'
+import { getAccessToken } from './api'
 
 // ============================================
 // FCM Service Types
@@ -123,8 +124,10 @@ export async function requestAndSyncFCMToken(): Promise<string | null> {
       return null
     }
 
+    const accessToken = getAccessToken()
+
     // 백엔드에 토큰 동기화 (요구사항: 항상 전송)
-    await syncDeviceToken(currentToken)
+    await syncDeviceToken(currentToken, accessToken ?? undefined)
 
     // 로컬 스토리지에 저장
     localStorage.setItem(FCM_TOKEN_KEY, currentToken)
@@ -141,25 +144,35 @@ export async function requestAndSyncFCMToken(): Promise<string | null> {
  * FCM 토큰 삭제 (로그아웃 시 호출)
  */
 export async function deleteFCMToken(): Promise<void> {
+  const accessToken = getAccessToken()
+  const messaging = getFirebaseMessaging()
+  const deviceToken = getSavedFCMToken()
+
   try {
-    const messaging = getFirebaseMessaging()
-    if (!messaging) {
-      // Firebase 미사용 환경에서는 로컬 토큰만 정리
-      localStorage.removeItem(FCM_TOKEN_KEY)
-      return
+    if (messaging) {
+      await deleteToken(messaging)
+      console.log('[FCM] Firebase token deleted')
+    } else {
+      console.log('[FCM] Firebase Messaging not available, skipping SDK token delete')
     }
-    await deleteToken(messaging)
-
-    // 백엔드에서도 토큰 삭제
-    await deleteDeviceToken()
-
-    // 로컬 스토리지에서도 삭제
-    localStorage.removeItem(FCM_TOKEN_KEY)
-
-    console.log('[FCM] Token deleted successfully')
   } catch (error) {
-    console.error('[FCM] Failed to delete token:', error)
-    // 토큰 삭제 실패해도 로그아웃은 계속 진행하도록 에러를 로그하기만 함
+    console.error('[FCM] Failed to delete Firebase token:', error)
+  }
+
+  try {
+    if (!accessToken) {
+      console.warn('[FCM] Access token missing, skipping backend token delete')
+    } else if (!deviceToken) {
+      throw new Error('Device token missing')
+    } else {
+      await deleteDeviceToken(deviceToken, accessToken)
+      console.log('[FCM] Backend token deleted')
+    }
+  } catch (error) {
+    console.error('[FCM] Failed to delete backend token:', error)
+  } finally {
+    localStorage.removeItem(FCM_TOKEN_KEY)
+    console.log('[FCM] Local token deleted')
   }
 }
 

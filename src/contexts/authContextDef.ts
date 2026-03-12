@@ -9,6 +9,7 @@ export interface AuthContextType {
   user: MemberProfileResponse | null
   isAuthenticated: boolean
   isLoading: boolean
+  isLoggingOut: boolean
   login: (tokenResponse: TokenResponse) => Promise<void>
   logout: () => Promise<void>
   updateUser: (user: MemberProfileResponse) => void

@@ -75,8 +75,18 @@ export async function reissueToken(data: TokenReissueRequest): Promise<TokenResp
  * 로그아웃
  * POST /v1/auth/logout
  */
-export async function logout(): Promise<void> {
-  await api.post('/v1/auth/logout')
+export async function logout(accessToken?: string): Promise<void> {
+  if (!accessToken) {
+    throw new Error('Access token missing')
+  }
+
+  await api.post(
+    '/v1/auth/logout',
+    {},
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  )
 }
 
 /**
