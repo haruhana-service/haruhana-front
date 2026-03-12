@@ -22,6 +22,11 @@ export function getFirebaseApp(): FirebaseApp | null {
   if (initFailed) return null
   if (!firebaseApp) {
     try {
+      console.log('[Firebase] Config check:', {
+        apiKey: !!import.meta.env.VITE_FIREBASE_API_KEY,
+        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+        appId: !!import.meta.env.VITE_FIREBASE_APP_ID,
+      })
       firebaseApp = initializeApp({
         apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
         authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,

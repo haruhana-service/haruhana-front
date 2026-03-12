@@ -9,31 +9,24 @@
  */
 
 // Firebase SDK 로드 (compat 버전)
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js')
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js')
+importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js')
+importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js')
 
-// Service Worker 환경에서는 앱 초기화를 따로 해줘야 합니다.
-// (public/ 파일은 Vite가 처리하지 않으므로 하드코딩 필요)
-firebase.initializeApp({
+const firebaseConfig = {
   apiKey: 'AIzaSyB1fyEoXol2OAXgz1YZaS7vhmU1Mv7h4Z4',
   authDomain: 'haruhana-22767.firebaseapp.com',
   projectId: 'haruhana-22767',
   storageBucket: 'haruhana-22767.firebasestorage.app',
   messagingSenderId: '487581121426',
   appId: '1:487581121426:web:724307ca7bae68a2679f4b',
-})
-
-// Messaging 초기화는 firebase.messaging() 호출로 자동 처리
-let messaging = null
-try {
-  messaging = firebase.messaging()
-} catch (error) {
-  console.error('[FCM-SW] Failed to initialize messaging:', error)
 }
 
+firebase.initializeApp(firebaseConfig)
+
+const messaging = firebase.messaging()
+
 // 백그라운드 메시지 처리
-if (messaging) {
-  messaging.onBackgroundMessage((payload) => {
+messaging.onBackgroundMessage((payload) => {
     console.log('[FCM-SW] Background message received:', payload)
 
     const notificationTitle = payload.notification?.title || '하루하루'
@@ -53,7 +46,6 @@ if (messaging) {
     // 네이티브 알림 표시
     return self.registration.showNotification(notificationTitle, notificationOptions)
   })
-}
 
 // 알림 클릭 처리
 self.addEventListener('notificationclick', (event) => {
@@ -74,6 +66,9 @@ self.addEventListener('notificationclick', (event) => {
 
   // 기존 클라이언트 중 문제 URL이 있으면 포커스
   // 없으면 새 윈도우 열기
+  // 절대 URL로 변환 (client.url은 항상 절대 URL이므로 비교를 위해 맞춤)
+  const targetUrl = new URL(urlToOpen, self.location.origin).href
+
   event.waitUntil(
     clients
       .matchAll({
@@ -83,14 +78,14 @@ self.addEventListener('notificationclick', (event) => {
       .then((clientList) => {
         // 기존 윈도우 찾기
         for (const client of clientList) {
-          if (client.url === urlToOpen && 'focus' in client) {
+          if (client.url === targetUrl && 'focus' in client) {
             return client.focus()
           }
         }
 
         // 없으면 새 윈도우 열기
         if (clients.openWindow) {
-          return clients.openWindow(urlToOpen)
+          return clients.openWindow(targetUrl)
         }
       })
   )

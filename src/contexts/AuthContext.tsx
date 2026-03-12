@@ -82,15 +82,53 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const body = payload.notification?.body || ''
       const problemId = payload.data?.problemId
 
-      toast.info(title, {
-        description: body,
-        duration: 5000,
-        action: problemId
-          ? {
-              label: '보기',
-              onClick: () => navigate(`/problem/${problemId}`),
+      toast.custom((t) => (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: 12,
+            boxShadow: '0 4px 20px rgba(74, 105, 255, 0.12)',
+            padding: '12px 16px',
+            width: 360,
+            maxWidth: '90vw',
+            cursor: problemId ? 'pointer' : 'default',
+          }}
+          onClick={() => {
+            if (problemId) {
+              navigate(`/problem/${problemId}`)
+              toast.dismiss(t)
             }
-          : undefined,
+          }}
+        >
+          <img
+            src="/logo-square.svg"
+            alt="하루하루"
+            style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0 }}
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 600, fontSize: 14, color: '#1a1f36', marginBottom: 2 }}>
+              {title}
+            </div>
+            {body && (
+              <div style={{ fontSize: 13, color: '#4a5568', whiteSpace: 'pre-line' }}>
+                {body}
+              </div>
+            )}
+          </div>
+          {problemId && (
+            <div style={{ fontSize: 13, color: '#4a69ff', fontWeight: 600, flexShrink: 0 }}>
+              풀기 →
+            </div>
+          )}
+        </div>
+      ), {
+        duration: 5000,
+        unstyled: true,
+        style: { padding: 0, background: 'transparent', border: 'none', boxShadow: 'none' },
       })
     })
 

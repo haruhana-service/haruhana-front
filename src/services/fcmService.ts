@@ -46,20 +46,6 @@ function clearPermissionDenied(): void {
 // FCM Token Management
 // ============================================
 
-/**
- * Service Worker 등록 가져오기
- */
-async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | undefined> {
-  if ('serviceWorker' in navigator) {
-    try {
-      return await navigator.serviceWorker.ready
-    } catch (error) {
-      console.error('[FCM] Service worker not ready:', error)
-      return undefined
-    }
-  }
-  return undefined
-}
 
 /**
  * FCM 토큰 요청 및 백엔드 동기화
@@ -112,16 +98,30 @@ export async function requestAndSyncFCMToken(options: RequestAndSyncFCMTokenOpti
     }
     const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
 
-    const swRegistration = await getServiceWorkerRegistration()
-    if (!swRegistration) {
-      console.warn('[FCM] Service Worker not registered, cannot get token')
+    // Service Worker + Push API 지원 여부 확인 (Samsung Internet 등 미지원 브라우저 대응)
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      console.warn('[FCM] Push notifications not supported in this browser')
       return null
     }
 
-    const currentToken = await getToken(messaging, {
-      vapidKey,
-      serviceWorkerRegistration: swRegistration,
-    })
+    // Firebase SW를 명시적으로 찾거나 등록 (VitePWA의 sw.js와 충돌 방지)
+    let swRegistration: ServiceWorkerRegistration | undefined
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      swRegistration = registrations.find(
+        (r) =>
+          r.active?.scriptURL.includes('firebase-messaging-sw') ||
+          r.installing?.scriptURL.includes('firebase-messaging-sw') ||
+          r.waiting?.scriptURL.includes('firebase-messaging-sw'),
+      )
+      if (!swRegistration) {
+        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      }
+    } catch (e) {
+      console.warn('[FCM] FCM SW registration lookup failed, using default:', e)
+    }
+
+    const currentToken = await getToken(messaging, { vapidKey, serviceWorkerRegistration: swRegistration })
 
     if (!currentToken) {
       console.log('[FCM] No token available')
