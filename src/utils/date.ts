@@ -1,5 +1,4 @@
 import { format, parseISO, isAfter, isBefore, differenceInDays } from 'date-fns'
-import { ko } from 'date-fns/locale'
 
 // ============================================
 // Date Formatting
@@ -15,12 +14,16 @@ export function formatDate(date: Date | string): string {
 }
 
 /**
- * 날짜를 YYYY년 MM월 DD일 형식으로 포맷
+ * 날짜를 시스템 로케일 기반으로 포맷
  * @param date - Date 객체 또는 ISO 문자열
  */
 export function formatDateKorean(date: Date | string): string {
   const dateObj = typeof date === 'string' ? parseISO(date) : date
-  return format(dateObj, 'yyyy년 MM월 dd일', { locale: ko })
+  return new Intl.DateTimeFormat(undefined, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(dateObj)
 }
 
 /**

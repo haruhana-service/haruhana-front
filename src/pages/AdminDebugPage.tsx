@@ -60,6 +60,16 @@ export function AdminDebugPage() {
       console.log('[AdminDebug] Notification not supported')
       return
     }
+    if (Notification.permission === 'granted') {
+      toast.success('알림 권한이 이미 허용되어 있습니다.')
+      console.log('[AdminDebug] Permission already granted')
+      return
+    }
+    if (Notification.permission === 'denied') {
+      toast.error('알림 권한이 이미 차단되어 있습니다. 브라우저 설정에서 허용해주세요.')
+      console.log('[AdminDebug] Permission already denied')
+      return
+    }
     try {
       const result = await Notification.requestPermission()
       updatePermission(result)

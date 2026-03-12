@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { format } from 'date-fns'
 import { updateAnswer } from '../services/submissionService'
-import type { SubmissionResponse } from '../../../types/models'
+import type { DailyProblemResponse, SubmissionResponse, TodayProblemResponse } from '../../../types/models'
 
 /**
  * 답변 수정 훅
@@ -19,9 +20,27 @@ export function useUpdateAnswer(dailyProblemId: number | null) {
       return updateAnswer(dailyProblemId, { userAnswer })
     },
     onSuccess: () => {
+      const todayKey = format(new Date(), 'yyyy-MM-dd')
+      queryClient.setQueryData<TodayProblemResponse | undefined>(['todayProblem'], (prev) => {
+        if (!prev) return prev
+        return { ...prev, isSolved: true }
+      })
+      queryClient.setQueriesData<Map<string, DailyProblemResponse | null>>(
+        { queryKey: ['submission-history'] },
+        (prev) => {
+          if (!prev) return prev
+          const next = new Map(prev)
+          const existing = next.get(todayKey)
+          if (existing) {
+            next.set(todayKey, { ...existing, isSolved: true })
+          }
+          return next
+        }
+      )
       // 수정 성공 시 관련 쿼리 무효화
       queryClient.invalidateQueries({ queryKey: ['todayProblem'] })
       queryClient.invalidateQueries({ queryKey: ['problemDetail', dailyProblemId] })
+      queryClient.invalidateQueries({ queryKey: ['submission-history'] })
       queryClient.invalidateQueries({ queryKey: ['streak'] })
     },
   })

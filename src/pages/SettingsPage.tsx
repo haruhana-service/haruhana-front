@@ -201,8 +201,13 @@ export function SettingsPage() {
     if (isDeleting) return
     setIsDeleting(true)
     try {
+      // 회원 탈퇴 전 디바이스 토큰부터 삭제 (JWT 필요)
+      try {
+        await deleteFCMToken()
+      } catch (error) {
+        console.error('Failed to delete FCM token before account deletion:', error)
+      }
       await deleteMember()
-      await deleteFCMToken()
       await logout()
       toast.success('회원 탈퇴가 완료되었습니다.')
       navigate(ROUTES.LOGIN)

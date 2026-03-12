@@ -34,6 +34,13 @@ function markPermissionDenied(): void {
   localStorage.setItem(FCM_PERMISSION_DENIED_KEY, 'true')
 }
 
+/**
+ * 알림 권한 거부 상태 해제
+ */
+function clearPermissionDenied(): void {
+  localStorage.removeItem(FCM_PERMISSION_DENIED_KEY)
+}
+
 // ============================================
 // FCM Token Management
 // ============================================
@@ -62,25 +69,35 @@ async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration
  */
 export async function requestAndSyncFCMToken(): Promise<string | null> {
   try {
-    // 이전에 거부된 경우 다시 요청하지 않음
-    if (wasPermissionDenied()) {
-      console.log('[FCM] Permission previously denied, skipping')
-      return null
-    }
+    const currentPermission = getNotificationPermission()
 
-    const permission = await Notification.requestPermission()
-
-    // 권한 거부 또는 미지원 시 처리
-    if (permission === 'denied') {
+    // 현재 권한이 거부 상태면 즉시 종료
+    if (currentPermission === 'denied') {
       markPermissionDenied()
       console.log('[FCM] Permission denied by user')
       return null
     }
 
+    // 이전에 거부한 기록이 있고, 현재도 허용이 아니면 재요청하지 않음
+    if (wasPermissionDenied() && currentPermission !== 'granted') {
+      console.log('[FCM] Permission previously denied, skipping')
+      return null
+    }
+
+    // 이미 허용된 경우는 재요청 없이 진행
+    let permission: NotificationPermission = currentPermission
+    if (permission !== 'granted') {
+      permission = await Notification.requestPermission()
+    }
+
+    // 권한 거부 또는 미지원 시 처리
     if (permission !== 'granted') {
       console.log('[FCM] Permission not granted:', permission)
       return null
     }
+
+    // 권한이 허용되었으면 거부 플래그 제거
+    clearPermissionDenied()
 
     // FCM 토큰 획득
     const messaging = getFirebaseMessaging()
@@ -106,14 +123,7 @@ export async function requestAndSyncFCMToken(): Promise<string | null> {
       return null
     }
 
-    // 이전 토큰과 비교 (동일하면 API 호출 생략)
-    const previousToken = localStorage.getItem(FCM_TOKEN_KEY)
-    if (previousToken === currentToken) {
-      console.log('[FCM] Token unchanged, skipping sync')
-      return currentToken
-    }
-
-    // 백엔드에 토큰 동기화
+    // 백엔드에 토큰 동기화 (요구사항: 항상 전송)
     await syncDeviceToken(currentToken)
 
     // 로컬 스토리지에 저장
