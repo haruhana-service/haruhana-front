@@ -1,4 +1,5 @@
 import { useStreak } from '../hooks/useStreak'
+import { useAuth } from '../../../hooks/useAuth'
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const
 
@@ -15,7 +16,8 @@ function getDayLabel(dateString: string): string {
  * 현재 스트릭과 최고 기록을 보여줍니다
  */
 export function StreakDisplay() {
-  const { data: streak, isLoading, error } = useStreak()
+  const { isAuthenticated } = useAuth()
+  const { data: streak, isLoading, error } = useStreak({ enabled: isAuthenticated })
 
   const getStreakLevel = (count: number) => {
     if (count >= 30) return { label: '마스터', color: 'text-purple-400' }
