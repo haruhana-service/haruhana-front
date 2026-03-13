@@ -18,7 +18,6 @@ interface SignupStepFieldsProps {
   isNicknameChecked: boolean
   isNicknameAvailable: boolean | null
   isCheckingNickname: boolean
-  handleCheckNickname: (reason?: 'manual' | 'auto') => void
 }
 
 export function SignupStepFields({
@@ -35,7 +34,6 @@ export function SignupStepFields({
   isNicknameChecked,
   isNicknameAvailable,
   isCheckingNickname,
-  handleCheckNickname,
 }: SignupStepFieldsProps) {
   if (currentStep === 1) {
     return (
@@ -60,7 +58,6 @@ export function SignupStepFields({
         isNicknameChecked={isNicknameChecked}
         isNicknameAvailable={isNicknameAvailable}
         isCheckingNickname={isCheckingNickname}
-        handleCheckNickname={handleCheckNickname}
       />
     )
   }

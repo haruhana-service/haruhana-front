@@ -64,7 +64,7 @@ export function SignupPage() {
   const categoryTopicIdValue = watch('categoryTopicId')
   const difficultyValue = watch('difficulty')
 
-  const { isPasswordMismatch, canProceedStep1, isStep3Incomplete, handleCheckNickname } = useSignupState({
+  const { isPasswordMismatch, canProceedStep1, isStep3Incomplete } = useSignupState({
     loginIdValue,
     passwordValue,
     passwordConfirmValue,
@@ -148,7 +148,7 @@ export function SignupPage() {
 
       const normalizedNickname = getValues('nickname').trim()
       if (!isNicknameChecked || checkedNickname !== normalizedNickname) {
-        setApiError('닉네임 중복 확인을 해주세요')
+        setApiError('닉네임 확인 중입니다. 잠시 후 다시 시도해주세요')
         return
       }
 
@@ -267,7 +267,6 @@ export function SignupPage() {
                 isNicknameChecked={isNicknameChecked}
                 isNicknameAvailable={isNicknameAvailable}
                   isCheckingNickname={isCheckingNickname}
-                  handleCheckNickname={handleCheckNickname}
                 />
                 </div>
               </form>
