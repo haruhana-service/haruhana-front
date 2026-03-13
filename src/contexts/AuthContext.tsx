@@ -127,6 +127,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         </div>
       ), {
         duration: 5000,
+        position: 'bottom-right',
         unstyled: true,
         style: { padding: 0, background: 'transparent', border: 'none', boxShadow: 'none' },
       })
@@ -154,27 +155,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (tokenResponse: TokenResponse) => {
     try {
       const { accessToken, refreshToken } = tokenResponse
-
-      console.log('[Auth] Received token response:', { accessToken: !!accessToken, refreshToken: !!refreshToken })
-
-      // 토큰 저장
       setAuthTokens(accessToken, refreshToken)
-      console.log('[Auth] Tokens saved to localStorage')
 
-      // 저장 확인
-      const savedToken = localStorage.getItem('haruharu_access_token')
-      console.log('[Auth] Verification - token in localStorage:', !!savedToken)
-
-      // 프로필 조회
       const profile = await fetchProfile()
-      console.log('[Auth] Profile fetched:', { role: profile?.role, loginId: profile?.loginId })
 
-      // 역할에 따라 다른 페이지로 이동
       if (profile?.role === 'ROLE_ADMIN') {
-        console.log('[Auth] Redirecting to admin dashboard')
         navigate(ROUTES.ADMIN_DASHBOARD)
       } else {
-        console.log('[Auth] Redirecting to today page')
         navigate(ROUTES.TODAY)
       }
     } catch (error) {
@@ -191,12 +178,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const accessToken = getAccessToken()
-      console.log('[Auth] Logout started')
 
       // 1) FCM 토큰 삭제 API 호출
       try {
         await deleteFCMToken()
-        console.log('[Auth] FCM token deletion finished')
       } catch (error) {
         console.error('[Auth] FCM deletion failed:', error)
       }
@@ -204,7 +189,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // 2) 서버 로그아웃 API 호출
       try {
         await logoutApi(accessToken ?? undefined)
-        console.log('[Auth] Logout API finished')
       } catch (error) {
         console.error('[Auth] Logout API failed:', error)
       }
@@ -214,9 +198,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       clearAllQueries()
       setUser(null)
       navigate(ROUTES.LOGIN)
-      console.log('[Auth] Client logout finished')
     } finally {
-      console.log('[Auth] Logout flow finished')
       isLoggingOutRef.current = false
       setIsLoggingOut(false)
     }

@@ -25,13 +25,8 @@ api.interceptors.request.use(
     }
 
     const token = localStorage.getItem(TOKEN_KEY)
-    console.log('[API] Request interceptor - token exists:', !!token, 'token length:', token?.length)
-
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
-      console.log('[API] Authorization header set')
-    } else {
-      console.log('[API] Authorization header NOT set - token:', !!token, 'headers:', !!config.headers)
     }
 
     return config
@@ -165,11 +160,6 @@ export function setAuthTokens(accessToken: string, refreshToken: string): void {
   try {
     localStorage.setItem(TOKEN_KEY, accessToken)
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
-    console.log('[API] Tokens saved to localStorage successfully')
-
-    // 저장 확인
-    const saved = localStorage.getItem(TOKEN_KEY)
-    console.log('[API] Verification - token saved:', !!saved)
   } catch (error) {
     console.error('[API] Failed to save tokens to localStorage:', error)
     throw error
