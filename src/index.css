@@ -6,7 +6,6 @@
     background-color: #F8FAFC;
     height: 100%;
     overscroll-behavior: none;
-    padding-top: env(safe-area-inset-top);
   }
 
   body {
@@ -40,7 +39,7 @@
   --page-px: clamp(12px, 4vw, 32px);
   --page-pt: clamp(12px, 2.5vh, 24px);
   --page-pb: calc(clamp(16px, 8vh, 96px) + env(safe-area-inset-bottom));
-  --page-py-top: clamp(16px, 5vh, 48px);
+  --page-py-top: calc(clamp(16px, 5vh, 48px) + env(safe-area-inset-top));
   --page-py-bottom: calc(clamp(16px, 5vh, 48px) + env(safe-area-inset-bottom));
 }
 

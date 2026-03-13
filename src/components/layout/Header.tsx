@@ -32,8 +32,8 @@ export function Header() {
   }
 
   return (
-    <header className="shrink-0 h-16 glass border-b border-white/40 flex items-center justify-between px-6 z-30 sticky top-0">
-      <div className="mx-auto max-w-md lg:max-w-none w-full flex items-center justify-between">
+    <header className="shrink-0 glass border-b border-white/40 z-30 sticky top-0" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div className="h-16 flex items-center justify-between px-6 mx-auto max-w-md lg:max-w-none w-full">
         {/* Logo - 데스크톱에서는 Sidebar에 로고가 있으므로 숨김 */}
         <button
           type="button"
