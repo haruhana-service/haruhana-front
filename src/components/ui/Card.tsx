@@ -1,15 +1,16 @@
-import type { ReactNode } from 'react'
+import { forwardRef, type ReactNode } from 'react'
 
-interface CardProps {
+interface CardProps extends React.ComponentPropsWithoutRef<'div'> {
   children: ReactNode
-  className?: string
-  onClick?: () => void
   title?: string
   subtitle?: string
   variant?: 'default' | 'glass' | 'dark'
 }
 
-export function Card({ children, className = '', onClick, title, subtitle, variant = 'default' }: CardProps) {
+export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
+  { children, className = '', onClick, title, subtitle, variant = 'default', ...rest },
+  ref
+) {
   const variantStyles = {
     default: 'bg-white border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]',
     glass: 'glass shadow-[0_8px_30px_rgb(0,0,0,0.04)]',
@@ -18,10 +19,12 @@ export function Card({ children, className = '', onClick, title, subtitle, varia
 
   return (
     <div
+      ref={ref}
       className={`rounded-[24px] border transition-all duration-300 overflow-hidden ${
         onClick ? 'cursor-pointer hover:translate-y-[-2px] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] active:scale-[0.98]' : ''
       } ${variantStyles[variant]} ${className}`}
       onClick={onClick}
+      {...rest}
     >
       {(title || subtitle) && (
         <div className="px-6 pt-6 pb-2">
@@ -32,4 +35,4 @@ export function Card({ children, className = '', onClick, title, subtitle, varia
       <div className="px-6 py-5">{children}</div>
     </div>
   )
-}
+})

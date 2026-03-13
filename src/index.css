@@ -135,6 +135,32 @@
     0% { opacity: 0; transform: translateY(6px) scale(0.995); }
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
+
+  @keyframes aurora {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  @keyframes grassReveal {
+    0% { opacity: 0; transform: translateY(6px) scale(0.6); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  --animate-aurora: aurora 8s ease infinite;
+  --animate-grass-reveal: grassReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-shimmer: shimmer 2.4s ease-in-out infinite;
+  --animate-float-orb: floatOrb 12s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0% { transform: translateX(-120%) skewX(-15deg); }
+    100% { transform: translateX(320%) skewX(-15deg); }
+  }
+
+  @keyframes floatOrb {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(24px, -18px) scale(1.06); }
+    66% { transform: translate(-16px, 12px) scale(0.94); }
+  }
 }
 
 .logo-glass {
@@ -164,11 +190,41 @@
 
 /* Mesh Gradient Background */
 .mesh-gradient {
-  background-color: #1e1b4b;
-  background-image: 
-    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-    radial-gradient(at 50% 0%, hsla(238,100%,70%,0.15) 0, transparent 50%), 
-    radial-gradient(at 100% 0%, hsla(253,16%,7%,1) 0, transparent 50%);
+  background-color: #12103a;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(253,30%,8%,1) 0, transparent 55%),
+    radial-gradient(at 50% 0%, hsla(238,100%,65%,0.22) 0, transparent 50%),
+    radial-gradient(at 100% 50%, hsla(280,80%,60%,0.15) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(253,30%,8%,1) 0, transparent 55%),
+    radial-gradient(at 0% 100%, hsla(220,90%,60%,0.12) 0, transparent 50%);
+}
+
+/* Dot grid overlay for dark cards */
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Shimmer sweep for cards */
+.shimmer-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.07) 50%, transparent 60%);
+  animation: var(--animate-shimmer);
+  pointer-events: none;
+}
+
+/* Gradient number text */
+.streak-number {
+  background: linear-gradient(135deg, #ffffff 0%, #c7d4ff 60%, #a5b8ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Glass Effect */
@@ -183,6 +239,26 @@
 .stagger-1 { animation-delay: 0.1s; }
 .stagger-2 { animation-delay: 0.2s; }
 .stagger-3 { animation-delay: 0.3s; }
+
+/* Grass (weekly solved) stagger reveal */
+.grass-cell {
+  opacity: 0;
+  animation: grassReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.grass-cell:nth-child(1) { animation-delay: 0.05s; }
+.grass-cell:nth-child(2) { animation-delay: 0.1s; }
+.grass-cell:nth-child(3) { animation-delay: 0.15s; }
+.grass-cell:nth-child(4) { animation-delay: 0.2s; }
+.grass-cell:nth-child(5) { animation-delay: 0.25s; }
+.grass-cell:nth-child(6) { animation-delay: 0.3s; }
+.grass-cell:nth-child(7) { animation-delay: 0.35s; }
+
+/* Aurora background */
+.aurora-bg {
+  background: linear-gradient(270deg, #4a69ff, #7c3aed, #0ea5e9, #4a69ff);
+  background-size: 400% 400%;
+  animation: aurora 8s ease infinite;
+}
 
 /* Keep calendar icon anchored to the right side of admin date input */
 .admin-date-input {

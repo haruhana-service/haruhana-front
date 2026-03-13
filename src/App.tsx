@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
@@ -8,6 +8,12 @@ import { queryClient } from './services/queryClient'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
 export function App() {
+  const [toasterPosition] = useState<'top-center' | 'bottom-right'>(() => {
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches
+    const isMobile = window.innerWidth < 768
+    return isPWA || isMobile ? 'top-center' : 'bottom-right'
+  })
+
   useEffect(() => {
     const findScrollableAncestor = (start: HTMLElement | null) => {
       let el = start
@@ -52,8 +58,9 @@ export function App() {
           <AuthProvider>
             <AppRoutes />
             <Toaster
-              position="top-center"
+              position={toasterPosition}
               toastOptions={{
+                duration: 3000,
                 style: {
                   background: '#ffffff',
                   border: '1px solid #ebf0ff',

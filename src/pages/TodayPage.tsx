@@ -4,6 +4,8 @@ import { toast } from 'sonner'
 import { useTodayProblem } from '../features/problem/hooks/useTodayProblem'
 import { useStreak } from '../features/streak/hooks/useStreak'
 import { useAuth } from '../hooks/useAuth'
+import { useCountUp } from '../hooks/useCountUp'
+import { useTilt } from '../hooks/useTilt'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -105,14 +107,31 @@ export function TodayPage() {
   }
 
   const level = getStreakLevel(streak?.currentStreak || 0)
+  const animatedStreak = useCountUp({ target: streak?.currentStreak || 0, duration: 1000, delay: 300 })
+  const tilt = useTilt({ maxTilt: 6, scale: 1.015 })
 
   return (
     <>
       <div className="max-w-xl mx-auto space-y-6 pb-10">
       {/* 콤팩트해진 스트릭 카드 */}
-      <Card variant="dark" className="animate-fade-up stagger-1 relative overflow-hidden border-none p-4 min-h-[140px]">
-        {/* 애니메이션 글로우 (크기 축소) */}
-        <div className="absolute top-0 right-0 w-40 h-40 bg-haru-500/20 rounded-full blur-[50px] animate-pulse-glow"></div>
+      <Card
+        variant="dark"
+        className="animate-fade-up stagger-1 relative overflow-hidden border-none p-4 min-h-[140px] shimmer-sweep"
+        style={{ transition: 'transform 0.15s ease-out', willChange: 'transform' }}
+        ref={tilt.ref}
+        onMouseMove={tilt.handleMouseMove}
+        onMouseLeave={tilt.handleMouseLeave}
+      >
+        {/* 도트 그리드 오버레이 */}
+        <div className="absolute inset-0 dot-grid pointer-events-none" />
+        {/* 상단 그라디언트 액센트 라인 */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-haru-400/60 to-transparent" />
+        {/* 메인 글로우 - 우측 상단 */}
+        <div className="absolute -top-6 -right-6 w-52 h-52 bg-haru-500/25 rounded-full blur-[65px] animate-pulse-glow"></div>
+        {/* 보조 글로우 - 좌측 하단 */}
+        <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-purple-600/20 rounded-full blur-[55px] animate-pulse-glow" style={{ animationDelay: '1.2s' }}></div>
+        {/* 중앙 포인트 글로우 */}
+        <div className="absolute top-1/2 right-1/4 w-20 h-20 bg-sky-400/15 rounded-full blur-[35px]"></div>
 
         {streakLoading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-3">
@@ -135,8 +154,8 @@ export function TodayPage() {
                 </div>
                 <p className="text-white/60 text-[11px] font-extrabold uppercase tracking-[0.2em]">연속 학습 리듬</p>
                 <div className="flex items-baseline gap-1.5">
-                  <h2 className="text-5xl font-black tracking-tighter text-white">{streak.currentStreak}</h2>
-                  <span className="text-lg font-extrabold text-haru-400 italic">일째</span>
+                  <h2 className="text-5xl font-black tracking-tighter streak-number">{animatedStreak}</h2>
+                  <span className="text-lg font-extrabold text-haru-300 italic">일째</span>
                 </div>
               </div>
 
@@ -152,12 +171,12 @@ export function TodayPage() {
               <div className="flex justify-between items-end">
                 <div className="flex gap-1.5">
                   {streak.weeklySolvedStatus.map((status) => (
-                    <div key={status.date} className="flex flex-col items-center gap-1.5">
+                    <div key={status.date} className="grass-cell flex flex-col items-center gap-1.5">
                       <div
                         className={`w-5 h-5 rounded-md transition-all duration-500
                           ${status.isSolved
-                            ? 'bg-haru-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]'
-                            : 'bg-white/5 border border-white/5'}`}
+                            ? 'bg-gradient-to-br from-haru-400 to-haru-600 shadow-[0_0_10px_rgba(74,105,255,0.5)]'
+                            : 'bg-white/5 border border-white/8'}`}
                       />
                       <span className="text-[8px] font-extrabold text-white/50">
                         {getDayLabel(status.date)}
@@ -185,16 +204,16 @@ export function TodayPage() {
       {/* 학습 정보 필 - 컴팩트 스타일 */}
       {user?.categoryTopicName && user?.difficulty && (
         <div className="flex gap-2.5 animate-fade-up stagger-2 px-1">
-          <div className="flex-1 flex items-center gap-3 bg-white px-5 py-4 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="w-2 h-2 rounded-full bg-haru-500"></div>
+          <div className="flex-1 flex items-center gap-3 bg-gradient-to-br from-white to-haru-50/60 px-5 py-4 rounded-2xl border border-haru-100/60 shadow-[0_4px_20px_rgba(74,105,255,0.07)]">
+            <div className="w-2 h-2 rounded-full bg-gradient-to-br from-haru-400 to-haru-600 shadow-[0_0_6px_rgba(74,105,255,0.5)]"></div>
             <div className="flex flex-col">
-              <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1.5">TOPIC</span>
+              <span className="text-[9px] font-extrabold text-haru-400/80 uppercase tracking-widest leading-none mb-1.5">TOPIC</span>
               <span className="text-[13px] font-bold text-slate-800 truncate max-w-[100px]">{user.categoryTopicName}</span>
             </div>
           </div>
-          <div className="flex-1 flex items-center gap-3 bg-white px-5 py-4 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center">
-              <span className="text-[10px] font-extrabold text-slate-500">LV</span>
+          <div className="flex-1 flex items-center gap-3 bg-gradient-to-br from-white to-slate-50/60 px-5 py-4 rounded-2xl border border-slate-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-haru-50 to-haru-100/50 border border-haru-100 flex items-center justify-center shadow-inner">
+              <span className="text-[10px] font-extrabold text-haru-500">LV</span>
             </div>
             <div className="flex flex-col">
               <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1.5">LEVEL</span>
@@ -208,8 +227,12 @@ export function TodayPage() {
       <Card
         title="오늘의 챌린지"
         subtitle="매일 조금씩, 당신의 성장을 돕습니다"
-        className="animate-fade-up stagger-3 border-none bg-white relative overflow-hidden group/card"
+        className="animate-fade-up stagger-3 border border-slate-100/80 bg-gradient-to-br from-white via-white to-haru-50/30 relative overflow-hidden group/card shadow-[0_8px_40px_rgba(74,105,255,0.06)]"
       >
+        {/* 상단 그라디언트 라인 */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-haru-400/50 to-transparent" />
+        {/* 배경 서클 장식 */}
+        <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-haru-400/5 rounded-full blur-[30px] pointer-events-none" />
         {problemLoading ? (
           <div className="py-16 flex flex-col items-center justify-center space-y-4">
             <div className="relative w-12 h-12">

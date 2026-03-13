@@ -212,12 +212,14 @@ export function SettingsPage() {
     <div className="animate-fade-up flex flex-col items-center pb-20 pt-4">
       {/* 프로필 헤더 - 프리미엄 디자인 */}
       <div className="w-full">
-        <div className="relative overflow-hidden bg-gradient-to-br from-haru-500 via-haru-600 to-haru-700 rounded-xl sm:rounded-2xl shadow-premium-lg min-w-0">
-          {/* 배경 패턴 */}
-          <div className="absolute inset-0 opacity-10 overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 sm:w-48 sm:h-48 bg-white rounded-full -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-full translate-y-1/2 -translate-x-1/2"></div>
-          </div>
+        <div className="relative overflow-hidden bg-gradient-to-br from-haru-500 via-haru-600 to-indigo-700 rounded-xl sm:rounded-2xl shadow-[0_20px_60px_rgba(74,105,255,0.3)] min-w-0 shimmer-sweep">
+          {/* 도트 그리드 */}
+          <div className="absolute inset-0 dot-grid pointer-events-none opacity-70" />
+          {/* 글로우 블롭 */}
+          <div className="absolute -top-10 -right-10 w-44 h-44 bg-white/10 rounded-full blur-[45px]"></div>
+          <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-purple-400/20 rounded-full blur-[35px]"></div>
+          {/* 상단 액센트 라인 */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
 
           <div className="relative px-4 sm:px-6 py-4 sm:py-6 min-w-0">
             {/* 수정 버튼 - 우측 상단 고정 */}

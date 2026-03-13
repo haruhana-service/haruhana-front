@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import { ProtectedRoute, PublicRoute } from './ProtectedRoute'
 import { RootRoute } from './RootRoute'
 import { AdminRoute } from './AdminRoute'
@@ -40,12 +41,25 @@ function PageLoader() {
   )
 }
 
+const pageVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.28, ease: 'easeOut' as const } },
+  exit: { opacity: 0, y: -8, transition: { duration: 0.18, ease: 'easeIn' as const } },
+}
+
 export function AppRoutes() {
   const location = useLocation()
 
   return (
     <Suspense fallback={<PageLoader />}>
-      <div key={location.pathname} className="animate-page-enter">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={location.pathname}
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
         <Routes location={location}>
           {/* Public Routes (로그인 전용) */}
           <Route
@@ -205,7 +219,8 @@ export function AppRoutes() {
           {/* 404 Not Found */}
           <Route path="*" element={<RootRoute />} />
         </Routes>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     </Suspense>
   )
 }

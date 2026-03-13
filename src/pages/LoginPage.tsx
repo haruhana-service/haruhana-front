@@ -126,6 +126,8 @@ export function LoginPage() {
         isLeaving ? 'opacity-0 translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'
       }`}
     >
+      {/* Aurora Background */}
+      <div className="absolute inset-0 aurora-bg opacity-10 pointer-events-none"></div>
       {/* Soft Background Glows */}
       <div className="absolute top-[-15%] right-[-15%] w-96 h-96 bg-haru-500/20 rounded-full blur-[120px]"></div>
       <div className="absolute bottom-[-15%] left-[-15%] w-96 h-96 bg-haru-700/10 rounded-full blur-[120px]"></div>

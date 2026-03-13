@@ -1,5 +1,6 @@
 import { useStreak } from '../hooks/useStreak'
 import { useAuth } from '../../../hooks/useAuth'
+import { useCountUp } from '../../../hooks/useCountUp'
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const
 
@@ -58,14 +59,21 @@ export function StreakDisplay() {
   }
 
   const level = getStreakLevel(streak.currentStreak)
+  const animatedStreak = useCountUp({ target: streak.currentStreak, duration: 1000, delay: 300 })
 
   return (
     <div
       data-testid="streak-container"
-      className="mesh-gradient text-white border-none shadow-2xl overflow-hidden relative min-h-[180px] rounded-[24px] p-6 animate-fade-up stagger-1"
+      className="mesh-gradient text-white border-none shadow-[0_20px_60px_rgba(18,16,58,0.5)] overflow-hidden relative min-h-[180px] rounded-[24px] p-6 animate-fade-up stagger-1 shimmer-sweep"
     >
-      {/* 애니메이션 글로우 */}
-      <div className="absolute top-0 right-0 w-40 h-40 bg-haru-500/20 rounded-full blur-[50px] animate-pulse-glow"></div>
+      {/* 도트 그리드 오버레이 */}
+      <div className="absolute inset-0 dot-grid pointer-events-none" />
+      {/* 상단 액센트 라인 */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-haru-400/60 to-transparent" />
+      {/* 메인 글로우 - 우측 상단 */}
+      <div className="absolute -top-6 -right-6 w-52 h-52 bg-haru-500/25 rounded-full blur-[65px] animate-pulse-glow"></div>
+      {/* 보조 글로우 - 좌측 하단 */}
+      <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-purple-600/20 rounded-full blur-[55px] animate-pulse-glow" style={{ animationDelay: '1.2s' }}></div>
 
       <div className="flex justify-between items-center relative z-10">
         <div className="space-y-0.5">
@@ -76,8 +84,8 @@ export function StreakDisplay() {
           </div>
           <p className="text-white/60 text-[11px] font-extrabold uppercase tracking-[0.2em]">연속 학습 리듬</p>
           <div className="flex items-baseline gap-1.5">
-            <h2 className="text-5xl font-black tracking-tighter text-white">{streak.currentStreak}</h2>
-            <span className="text-lg font-extrabold text-haru-400 italic">일째</span>
+            <h2 className="text-5xl font-black tracking-tighter streak-number">{animatedStreak}</h2>
+            <span className="text-lg font-extrabold text-haru-300 italic">일째</span>
           </div>
         </div>
 
@@ -93,12 +101,12 @@ export function StreakDisplay() {
         <div className="flex justify-between items-end">
           <div className="flex gap-1.5">
             {streak.weeklySolvedStatus.map((status) => (
-              <div key={status.date} className="flex flex-col items-center gap-1.5">
+              <div key={status.date} className="grass-cell flex flex-col items-center gap-1.5">
                 <div
                   className={`w-5 h-5 rounded-md transition-all duration-500
                     ${status.isSolved
-                      ? 'bg-haru-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]'
-                      : 'bg-white/5 border border-white/5'}`}
+                      ? 'bg-gradient-to-br from-haru-400 to-haru-600 shadow-[0_0_10px_rgba(74,105,255,0.5)]'
+                      : 'bg-white/5 border border-white/8'}`}
                 />
                 <span className="text-[8px] font-extrabold text-white/50">{getDayLabel(status.date)}</span>
               </div>

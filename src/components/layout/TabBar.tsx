@@ -14,25 +14,32 @@ export function TabBar() {
 
   return (
     <nav className="lg:hidden shrink-0 h-[calc(4rem+env(safe-area-inset-bottom))] glass bg-white/90 border-t border-slate-200/70 flex justify-around items-center px-4 pb-[env(safe-area-inset-bottom)] fixed bottom-0 left-0 right-0 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.06)]">
-      <div className="mx-auto max-w-md w-full flex justify-around items-center relative">
+      <div className="mx-auto max-w-md w-full flex justify-around items-center relative py-2">
         <div
-          className="absolute top-2 left-0 h-12 rounded-2xl transition-transform duration-300 ease-out"
+          className="absolute inset-y-0 left-0 transition-transform duration-300 ease-out"
           style={{
             width: `calc(100% / ${itemCount})`,
             transform: `translateX(${activeIndex * 100}%)`,
-            backgroundImage:
-              'linear-gradient(135deg, rgba(59,130,246,0.3), rgba(14,165,233,0.18) 55%, rgba(34,211,238,0.28))',
-            backgroundSize: '180% 180%',
-            backgroundPosition: `${activeIndex * 35}% 50%`,
+            padding: '4px',
           }}
           aria-hidden="true"
-        />
+        >
+          <div
+            className="w-full h-full rounded-2xl"
+            style={{
+              backgroundImage:
+                'linear-gradient(135deg, rgba(59,130,246,0.3), rgba(14,165,233,0.18) 55%, rgba(34,211,238,0.28))',
+              backgroundSize: '180% 180%',
+              backgroundPosition: `${activeIndex * 35}% 50%`,
+            }}
+          />
+        </div>
         {navItems.map((tab) => (
           <NavLink
             key={tab.path}
             to={tab.path}
             className={({ isActive }) =>
-              `group flex flex-col items-center justify-center transition-all duration-300 relative z-10 ${
+              `group flex-1 flex flex-col items-center justify-center transition-all duration-300 relative z-10 ${
                 isActive
                   ? 'text-haru-600 scale-105'
                   : 'text-slate-500 hover:text-slate-700 hover:scale-[1.03]'

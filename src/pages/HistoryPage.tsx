@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Card } from '../components/ui/Card'
 import { useSubmissionHistory } from '../features/submission/hooks/useSubmissionHistory'
 import { useAuth } from '../hooks/useAuth'
@@ -18,6 +19,7 @@ export function HistoryPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(
     format(new Date(), 'yyyy-MM-dd')
   )
+  const slideDirectionRef = useRef<number>(1) // 1 = forward, -1 = back
 
   // API 연동: 월별 제출 기록 조회
   const { data: problemsMap, isLoading } = useSubmissionHistory(currentMonth)
@@ -53,10 +55,12 @@ export function HistoryPage() {
   }
 
   const handlePrevMonth = () => {
+    slideDirectionRef.current = -1
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
   }
 
   const handleNextMonth = () => {
+    slideDirectionRef.current = 1
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
   }
 
@@ -78,7 +82,7 @@ export function HistoryPage() {
     currentMonth.getMonth() === now.getMonth()
 
   return (
-    <div className="flex flex-col animate-fade-in">
+    <div className="flex flex-col animate-fade-in pb-10">
       <div className="mb-3">
         <h2 className="text-base font-bold text-slate-800 tracking-tight">나의 기록</h2>
         <p className="text-[11px] text-slate-500 mt-0.5 font-medium">날짜를 선택하여 문제 확인하세요.</p>
@@ -108,7 +112,15 @@ export function HistoryPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-0.5">
+        <div className="overflow-hidden">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={format(currentMonth, 'yyyy-MM')}
+              initial={{ opacity: 0, x: slideDirectionRef.current * 40 }}
+              animate={{ opacity: 1, x: 0, transition: { duration: 0.25, ease: 'easeOut' } }}
+              exit={{ opacity: 0, x: slideDirectionRef.current * -40, transition: { duration: 0.18, ease: 'easeIn' } }}
+              className="grid grid-cols-7 gap-0.5"
+            >
           {days.map((date, idx) => {
             if (!date) return <div key={`empty-${idx}`}></div>
 
@@ -128,8 +140,8 @@ export function HistoryPage() {
                 key={date.toISOString()}
                 onClick={() => handleDateClick(date)}
                 className={`aspect-square rounded-md flex flex-col items-center justify-center text-[12px] transition-all
-                  ${isSelected ? 'bg-haru-500 text-white shadow-lg shadow-haru-500/30 font-bold' : 
-                    isToday ? 'bg-haru-50 text-haru-700 font-extrabold ring-2 ring-haru-500' : 
+                  ${isSelected ? 'bg-haru-500 text-white shadow-lg shadow-haru-500/30 font-bold' :
+                    isToday ? 'bg-haru-50 text-haru-700 font-extrabold ring-2 ring-haru-500' :
                     'hover:bg-slate-50 text-slate-700 font-semibold'}
                   ${hasProblem && !isSelected && !isToday ? (isSolved ? 'text-haru-600 font-bold' : 'text-slate-500') : ''}
                 `}
@@ -141,6 +153,8 @@ export function HistoryPage() {
               </button>
             )
           })}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </Card>
 
