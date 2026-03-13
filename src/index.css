@@ -6,6 +6,7 @@
     background-color: #F8FAFC;
     height: 100%;
     overscroll-behavior: none;
+    padding-top: env(safe-area-inset-top);
   }
 
   body {
