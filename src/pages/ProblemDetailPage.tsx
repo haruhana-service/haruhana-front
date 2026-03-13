@@ -324,7 +324,7 @@ export function ProblemDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const problemId = id ? parseInt(id) : null
-  const { data: problem, isLoading, error, refetch } = useProblemDetail(problemId)
+  const { data: problem, isLoading, error } = useProblemDetail(problemId)
   const { mutateAsync: submitAnswerMutation } = useSubmitAnswer(problemId)
   const { mutateAsync: updateAnswerMutation } = useUpdateAnswer(problemId)
 
