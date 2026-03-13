@@ -12,6 +12,10 @@
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js')
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js')
 
+// VitePWA의 sw.js와 스코프 충돌 방지: 설치 즉시 활성화
+self.addEventListener('install', () => self.skipWaiting())
+self.addEventListener('activate', (event) => event.waitUntil(clients.claim()))
+
 const firebaseConfig = {
   apiKey: 'AIzaSyB1fyEoXol2OAXgz1YZaS7vhmU1Mv7h4Z4',
   authDomain: 'haruhana-22767.firebaseapp.com',

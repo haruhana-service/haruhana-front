@@ -324,7 +324,7 @@ export function ProblemDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const problemId = id ? parseInt(id) : null
-  const { data: problem, isLoading, error, refetch } = useProblemDetail(problemId)
+  const { data: problem, isLoading, error } = useProblemDetail(problemId)
   const { mutateAsync: submitAnswerMutation } = useSubmitAnswer(problemId)
   const { mutateAsync: updateAnswerMutation } = useUpdateAnswer(problemId)
 
@@ -347,7 +347,6 @@ export function ProblemDetailPage() {
     try {
       const result = await submitAnswerMutation(answer)
       setSubmissionResult(result)
-      refetch()
       toast.success('답변이 제출되었습니다.')
     } catch (err) {
       if (err && typeof err === 'object' && 'message' in err) {
@@ -375,7 +374,6 @@ export function ProblemDetailPage() {
     try {
       await updateAnswerMutation(editAnswer)
       setIsEditing(false)
-      refetch()
       toast.success('답변이 수정되었습니다.')
     } catch (err) {
       if (err && typeof err === 'object' && 'message' in err) {

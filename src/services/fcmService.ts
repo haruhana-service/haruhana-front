@@ -115,7 +115,10 @@ export async function requestAndSyncFCMToken(options: RequestAndSyncFCMTokenOpti
           r.waiting?.scriptURL.includes('firebase-messaging-sw'),
       )
       if (!swRegistration) {
-        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        // VitePWA의 sw.js(scope: '/')와 충돌 방지를 위해 별도 scope 사용
+        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+          scope: '/fcm/',
+        })
       }
     } catch (e) {
       console.warn('[FCM] FCM SW registration lookup failed, using default:', e)

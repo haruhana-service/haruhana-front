@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useTodayProblem } from '../features/problem/hooks/useTodayProblem'
@@ -24,13 +24,26 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 const REMINDER_INTERVAL_MS = 60 * 60 * 1000
 const REMINDER_LAST_AT_KEY = 'haruharu_unsolved_reminder_last_at'
 
+function getReminderModalKey(loginId: string): string {
+  return `haruharu_reminder_modal_shown_date_${loginId}`
+}
+
+function wasReminderModalShownToday(loginId: string): boolean {
+  const shownDate = localStorage.getItem(getReminderModalKey(loginId))
+  if (!shownDate) return false
+  return shownDate === new Date().toISOString().split('T')[0]
+}
+
+function markReminderModalShown(loginId: string): void {
+  localStorage.setItem(getReminderModalKey(loginId), new Date().toISOString().split('T')[0])
+}
+
 export function TodayPage() {
   const { user, isAuthenticated } = useAuth()
   const { data: problem, isLoading: problemLoading, error } = useTodayProblem({ enabled: isAuthenticated })
   const { data: streak, isLoading: streakLoading } = useStreak({ enabled: isAuthenticated })
   const navigate = useNavigate()
   const [isReminderOpen, setIsReminderOpen] = useState(false)
-  const hasPromptedRef = useRef(false)
 
   const handleProblemClick = () => {
     if (problem) {
@@ -40,11 +53,13 @@ export function TodayPage() {
 
   useEffect(() => {
     if (!problem || problem.isSolved) return
-    if (hasPromptedRef.current) return
+    if (!user?.loginId) return
+    // localStorage에 사용자+날짜 기준으로 저장 → 계정마다 독립적으로 하루에 한 번만 표시
+    if (wasReminderModalShownToday(user.loginId)) return
 
-    hasPromptedRef.current = true
+    markReminderModalShown(user.loginId)
     setIsReminderOpen(true)
-  }, [problem])
+  }, [problem, user?.loginId])
 
   useEffect(() => {
     if (!problem || problem.isSolved) return
@@ -74,7 +89,7 @@ export function TodayPage() {
       localStorage.setItem(REMINDER_LAST_AT_KEY, String(Date.now()))
     }
 
-    sendReminder()
+    // 즉시 실행하지 않음: 모달이 이미 뜨므로 인터벌만 설정
     const intervalId = window.setInterval(sendReminder, REMINDER_INTERVAL_MS)
 
     return () => {

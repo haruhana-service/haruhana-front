@@ -61,17 +61,21 @@ export function HistoryPage() {
   }
 
   const handleResetToToday = () => {
-    setSelectedDate(null)
+    setSelectedDate(format(new Date(), 'yyyy-MM-dd'))
     setCurrentMonth(new Date())
   }
 
   const today = format(new Date(), 'yyyy-MM-dd')
+  const now = new Date()
   const joinedDateKey = user?.createdAt ? format(new Date(user.createdAt), 'yyyy-MM-dd') : null
   const joinMonthStart = joinedDateKey ? new Date(joinedDateKey + 'T00:00:00') : null
   const isPrevDisabled =
     !!joinMonthStart &&
     currentMonth.getFullYear() === joinMonthStart.getFullYear() &&
     currentMonth.getMonth() === joinMonthStart.getMonth()
+  const isNextDisabled =
+    currentMonth.getFullYear() === now.getFullYear() &&
+    currentMonth.getMonth() === now.getMonth()
 
   return (
     <div className="flex flex-col animate-fade-in">
@@ -93,7 +97,7 @@ export function HistoryPage() {
           <h3 className="text-[17px] font-bold text-slate-900">
             {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
           </h3>
-          <button onClick={handleNextMonth} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+          <button onClick={handleNextMonth} disabled={isNextDisabled} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>

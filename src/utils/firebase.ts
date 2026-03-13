@@ -22,11 +22,6 @@ export function getFirebaseApp(): FirebaseApp | null {
   if (initFailed) return null
   if (!firebaseApp) {
     try {
-      console.log('[Firebase] Config check:', {
-        apiKey: !!import.meta.env.VITE_FIREBASE_API_KEY,
-        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-        appId: !!import.meta.env.VITE_FIREBASE_APP_ID,
-      })
       firebaseApp = initializeApp({
         apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
         authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -35,7 +30,6 @@ export function getFirebaseApp(): FirebaseApp | null {
         messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
         appId: import.meta.env.VITE_FIREBASE_APP_ID,
       })
-      console.log('[Firebase] Initialized successfully')
     } catch (error) {
       console.warn('[Firebase] Initialization failed:', error)
       initFailed = true
@@ -56,7 +50,6 @@ export function getFirebaseMessaging(): Messaging | null {
     if (!app) return null
     try {
       messaging = getMessaging(app)
-      console.log('[Firebase] Messaging initialized successfully')
     } catch (error) {
       console.warn('[Firebase] Messaging initialization failed:', error)
       return null
