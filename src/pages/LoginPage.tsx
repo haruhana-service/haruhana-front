@@ -210,7 +210,7 @@ export function LoginPage() {
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col items-center">
+          <div className="mt-8 flex flex-col items-center">
             <LoginFormFooter />
           </div>
         </div>
@@ -338,10 +338,10 @@ function LoginForm({
           {isSubmitting ? '로그인 중...' : '챌린지 시작하기'}
         </Button>
 
-        {showFooter && <LoginFormFooter />}
+        {showFooter && <div className="mt-4"><LoginFormFooter /></div>}
       </div>
 
-      {!showPassword && showFooter && <LoginFormFooter />}
+      {!showPassword && showFooter && <div className="mt-4"><LoginFormFooter /></div>}
     </form>
   )
 }
