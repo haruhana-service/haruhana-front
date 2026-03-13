@@ -12,12 +12,12 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isLoading, isLoggingOut } = useAuth()
+  const { user, isLoading } = useAuth()
 
   // 로딩 중이면 로딩 표시
-  if (isLoading || isLoggingOut) {
+  if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex min-h-[100dvh] h-screen items-center justify-center">
         <div className="text-lg">로딩 중...</div>
       </div>
     )
@@ -41,12 +41,12 @@ interface PublicRouteProps {
 }
 
 export function PublicRoute({ children }: PublicRouteProps) {
-  const { user, isLoading, isLoggingOut } = useAuth()
+  const { user, isLoading } = useAuth()
 
   // 로딩 중이면 로딩 표시
-  if (isLoading || isLoggingOut) {
+  if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex min-h-[100dvh] h-screen items-center justify-center">
         <div className="text-lg">로딩 중...</div>
       </div>
     )

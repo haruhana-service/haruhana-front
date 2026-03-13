@@ -9,7 +9,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   return (
-    <div className="h-screen bg-[#F8FAFC] flex overflow-hidden">
+    <div className="min-h-[100dvh] h-screen bg-[#F8FAFC] flex overflow-hidden">
       {/* 스킵 네비게이션 */}
       <a
         href="#main-content"
@@ -27,7 +27,11 @@ export function MainLayout({ children }: MainLayoutProps) {
         <Header />
 
         {/* Main Content */}
-        <main id="main-content" className="flex-1 overflow-y-auto no-scrollbar scroll-smooth px-4 lg:px-8 pt-6 pb-24 lg:pb-8">
+        <main
+          id="main-content"
+          data-scroll-container="true"
+          className="flex-1 overflow-y-auto overscroll-none no-scrollbar scroll-smooth [@supports(-webkit-overflow-scrolling:touch)]:[-webkit-overflow-scrolling:touch] px-[var(--page-px)] pt-[var(--page-pt)] pb-[var(--page-pb)]"
+        >
           <div className="max-w-xl lg:max-w-3xl mx-auto">
             {children}
           </div>
