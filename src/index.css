@@ -4,6 +4,8 @@
 @layer base {
   html {
     background-color: #F8FAFC;
+    height: 100%;
+    overscroll-behavior: none;
   }
 
   body {
@@ -11,7 +13,9 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    overscroll-behavior-y: none;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -31,6 +35,20 @@
   }
 }
 
+:root {
+  --page-px: clamp(12px, 4vw, 32px);
+  --page-pt: clamp(12px, 2.5vh, 24px);
+  --page-pb: calc(clamp(16px, 8vh, 96px) + env(safe-area-inset-bottom));
+  --page-py-top: clamp(16px, 5vh, 48px);
+  --page-py-bottom: calc(clamp(16px, 5vh, 48px) + env(safe-area-inset-bottom));
+}
+
+#root {
+  height: 100%;
+  overscroll-behavior: none;
+  background-color: #F8FAFC;
+}
+
 @theme {
   --color-haru-50: #f5f7ff;
   --color-haru-100: #ebf0ff;
@@ -46,9 +64,15 @@
   --animate-fade-in: fadeIn 0.3s ease-out;
   --animate-fade-up: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-slide-up-fade: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slide-down-fade: slideDownFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-modal-in: modalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-modal-out: modalOut 0.18s ease-in forwards;
   --animate-float: float 3s ease-in-out infinite;
   --animate-bounce-soft: bounceSoft 2s infinite;
   --animate-pulse-glow: pulseGlow 2s infinite;
+  --animate-logo-glass: glassSheen 2.4s ease-in-out infinite;
+  --animate-logo-glass-exit: glassSheen 0.45s ease-out 1, logoFlash 0.35s ease-out 1;
+  --animate-page-enter: pageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 
   @keyframes fadeIn {
     0% { opacity: 0; }
@@ -65,6 +89,21 @@
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
 
+  @keyframes slideDownFade {
+    0% { opacity: 0; transform: translateY(-10px) scale(0.98); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes modalIn {
+    0% { opacity: 0; transform: translateY(10px) scale(0.98); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes modalOut {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(6px) scale(0.98); }
+  }
+
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
@@ -79,6 +118,42 @@
     0%, 100% { opacity: 0.5; filter: blur(20px); }
     50% { opacity: 0.8; filter: blur(30px); }
   }
+
+  @keyframes glassSheen {
+    0% { background-position: -120% 0; }
+    100% { background-position: 120% 0; }
+  }
+
+  @keyframes logoFlash {
+    0% { text-shadow: 0 6px 24px rgba(74, 105, 255, 0.25); filter: brightness(1); }
+    60% { text-shadow: 0 8px 28px rgba(255, 255, 255, 0.55); filter: brightness(1.15); }
+    100% { text-shadow: 0 6px 24px rgba(74, 105, 255, 0.25); filter: brightness(1); }
+  }
+
+  @keyframes pageEnter {
+    0% { opacity: 0; transform: translateY(6px) scale(0.995); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+}
+
+.logo-glass {
+  position: relative;
+  color: transparent;
+  background-image: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.95) 40%,
+    rgba(255, 255, 255, 0.55) 60%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 6px 24px rgba(74, 105, 255, 0.25);
+}
+
+.logo-glass-exit {
+  animation: var(--animate-logo-glass-exit);
 }
 
 /* Safe Area for mobile devices (iOS notch, home indicator) */

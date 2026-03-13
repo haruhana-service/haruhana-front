@@ -4,9 +4,9 @@ import { ROUTES } from '../constants'
 import { FullScreenLoading } from '../components/ui/LoadingSpinner'
 
 export function RootRoute() {
-  const { user, isLoading, isLoggingOut } = useAuth()
+  const { user, isLoading } = useAuth()
 
-  if (isLoading || isLoggingOut) {
+  if (isLoading) {
     return <FullScreenLoading text="로딩 중..." />
   }
 

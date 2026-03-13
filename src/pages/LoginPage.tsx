@@ -1,4 +1,4 @@
-import { type BaseSyntheticEvent, useEffect, useMemo, useState } from 'react'
+import { type BaseSyntheticEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { Controller, useForm, type Control, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from 'react-router-dom'
@@ -13,14 +13,17 @@ import { Button } from '../components/ui/Button'
 export function LoginPage() {
   const { login } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLeaving, setIsLeaving] = useState(false)
   const [apiError, setApiError] = useState<string>()
   const [quotes, setQuotes] = useState<string[]>([])
   const [activeQuoteIndex, setActiveQuoteIndex] = useState(0)
+  const passwordInputRef = useRef<HTMLInputElement | null>(null)
 
   const {
     control,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -91,6 +94,8 @@ export function LoginPage() {
         password: data.password,
       })
 
+      setIsLeaving(true)
+      await new Promise((resolve) => window.setTimeout(resolve, 220))
       await login(tokenResponse)
     } catch (error) {
       console.error('Login failed:', error)
@@ -99,13 +104,28 @@ export function LoginPage() {
       } else {
         setApiError('로그인 중 오류가 발생했습니다')
       }
+      setIsLeaving(false)
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  const loginIdValue = watch('loginId')
+  const showPassword = Boolean(loginIdValue?.trim())
+
+  useEffect(() => {
+    if (!showPassword) return
+    window.requestAnimationFrame(() => {
+      passwordInputRef.current?.focus()
+    })
+  }, [showPassword])
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-8 py-12 animate-fade-in bg-haru-900 relative overflow-hidden">
+    <div
+      className={`flex flex-col items-center justify-center min-h-screen px-[var(--page-px)] pt-[var(--page-py-top)] pb-[var(--page-py-bottom)] animate-fade-in bg-haru-900 relative overflow-hidden transition-all duration-200 ease-in ${
+        isLeaving ? 'opacity-0 translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'
+      }`}
+    >
       {/* Soft Background Glows */}
       <div className="absolute top-[-15%] right-[-15%] w-96 h-96 bg-haru-500/20 rounded-full blur-[120px]"></div>
       <div className="absolute bottom-[-15%] left-[-15%] w-96 h-96 bg-haru-700/10 rounded-full blur-[120px]"></div>
@@ -114,17 +134,21 @@ export function LoginPage() {
         {/* Mobile Layout */}
         <div className="md:hidden max-w-sm mx-auto">
           {/* Header */}
-          <div className="text-center mb-10">
-            <p className="text-haru-300 text-[13px] font-semibold tracking-tight mb-2">
+          <div className="text-center mb-6">
+            <p className="text-haru-300 text-[12px] font-semibold tracking-tight mb-1.5">
               나를 지키는 작은 습관
             </p>
-            <h1 className="text-5xl font-black text-white tracking-tighter italic">haru:</h1>
+            <h1
+              className={`text-4xl font-black tracking-tighter italic logo-glass animate-logo-glass ${isLeaving ? 'logo-glass-exit' : ''}`}
+            >
+              haru:
+            </h1>
           </div>
 
           {/* Square Speech Bubble */}
-          <div className="relative mb-10 mx-auto w-44 h-44">
+          <div className="relative mb-6 mx-auto w-36 h-36">
             <div className="absolute inset-0 bg-haru-500 text-white rounded-[24px] border border-white/10 shadow-2xl p-4 flex items-center justify-center text-center">
-              <p className="text-[13px] font-extrabold leading-snug break-keep animate-fade-in">
+              <p className="text-[12px] font-extrabold leading-snug break-keep animate-fade-in">
                 {activeQuoteText}
               </p>
             </div>
@@ -137,27 +161,33 @@ export function LoginPage() {
               apiError={apiError}
               isSubmitting={isSubmitting}
               onSubmit={handleSubmit(onSubmit)}
-              buttonClassName="h-14 text-base rounded-2xl bg-haru-500 hover:bg-haru-400 text-white font-bold shadow-2xl shadow-haru-500/20 active:scale-95 transition-all mt-6"
+              buttonClassName="h-12 text-[15px] rounded-2xl bg-haru-500 hover:bg-haru-400 text-white font-bold shadow-2xl shadow-haru-500/20 active:scale-95 transition-all mt-4"
+              showPassword={showPassword}
+              passwordInputRef={passwordInputRef}
           />
         </div>
 
         {/* Tablet + Desktop Layout */}
         <div className="hidden md:block max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-haru-300 text-[16px] font-semibold tracking-tight mb-3">
+          <div className="text-center mb-8">
+            <p className="text-haru-300 text-[14px] font-semibold tracking-tight mb-2">
               나를 지키는 작은 습관
             </p>
-            <h1 className="text-6xl lg:text-7xl font-black text-white tracking-tighter italic">haru:</h1>
+            <h1
+              className={`text-5xl lg:text-6xl font-black tracking-tighter italic logo-glass animate-logo-glass ${isLeaving ? 'logo-glass-exit' : ''}`}
+            >
+              haru:
+            </h1>
           </div>
 
-          <div className="flex items-center justify-center gap-10 lg:gap-16">
+          <div className="flex items-center justify-center gap-8 lg:gap-12">
             <div className="flex-1 min-w-[320px] flex items-center justify-center">
-              <div className="relative w-full max-w-md md:max-w-[420px] lg:w-72 lg:h-72">
-                <div className="relative bg-haru-500 text-white rounded-2xl md:rounded-3xl border border-white/10 shadow-2xl px-6 py-6 md:px-9 md:py-9 flex items-center justify-center text-center min-h-[180px] md:min-h-[300px] lg:absolute lg:inset-0">
-                  <span className="absolute -top-5 left-5 md:-top-6 md:left-6 text-4xl md:text-5xl font-black text-white/25 select-none">
+              <div className="relative w-full max-w-md md:max-w-[380px] lg:w-64 lg:h-64">
+                <div className="relative bg-haru-500 text-white rounded-2xl md:rounded-3xl border border-white/10 shadow-2xl px-5 py-5 md:px-7 md:py-7 flex items-center justify-center text-center min-h-[160px] md:min-h-[260px] lg:absolute lg:inset-0">
+                  <span className="absolute -top-5 left-5 md:-top-6 md:left-6 text-3xl md:text-4xl font-black text-white/25 select-none">
                     “
                   </span>
-                  <p className="text-[14px] md:text-[17px] lg:text-[16px] font-extrabold leading-snug break-keep animate-fade-in">
+                  <p className="text-[13px] md:text-[15px] lg:text-[14px] font-extrabold leading-snug break-keep animate-fade-in">
                     {activeQuoteText}
                   </p>
                 </div>
@@ -172,13 +202,15 @@ export function LoginPage() {
                 apiError={apiError}
                 isSubmitting={isSubmitting}
                 onSubmit={handleSubmit(onSubmit)}
-                buttonClassName="h-16 text-base rounded-2xl bg-haru-500 hover:bg-haru-400 text-white font-bold shadow-2xl shadow-haru-500/20 active:scale-95 transition-all mt-8"
+                buttonClassName="h-12 text-[15px] rounded-2xl bg-haru-500 hover:bg-haru-400 text-white font-bold shadow-2xl shadow-haru-500/20 active:scale-95 transition-all mt-5"
                 showFooter={false}
+                showPassword={showPassword}
+                passwordInputRef={passwordInputRef}
               />
             </div>
           </div>
 
-          <div className="mt-10 flex flex-col items-center">
+          <div className="mt-6 flex flex-col items-center">
             <LoginFormFooter />
           </div>
         </div>
@@ -195,6 +227,8 @@ type LoginFormProps = {
   onSubmit: (event?: BaseSyntheticEvent) => Promise<void>
   buttonClassName: string
   showFooter?: boolean
+  showPassword?: boolean
+  passwordInputRef?: React.RefObject<HTMLInputElement | null>
 }
 
 function LoginForm({
@@ -205,9 +239,11 @@ function LoginForm({
   onSubmit,
   buttonClassName,
   showFooter = true,
+  showPassword = true,
+  passwordInputRef,
 }: LoginFormProps) {
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-4">
       {/* API Error */}
       {apiError && (
         <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-4 backdrop-blur-sm">
@@ -216,55 +252,96 @@ function LoginForm({
       )}
 
       {/* 로그인 ID */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <label htmlFor="loginId" className="text-[12px] font-bold text-white/60 uppercase tracking-widest ml-1">
           아이디
         </label>
         <Controller
           name="loginId"
           control={control}
-          render={({ field }) => (
-            <input
-              {...field}
-              type="text"
-              id="loginId"
-              className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm rounded-xl border-2 border-white/10 focus:border-haru-500 focus:bg-white/20 outline-none transition-all font-semibold text-white placeholder:text-white/50"
-              placeholder="아이디를 입력하세요"
-            />
-          )}
+          render={({ field }) => {
+            const errorMessage = errors.loginId?.message
+            return (
+              <div className="relative">
+                <input
+                  {...field}
+                  type="text"
+                  id="loginId"
+                  aria-invalid={Boolean(errorMessage)}
+                  className={`w-full px-4 py-2.5 ${errorMessage ? 'pr-10 border-red-400 focus:border-red-400' : 'border-white/10 focus:border-haru-500'} bg-white/10 backdrop-blur-sm rounded-xl border-2 focus:bg-white/20 outline-none transition-all font-semibold text-white placeholder:text-white/50`}
+                  placeholder={errorMessage || '아이디를 입력하세요'}
+                />
+                {errorMessage && (
+                  <span
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-red-300 text-base font-black"
+                    aria-hidden="true"
+                  >
+                    !
+                  </span>
+                )}
+              </div>
+            )
+          }}
         />
-        {errors.loginId && <p className="mt-1 text-sm text-red-300 ml-1 font-medium">{errors.loginId.message}</p>}
       </div>
 
-      {/* 비밀번호 */}
-      <div className="space-y-2">
-        <label htmlFor="password" className="text-[12px] font-bold text-white/60 uppercase tracking-widest ml-1">
-          비밀번호
-        </label>
-        <Controller
-          name="password"
-          control={control}
-          render={({ field }) => (
-            <input
-              {...field}
-              type="password"
-              id="password"
-              className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm rounded-xl border-2 border-white/10 focus:border-haru-500 focus:bg-white/20 outline-none transition-all font-semibold text-white placeholder:text-white/50"
-              placeholder="비밀번호를 입력하세요"
-            />
-          )}
-        />
-        {errors.password && (
-          <p className="mt-1 text-sm text-red-300 ml-1 font-medium">{errors.password.message}</p>
-        )}
+      <div
+        className={`transition-all duration-200 ease-out ${
+          showPassword
+            ? 'max-h-[240px] opacity-100 translate-y-0 pointer-events-auto mt-3'
+            : 'max-h-0 opacity-0 -translate-y-1 pointer-events-none'
+        }`}
+        aria-hidden={!showPassword}
+      >
+        {/* 비밀번호 */}
+        <div className="space-y-1.5">
+          <label htmlFor="password" className="text-[12px] font-bold text-white/60 uppercase tracking-widest ml-1">
+            비밀번호
+          </label>
+          <Controller
+            name="password"
+            control={control}
+            render={({ field }) => {
+              const errorMessage = errors.password?.message
+              return (
+                <div className="relative">
+                  <input
+                    {...field}
+                    ref={(element) => {
+                      field.ref(element)
+                      if (passwordInputRef) {
+                        passwordInputRef.current = element
+                      }
+                    }}
+                    type="password"
+                    id="password"
+                    aria-invalid={Boolean(errorMessage)}
+                    className={`w-full px-4 py-2.5 ${errorMessage ? 'pr-10 border-red-400 focus:border-red-400' : 'border-white/10 focus:border-haru-500'} bg-white/10 backdrop-blur-sm rounded-xl border-2 focus:bg-white/20 outline-none transition-all font-semibold text-white placeholder:text-white/50`}
+                    placeholder={errorMessage || '비밀번호를 입력하세요'}
+                  />
+                  {errorMessage && (
+                    <span
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-red-300 text-base font-black"
+                      aria-hidden="true"
+                    >
+                      !
+                    </span>
+                  )}
+                </div>
+              )
+            }}
+          />
+        </div>
+
+        {/* Submit Button */}
+        <Button type="submit" disabled={isSubmitting} fullWidth size="lg" className={buttonClassName}>
+          {isSubmitting ? '로그인 중...' : '챌린지 시작하기'}
+        </Button>
+
+        {showFooter && <LoginFormFooter />}
       </div>
 
-      {/* Submit Button */}
-      <Button type="submit" disabled={isSubmitting} fullWidth size="lg" className={buttonClassName}>
-        {isSubmitting ? '로그인 중...' : '챌린지 시작하기'}
-      </Button>
-
-      {showFooter && <LoginFormFooter />}
+      {!showPassword && showFooter && <LoginFormFooter />}
     </form>
   )
 }
@@ -272,13 +349,6 @@ function LoginForm({
 function LoginFormFooter() {
   return (
     <>
-      {/* Divider */}
-      <div className="flex items-center justify-center gap-3 py-4 opacity-30 mx-auto">
-        <div className="h-[1px] w-8 bg-white"></div>
-        <p className="text-white text-[10px] font-extrabold uppercase tracking-[0.4em]">Persistence</p>
-        <div className="h-[1px] w-8 bg-white"></div>
-      </div>
-
       {/* Signup Link */}
       <p className="text-center text-[15px] text-white/60 font-medium mx-auto">
         아직 계정이 없으신가요?{' '}

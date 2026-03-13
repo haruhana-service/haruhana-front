@@ -68,7 +68,7 @@ export function PreferenceEditPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto py-6 px-6 animate-fade-in">
+    <div className="max-w-lg mx-auto py-[var(--page-pt)] px-[var(--page-px)] animate-fade-in">
       {/* Header */}
       <div className="mb-6">
         <button
