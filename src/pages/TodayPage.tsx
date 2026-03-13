@@ -220,7 +220,15 @@ export function TodayPage() {
           </div>
         ) : error ? (
           <div className="py-10 text-center bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
-            <p className="text-slate-500 text-sm font-semibold">챌린지를 불러올 수 없습니다</p>
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative w-8 h-8">
+                <div className="absolute inset-0 border-[3px] border-slate-100 rounded-full"></div>
+                <div className="absolute inset-0 border-[3px] border-haru-400 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+              <p className="text-slate-500 text-sm font-semibold">
+                챌린지를 준비 중입니다. 잠시만 기다려주세요.
+              </p>
+            </div>
           </div>
         ) : problem ? (
           <div className="space-y-6 animate-fade-in relative z-10">
@@ -248,17 +256,11 @@ export function TodayPage() {
           </div>
         ) : (
           <div className="py-10 text-center bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
-            <p className="text-slate-500 text-sm font-semibold">챌린지를 불러올 수 없습니다</p>
+            <p className="text-slate-500 text-sm font-semibold">챌린지를 준비 중입니다.</p>
           </div>
         )}
       </Card>
 
-      <div className="pt-8 pb-12 flex flex-col items-center gap-3 opacity-30">
-        <div className="w-1 h-1 rounded-full bg-slate-300"></div>
-        <p className="text-[10px] text-slate-400 font-extrabold tracking-[0.4em] uppercase italic text-center leading-relaxed">
-          Daily progress leads to<br/>Mastery
-        </p>
-      </div>
       </div>
       <Modal isOpen={isReminderOpen} onClose={() => setIsReminderOpen(false)} title="아직 오늘의 문제를 풀지 않았어요">
         <div className="space-y-5">

@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       // 기본 에러 UI
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-[var(--page-px)] pt-[var(--page-py-top)] pb-[var(--page-py-bottom)]">
           <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center">
             <div className="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <svg 
