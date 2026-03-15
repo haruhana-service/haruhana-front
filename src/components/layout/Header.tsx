@@ -9,6 +9,7 @@ export function Header() {
   const { logout } = useAuth()
   const navigate = useNavigate()
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
+  const [isConfirmLogoutOpen, setIsConfirmLogoutOpen] = useState(false)
   const [isCheckingLogout, setIsCheckingLogout] = useState(false)
   const isMountedRef = useRef(true)
 
@@ -27,7 +28,7 @@ export function Header() {
     setIsCheckingLogout(false)
 
     if (solved) {
-      await logout()
+      setIsConfirmLogoutOpen(true)
       return
     }
 
@@ -71,6 +72,32 @@ export function Header() {
         </div>
       </div>
 
+      {/* 문제 풀었을 때: 단순 로그아웃 확인 */}
+      <Modal isOpen={isConfirmLogoutOpen} onClose={() => setIsConfirmLogoutOpen(false)} title="로그아웃" size="sm">
+        <div className="space-y-5">
+          <p className="text-sm text-slate-600 leading-relaxed">
+            로그아웃 하시겠어요?
+          </p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setIsConfirmLogoutOpen(false)}
+              className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-95"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={logout}
+              className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all active:scale-95"
+            >
+              로그아웃
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* 문제 안 풀었을 때: 풀기 유도 */}
       <Modal isOpen={isLogoutDialogOpen} onClose={() => setIsLogoutDialogOpen(false)} title="아직 오늘의 문제를 풀지 않았어요" size="sm">
         <div className="space-y-5">
           <p className="text-sm text-slate-600 leading-relaxed">

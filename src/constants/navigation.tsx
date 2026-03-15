@@ -13,7 +13,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     label: '대시보드',
     icon: (isActive) => (
       <svg
-        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-300'}`}
+        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-400'}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -29,7 +29,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     label: '카테고리',
     icon: (isActive) => (
       <svg
-        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-300'}`}
+        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-400'}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -45,7 +45,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     label: '문제',
     icon: (isActive) => (
       <svg
-        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-300'}`}
+        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-400'}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -61,7 +61,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     label: '사용자',
     icon: (isActive) => (
       <svg
-        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-300'}`}
+        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-400'}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -77,7 +77,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     label: '디버그',
     icon: (isActive) => (
       <svg
-        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-300'}`}
+        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-400'}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -100,7 +100,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: '챌린지',
     icon: (isActive) => (
       <svg
-        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-300'}`}
+        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-400'}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -120,7 +120,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: '성장 기록',
     icon: (isActive) => (
       <svg
-        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-300'}`}
+        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-400'}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -140,7 +140,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: '설정',
     icon: (isActive) => (
       <svg
-        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-300'}`}
+        className={`w-6 h-6 transition-colors ${isActive ? 'text-haru-600' : 'text-slate-400'}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
