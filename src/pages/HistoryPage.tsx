@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -19,7 +19,7 @@ export function HistoryPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(
     format(new Date(), 'yyyy-MM-dd')
   )
-  const slideDirectionRef = useRef<number>(1) // 1 = forward, -1 = back
+  const [slideDirection, setSlideDirection] = useState<number>(1) // 1 = forward, -1 = back
 
   // API 연동: 월별 제출 기록 조회
   const { data: problemsMap, isLoading } = useSubmissionHistory(currentMonth)
@@ -55,12 +55,12 @@ export function HistoryPage() {
   }
 
   const handlePrevMonth = () => {
-    slideDirectionRef.current = -1
+    setSlideDirection(-1)
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
   }
 
   const handleNextMonth = () => {
-    slideDirectionRef.current = 1
+    setSlideDirection(1)
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
   }
 
@@ -116,9 +116,9 @@ export function HistoryPage() {
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={format(currentMonth, 'yyyy-MM')}
-              initial={{ opacity: 0, x: slideDirectionRef.current * 40 }}
+              initial={{ opacity: 0, x: slideDirection * 40 }}
               animate={{ opacity: 1, x: 0, transition: { duration: 0.25, ease: 'easeOut' } }}
-              exit={{ opacity: 0, x: slideDirectionRef.current * -40, transition: { duration: 0.18, ease: 'easeIn' } }}
+              exit={{ opacity: 0, x: slideDirection * -40, transition: { duration: 0.18, ease: 'easeIn' } }}
               className="grid grid-cols-7 gap-0.5"
             >
           {days.map((date, idx) => {

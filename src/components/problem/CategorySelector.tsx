@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useCategories } from '../../hooks/useCategories'
 
 interface CategorySelectorProps {
@@ -15,6 +15,7 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
   const [openPanel, setOpenPanel] = useState<'category' | 'group' | 'topic' | null>(null)
   const [closingPanel, setClosingPanel] = useState(false)
   const timerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     return () => {
@@ -74,14 +75,27 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
     triggerClose()
   }
 
-  const triggerClose = () => {
+  const triggerClose = useCallback(() => {
     if (timerRef.current !== null) clearTimeout(timerRef.current)
     setClosingPanel(true)
     timerRef.current = window.setTimeout(() => {
       setOpenPanel(null)
       setClosingPanel(false)
     }, 180)
-  }
+  }, [])
+
+  useEffect(() => {
+    if (openPanel) dialogRef.current?.focus()
+  }, [openPanel])
+
+  useEffect(() => {
+    if (!openPanel) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') triggerClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [openPanel, triggerClose])
 
   if (isLoading) {
     return (
@@ -156,13 +170,18 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
           onClick={triggerClose}
         >
           <div
-            className={`w-full max-w-sm rounded-2xl bg-white p-4 shadow-2xl ${
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="category-selector-dialog-title"
+            tabIndex={-1}
+            className={`w-full max-w-sm rounded-2xl bg-white p-4 shadow-2xl outline-none ${
               closingPanel ? 'animate-modal-out' : 'animate-modal-in'
             }`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-bold text-slate-700">
+              <p id="category-selector-dialog-title" className="text-sm font-bold text-slate-700">
                 {openPanel === 'category' && '분야 선택'}
                 {openPanel === 'group' && '분류 선택'}
                 {openPanel === 'topic' && '주제 선택'}

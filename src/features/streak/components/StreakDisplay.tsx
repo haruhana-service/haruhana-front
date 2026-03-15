@@ -19,6 +19,7 @@ function getDayLabel(dateString: string): string {
 export function StreakDisplay() {
   const { isAuthenticated } = useAuth()
   const { data: streak, isLoading, error } = useStreak({ enabled: isAuthenticated })
+  const animatedStreak = useCountUp({ target: streak?.currentStreak ?? 0, duration: 1000, delay: 300 })
 
   const getStreakLevel = (count: number) => {
     if (count >= 30) return { label: '마스터', color: 'text-purple-400' }
@@ -59,7 +60,6 @@ export function StreakDisplay() {
   }
 
   const level = getStreakLevel(streak.currentStreak)
-  const animatedStreak = useCountUp({ target: streak.currentStreak, duration: 1000, delay: 300 })
 
   return (
     <div
