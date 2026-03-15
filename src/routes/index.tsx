@@ -42,9 +42,9 @@ function PageLoader() {
 }
 
 const pageVariants = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.28, ease: 'easeOut' as const } },
-  exit: { opacity: 0, y: -8, transition: { duration: 0.18, ease: 'easeIn' as const } },
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.18, ease: 'easeOut' as const } },
+  exit: { opacity: 0, transition: { duration: 0.12, ease: 'easeIn' as const } },
 }
 
 export function AppRoutes() {

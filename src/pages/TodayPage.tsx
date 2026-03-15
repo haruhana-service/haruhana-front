@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useTodayProblem } from '../features/problem/hooks/useTodayProblem'
@@ -21,6 +21,13 @@ const DIFFICULTY_LABELS: Record<string, string> = {
   EASY: '쉬움',
   MEDIUM: '보통',
   HARD: '어려움',
+}
+
+function getStreakLevel(count: number) {
+  if (count >= 30) return { label: '마스터', color: 'text-purple-400' }
+  if (count >= 14) return { label: '전문가', color: 'text-blue-400' }
+  if (count >= 7) return { label: '성실함', color: 'text-green-400' }
+  return { label: '입문자', color: 'text-haru-300' }
 }
 
 const REMINDER_INTERVAL_MS = 60 * 60 * 1000
@@ -47,11 +54,11 @@ export function TodayPage() {
   const navigate = useNavigate()
   const [isReminderOpen, setIsReminderOpen] = useState(false)
 
-  const handleProblemClick = () => {
+  const handleProblemClick = useCallback(() => {
     if (problem) {
       navigate(`/problem/${problem.id}`)
     }
-  }
+  }, [problem, navigate])
 
   useEffect(() => {
     if (!problem || problem.isSolved) return
@@ -99,14 +106,7 @@ export function TodayPage() {
     }
   }, [problem])
 
-  const getStreakLevel = (count: number) => {
-    if (count >= 30) return { label: '마스터', color: 'text-purple-400' }
-    if (count >= 14) return { label: '전문가', color: 'text-blue-400' }
-    if (count >= 7) return { label: '성실함', color: 'text-green-400' }
-    return { label: '입문자', color: 'text-haru-300' }
-  }
-
-  const level = getStreakLevel(streak?.currentStreak || 0)
+  const level = useMemo(() => getStreakLevel(streak?.currentStreak || 0), [streak?.currentStreak])
   const animatedStreak = useCountUp({ target: streak?.currentStreak || 0, duration: 1000, delay: 300 })
   const tilt = useTilt({ maxTilt: 6, scale: 1.015 })
 

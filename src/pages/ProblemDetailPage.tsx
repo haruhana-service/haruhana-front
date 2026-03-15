@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState, memo, useCallback, type ReactNode } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Markdown from 'markdown-to-jsx'
 import confetti from 'canvas-confetti'
@@ -321,6 +321,15 @@ const darkMarkdownOptions = {
   },
 }
 
+// Memoized Markdown renderers - prevent re-parsing on every keystroke
+const ProblemDescription = memo(({ description }: { description: string }) => (
+  <Markdown options={markdownOptions}>{description}</Markdown>
+))
+
+const AiAnswerMarkdown = memo(({ content }: { content: string }) => (
+  <Markdown options={darkMarkdownOptions}>{content}</Markdown>
+))
+
 export function ProblemDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -336,12 +345,12 @@ export function ProblemDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     navigate('/today')
-  }
+  }, [navigate])
 
   // 미제출 상태에서 제출
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!problemId || answer.length < 10) return
     setIsSubmitting(true)
     setApiError(null)
@@ -366,16 +375,16 @@ export function ProblemDetailPage() {
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [problemId, answer, submitAnswerMutation])
 
   // 수정 모드 시작
-  const handleEditStart = () => {
+  const handleEditStart = useCallback(() => {
     setEditAnswer(problem?.userAnswer || '')
     setIsEditing(true)
-  }
+  }, [problem?.userAnswer])
 
   // 수정 제출
-  const handleEditSubmit = async () => {
+  const handleEditSubmit = useCallback(async () => {
     if (!problemId || editAnswer.length < 10) return
     setIsSubmitting(true)
     setApiError(null)
@@ -393,7 +402,7 @@ export function ProblemDetailPage() {
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [problemId, editAnswer, updateAnswerMutation])
 
   // 제출 후 결과에서 사용할 데이터
   const userAnswer = submissionResult?.userAnswer || problem?.userAnswer
@@ -480,9 +489,7 @@ export function ProblemDetailPage() {
             </div>
             <div className="p-4">
               <div className="prose prose-slate max-w-none text-slate-600 [&_p]:text-[14px] [&_p]:leading-[1.6] [&_p]:mb-3 last:[&_p]:mb-0 [&_code]:bg-slate-50 [&_code]:p-1 [&_code]:rounded [&_pre]:bg-[#f4f7ff] [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-indigo-50/40">
-                <Markdown options={markdownOptions}>
-                  {problem.description}
-                </Markdown>
+                <ProblemDescription description={problem.description} />
               </div>
             </div>
           </div>
@@ -603,9 +610,7 @@ export function ProblemDetailPage() {
                     </div>
                   </div>
                   <div className="prose prose-invert max-w-none text-white/80 [&_p]:text-[16px] [&_p]:leading-[1.9] [&_p]:mb-5 last:[&_p]:mb-0 [&_h2]:mt-4 [&_h2]:mb-4 [&_h2]:leading-tight [&_h3]:mt-3 [&_h3]:mb-3">
-                    <Markdown options={darkMarkdownOptions}>
-                      {aiAnswer}
-                    </Markdown>
+                    <AiAnswerMarkdown content={aiAnswer} />
                   </div>
                 </div>
               )}
