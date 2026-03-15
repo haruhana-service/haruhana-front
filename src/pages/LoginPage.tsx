@@ -113,12 +113,6 @@ export function LoginPage() {
   const loginIdValue = watch('loginId')
   const showPassword = Boolean(loginIdValue?.trim())
 
-  useEffect(() => {
-    if (!showPassword) return
-    window.requestAnimationFrame(() => {
-      passwordInputRef.current?.focus()
-    })
-  }, [showPassword])
 
   return (
     <div
@@ -272,6 +266,12 @@ function LoginForm({
                   aria-invalid={Boolean(errorMessage)}
                   className={`w-full px-4 py-2.5 ${errorMessage ? 'pr-10 border-red-400 focus:border-red-400' : 'border-white/10 focus:border-haru-500'} bg-white/10 backdrop-blur-sm rounded-xl border-2 focus:bg-white/20 outline-none transition-all font-semibold text-white placeholder:text-white/50`}
                   placeholder={errorMessage || '아이디를 입력하세요'}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && showPassword && passwordInputRef?.current) {
+                      e.preventDefault()
+                      passwordInputRef.current.focus()
+                    }
+                  }}
                 />
                 {errorMessage && (
                   <span
@@ -318,6 +318,7 @@ function LoginForm({
                     type="password"
                     id="password"
                     aria-invalid={Boolean(errorMessage)}
+                    tabIndex={showPassword ? undefined : -1}
                     className={`w-full px-4 py-2.5 ${errorMessage ? 'pr-10 border-red-400 focus:border-red-400' : 'border-white/10 focus:border-haru-500'} bg-white/10 backdrop-blur-sm rounded-xl border-2 focus:bg-white/20 outline-none transition-all font-semibold text-white placeholder:text-white/50`}
                     placeholder={errorMessage || '비밀번호를 입력하세요'}
                   />
@@ -336,7 +337,7 @@ function LoginForm({
         </div>
 
         {/* Submit Button */}
-        <Button type="submit" disabled={isSubmitting} fullWidth size="lg" className={buttonClassName}>
+        <Button type="submit" disabled={isSubmitting} tabIndex={showPassword ? undefined : -1} fullWidth size="lg" className={buttonClassName}>
           {isSubmitting ? '로그인 중...' : '챌린지 시작하기'}
         </Button>
 

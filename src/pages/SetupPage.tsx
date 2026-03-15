@@ -60,7 +60,7 @@ export function SetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white px-[var(--page-px)] pt-[var(--page-py-top)] pb-[var(--page-py-bottom)]">
+    <div className="min-h-screen overflow-y-auto bg-white px-[var(--page-px)] pt-[var(--page-py-top)] pb-[var(--page-py-bottom)]">
       <div className="mx-auto max-w-2xl space-y-10">
         {/* 헤더 */}
         <div>

@@ -42,7 +42,7 @@ function markReminderModalShown(loginId: string): void {
 
 export function TodayPage() {
   const { user, isAuthenticated } = useAuth()
-  const { data: problem, isLoading: problemLoading, error } = useTodayProblem({ enabled: isAuthenticated })
+  const { data: problem, isLoading: problemLoading, error, refetch, isRefetching } = useTodayProblem({ enabled: isAuthenticated })
   const { data: streak, isLoading: streakLoading } = useStreak({ enabled: isAuthenticated })
   const navigate = useNavigate()
   const [isReminderOpen, setIsReminderOpen] = useState(false)
@@ -242,15 +242,19 @@ export function TodayPage() {
             <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.2em] animate-pulse">Loading Next Goal...</p>
           </div>
         ) : error ? (
-          <div className="py-10 text-center bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
+          <div className="py-10 text-center bg-red-50/50 rounded-3xl border-2 border-dashed border-red-100">
             <div className="flex flex-col items-center gap-3">
-              <div className="relative w-8 h-8">
-                <div className="absolute inset-0 border-[3px] border-slate-100 rounded-full"></div>
-                <div className="absolute inset-0 border-[3px] border-haru-400 border-t-transparent rounded-full animate-spin"></div>
-              </div>
-              <p className="text-slate-500 text-sm font-semibold">
-                챌린지를 준비 중입니다. 잠시만 기다려주세요.
-              </p>
+              <span className="text-3xl">⚠️</span>
+              <p className="text-slate-600 text-sm font-bold">챌린지 불러오기 실패</p>
+              <p className="text-slate-400 text-xs font-medium">네트워크 오류가 발생했습니다. 다시 시도해주세요.</p>
+              <button
+                type="button"
+                onClick={() => refetch()}
+                disabled={isRefetching}
+                className="mt-1 px-4 py-2 rounded-xl bg-haru-500 text-white text-xs font-bold hover:bg-haru-600 active:scale-95 transition-all disabled:opacity-60"
+              >
+                {isRefetching ? '재시도 중...' : '다시 시도'}
+              </button>
             </div>
           </div>
         ) : problem ? (

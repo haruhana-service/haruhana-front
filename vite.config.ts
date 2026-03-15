@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   server: {
     proxy: {
       '/api': {
@@ -60,7 +60,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        mode: 'development',
+        ...(mode === 'development' && { mode: 'development' }),
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         globIgnores: ['firebase-messaging-sw.js'],
         runtimeCaching: [
@@ -86,4 +86,4 @@ export default defineConfig({
       }
     })
   ],
-})
+}))
