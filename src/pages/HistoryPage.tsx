@@ -72,11 +72,7 @@ export function HistoryPage() {
   const today = format(new Date(), 'yyyy-MM-dd')
   const now = new Date()
   const joinedDateKey = user?.createdAt ? format(new Date(user.createdAt), 'yyyy-MM-dd') : null
-  const joinMonthStart = joinedDateKey ? new Date(joinedDateKey + 'T00:00:00') : null
-  const isPrevDisabled =
-    !!joinMonthStart &&
-    currentMonth.getFullYear() === joinMonthStart.getFullYear() &&
-    currentMonth.getMonth() === joinMonthStart.getMonth()
+  const isPrevDisabled = false
   const isNextDisabled =
     currentMonth.getFullYear() === now.getFullYear() &&
     currentMonth.getMonth() === now.getMonth()
@@ -112,7 +108,8 @@ export function HistoryPage() {
           ))}
         </div>
 
-        <div className="overflow-hidden">
+        {/* overflow-visible로 ring이 잘리지 않도록, AnimatePresence clip은 -mx-1 px-1로 처리 */}
+        <div className="overflow-hidden -mx-1 px-1 py-1">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={format(currentMonth, 'yyyy-MM')}
@@ -125,15 +122,24 @@ export function HistoryPage() {
             if (!date) return <div key={`empty-${idx}`}></div>
 
             const dateStr = format(date, 'yyyy-MM-dd')
-            if (joinedDateKey && dateStr < joinedDateKey) {
-              return <div key={`before-${dateStr}`}></div>
-            }
+            const isBeforeJoin = !!(joinedDateKey && dateStr < joinedDateKey)
             const isSelected = selectedDate === dateStr
             const isToday = dateStr === today
 
             const problemData = problemsMap?.get(dateStr)
             const hasProblem = !!problemData
             const isSolved = problemData?.isSolved ?? false
+
+            if (isBeforeJoin) {
+              return (
+                <div
+                  key={`before-${dateStr}`}
+                  className="aspect-square rounded-md flex items-center justify-center text-[12px] text-slate-300 font-medium"
+                >
+                  {date.getDate()}
+                </div>
+              )
+            }
 
             return (
               <button
