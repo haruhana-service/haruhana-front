@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '../../constants'
 import { useAuth } from '../../hooks/useAuth'
@@ -10,12 +10,20 @@ export function Header() {
   const navigate = useNavigate()
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
   const [isCheckingLogout, setIsCheckingLogout] = useState(false)
+  const isMountedRef = useRef(true)
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => { isMountedRef.current = false }
+  }, [])
 
   const handleLogoutClick = async () => {
     if (isCheckingLogout) return
     setIsCheckingLogout(true)
 
     const solved = await getTodayProblemSolvedStatus()
+    if (!isMountedRef.current) return
+
     setIsCheckingLogout(false)
 
     if (solved) {

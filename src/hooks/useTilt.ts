@@ -13,6 +13,7 @@ export function useTilt({ maxTilt = 8, scale = 1.01 }: TiltOptions = {}) {
     (e: React.MouseEvent<HTMLDivElement>) => {
       const el = ref.current
       if (!el) return
+      el.style.transition = 'none'
       const rect = el.getBoundingClientRect()
       const x = (e.clientX - rect.left) / rect.width - 0.5   // -0.5 ~ 0.5
       const y = (e.clientY - rect.top) / rect.height - 0.5
@@ -24,7 +25,11 @@ export function useTilt({ maxTilt = 8, scale = 1.01 }: TiltOptions = {}) {
   const handleMouseLeave = useCallback(() => {
     const el = ref.current
     if (!el) return
+    el.style.transition = 'transform 0.4s ease-out'
     el.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)'
+    el.addEventListener('transitionend', () => {
+      el.style.transition = ''
+    }, { once: true })
   }, [])
 
   return { ref, handleMouseMove, handleMouseLeave }

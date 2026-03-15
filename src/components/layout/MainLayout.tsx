@@ -12,9 +12,9 @@ export function MainLayout({ children }: MainLayoutProps) {
     <div className="min-h-[100dvh] h-screen bg-[#F8FAFC] flex overflow-hidden relative">
       {/* Ambient background blobs */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute -top-1/3 -right-1/4 w-[700px] h-[700px] rounded-full bg-haru-400/[0.04] blur-[140px]" style={{ animation: 'floatOrb 14s ease-in-out infinite' }} />
-        <div className="absolute -bottom-1/3 -left-1/4 w-[600px] h-[600px] rounded-full bg-purple-400/[0.035] blur-[120px]" style={{ animation: 'floatOrb 18s ease-in-out infinite reverse' }} />
-        <div className="absolute top-1/2 right-1/3 w-[400px] h-[400px] rounded-full bg-sky-300/[0.03] blur-[100px]" style={{ animation: 'floatOrb 22s ease-in-out infinite 6s' }} />
+        <div className="absolute -top-1/3 -right-1/4 w-[700px] h-[700px] rounded-full bg-haru-400/[0.04] blur-[140px]" style={{ animation: 'floatOrb 14s ease-in-out infinite', willChange: 'transform' }} />
+        <div className="absolute -bottom-1/3 -left-1/4 w-[600px] h-[600px] rounded-full bg-purple-400/[0.035] blur-[120px]" style={{ animation: 'floatOrb 18s ease-in-out infinite reverse', willChange: 'transform' }} />
+        <div className="absolute top-1/2 right-1/3 w-[400px] h-[400px] rounded-full bg-sky-300/[0.03] blur-[100px]" style={{ animation: 'floatOrb 22s ease-in-out infinite 6s', willChange: 'transform' }} />
       </div>
       {/* 스킵 네비게이션 */}
       <a

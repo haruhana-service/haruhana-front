@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { NAV_ITEMS, ADMIN_NAV_ITEMS } from '../../constants/navigation'
@@ -5,12 +6,34 @@ import { NAV_ITEMS, ADMIN_NAV_ITEMS } from '../../constants/navigation'
 export function TabBar() {
   const { user } = useAuth()
   const location = useLocation()
+  const [inputFocused, setInputFocused] = useState(false)
+
+  useEffect(() => {
+    const onFocusIn = (e: FocusEvent) => {
+      if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) {
+        setInputFocused(true)
+      }
+    }
+    const onFocusOut = (e: FocusEvent) => {
+      if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) {
+        setInputFocused(false)
+      }
+    }
+    document.addEventListener('focusin', onFocusIn)
+    document.addEventListener('focusout', onFocusOut)
+    return () => {
+      document.removeEventListener('focusin', onFocusIn)
+      document.removeEventListener('focusout', onFocusOut)
+    }
+  }, [])
   const navItems = user?.role === 'ROLE_ADMIN' ? ADMIN_NAV_ITEMS : NAV_ITEMS
   const activeIndex = Math.max(
     0,
     navItems.findIndex((item) => location.pathname.startsWith(item.path))
   )
   const itemCount = Math.max(1, navItems.length)
+
+  if (inputFocused) return null
 
   return (
     <nav className="lg:hidden shrink-0 h-[calc(4rem+env(safe-area-inset-bottom))] glass bg-white/90 border-t border-slate-200/70 flex justify-around items-center px-4 pb-[env(safe-area-inset-bottom)] fixed bottom-0 left-0 right-0 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.06)]">
@@ -21,6 +44,7 @@ export function TabBar() {
             width: `calc(100% / ${itemCount})`,
             transform: `translateX(${activeIndex * 100}%)`,
             padding: '4px',
+            willChange: 'transform',
           }}
           aria-hidden="true"
         >
