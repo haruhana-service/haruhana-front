@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useCategories } from '../../hooks/useCategories'
 
 interface CategorySelectorProps {
@@ -14,6 +14,13 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
   const [selectedGroupId, setSelectedGroupId] = useState<number>()
   const [openPanel, setOpenPanel] = useState<'category' | 'group' | 'topic' | null>(null)
   const [closingPanel, setClosingPanel] = useState(false)
+  const timerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) clearTimeout(timerRef.current)
+    }
+  }, [])
 
   const categories = useMemo(() => categoriesData?.categories || [], [categoriesData])
 
@@ -68,8 +75,9 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
   }
 
   const triggerClose = () => {
+    if (timerRef.current !== null) clearTimeout(timerRef.current)
     setClosingPanel(true)
-    window.setTimeout(() => {
+    timerRef.current = window.setTimeout(() => {
       setOpenPanel(null)
       setClosingPanel(false)
     }, 180)
@@ -109,7 +117,7 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
           <button
             type="button"
             onClick={() => setOpenPanel('category')}
-            className="w-full rounded-xl border border-white/60 bg-white/70 px-3 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-sm text-left hover:border-haru-300 transition-colors"
+            className="w-full min-h-11 rounded-xl border border-white/60 bg-white/70 px-3 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-sm text-left hover:border-haru-300 transition-colors"
           >
             {selectedCategory?.name || '분야를 선택하세요'}
           </button>
@@ -121,7 +129,7 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
             type="button"
             onClick={() => resolvedCategoryId && setOpenPanel('group')}
             disabled={!resolvedCategoryId}
-            className="w-full rounded-xl border border-white/60 bg-white/70 px-3 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-sm text-left hover:border-haru-300 transition-colors disabled:bg-white/40 disabled:text-slate-400 disabled:cursor-not-allowed"
+            className="w-full min-h-11 rounded-xl border border-white/60 bg-white/70 px-3 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-sm text-left hover:border-haru-300 transition-colors disabled:bg-white/40 disabled:text-slate-400 disabled:cursor-not-allowed"
           >
             {selectedGroup?.name || (resolvedCategoryId ? '분류를 선택하세요' : '먼저 분야를 선택하세요')}
           </button>
@@ -133,7 +141,7 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
             type="button"
             onClick={() => resolvedGroupId && setOpenPanel('topic')}
             disabled={!resolvedGroupId}
-            className="w-full rounded-xl border border-white/60 bg-white/70 px-3 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-sm text-left hover:border-haru-300 transition-colors disabled:bg-white/40 disabled:text-slate-400 disabled:cursor-not-allowed"
+            className="w-full min-h-11 rounded-xl border border-white/60 bg-white/70 px-3 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-sm text-left hover:border-haru-300 transition-colors disabled:bg-white/40 disabled:text-slate-400 disabled:cursor-not-allowed"
           >
             {topics.find((t) => t.id === value)?.name || (resolvedGroupId ? '주제를 선택하세요' : '분류를 먼저 선택하세요')}
           </button>
@@ -162,7 +170,7 @@ export function CategorySelector({ value, onChange, error }: CategorySelectorPro
               <button
                 type="button"
                 onClick={() => setOpenPanel(null)}
-                className="text-slate-400 hover:text-slate-600"
+                className="min-h-11 min-w-11 flex items-center justify-center text-slate-400 hover:text-slate-600"
               >
                 닫기
               </button>
