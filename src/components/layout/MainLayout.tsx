@@ -36,7 +36,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <main
           id="main-content"
           data-scroll-container="true"
-          className="flex-1 overflow-y-auto overscroll-none no-scrollbar scroll-smooth [@supports(-webkit-overflow-scrolling:touch)]:[-webkit-overflow-scrolling:touch] px-[var(--page-px)] pt-[var(--page-pt)] pb-[var(--page-pb)]"
+          className="flex-1 overflow-y-auto overscroll-none no-scrollbar [@supports(-webkit-overflow-scrolling:touch)]:[-webkit-overflow-scrolling:touch] px-[var(--page-px)] pt-[var(--page-pt)] pb-[var(--page-pb)]"
         >
           <div className="max-w-xl lg:max-w-3xl mx-auto">
             {children}
