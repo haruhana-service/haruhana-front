@@ -23,6 +23,8 @@ interface CodeProps {
   inline?: boolean
 }
 
+const MIN_ANSWER_LENGTH = 10
+
 // Markdown 렌더러 옵션
 const markdownOptions = {
   overrides: {
@@ -351,7 +353,7 @@ export function ProblemDetailPage() {
 
   // 미제출 상태에서 제출
   const handleSubmit = useCallback(async () => {
-    if (!problemId || answer.length < 10) return
+    if (!problemId || answer.length < MIN_ANSWER_LENGTH) return
     setIsSubmitting(true)
     setApiError(null)
     try {
@@ -385,7 +387,7 @@ export function ProblemDetailPage() {
 
   // 수정 제출
   const handleEditSubmit = useCallback(async () => {
-    if (!problemId || editAnswer.length < 10) return
+    if (!problemId || editAnswer.length < MIN_ANSWER_LENGTH) return
     setIsSubmitting(true)
     setApiError(null)
     try {
@@ -512,14 +514,14 @@ export function ProblemDetailPage() {
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
                   className="w-full h-36 p-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-indigo-400 focus:bg-white outline-none resize-none text-[14px] transition-all font-medium leading-[1.6]"
-                  placeholder="오늘의 생각을 여기에 기록해보세요..."
+                  placeholder={`오늘의 생각을 여기에 기록해보세요. (최소 ${MIN_ANSWER_LENGTH}자)`}
                 />
               </div>
               <Button
                 fullWidth
                 size="md"
                 onClick={handleSubmit}
-                disabled={answer.length < 10 || isSubmitting}
+                disabled={answer.length < MIN_ANSWER_LENGTH || isSubmitting}
                 className="h-12 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/8 font-semibold"
               >
                 {isSubmitting ? '제출 중...' : '문제 제출하기'}
@@ -571,7 +573,7 @@ export function ProblemDetailPage() {
                       <Button
                         size="sm"
                         onClick={handleEditSubmit}
-                        disabled={editAnswer.length < 10 || isSubmitting}
+                        disabled={editAnswer.length < MIN_ANSWER_LENGTH || isSubmitting}
                         className="flex-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white"
                       >
                         {isSubmitting ? '수정 중...' : '수정 완료'}
