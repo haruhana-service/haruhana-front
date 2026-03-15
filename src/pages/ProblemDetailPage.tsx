@@ -621,7 +621,7 @@ export function ProblemDetailPage() {
               <Button
                 fullWidth
                 onClick={handleBack}
-                className="h-16 rounded-[24px] bg-indigo-50 text-indigo-700 font-black text-[17px] shadow-sm hover:bg-indigo-100 border-none transition-all"
+                className="h-16 rounded-[24px] bg-indigo-400 text-white font-black text-[17px] shadow-md shadow-indigo-300/40 hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-400/50 hover:scale-[1.02] border-none transition-all duration-200 active:scale-[0.98]"
               >
                 대시보드로 돌아가기
               </Button>
