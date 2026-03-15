@@ -53,14 +53,14 @@ export function SetupPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="flex min-h-screen items-center justify-center bg-white px-[var(--page-px)] pt-[var(--page-py-top)] pb-[var(--page-py-bottom)]">
         <div className="text-gray-500">로딩 중...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white px-6 py-12">
+    <div className="min-h-screen overflow-y-auto bg-white px-[var(--page-px)] pt-[var(--page-py-top)] pb-[var(--page-py-bottom)]">
       <div className="mx-auto max-w-2xl space-y-10">
         {/* 헤더 */}
         <div>

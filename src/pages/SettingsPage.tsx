@@ -9,7 +9,6 @@ import { formatDateKorean } from '../utils/date'
 import { toast } from 'sonner'
 import { getNotificationPermission, requestAndSyncFCMToken, deleteFCMToken, getSavedFCMToken } from '../services/fcmService'
 import { Modal } from '../components/ui/Modal'
-import { getTodayProblemSolvedStatus } from '../features/problem/utils/todayProblem'
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   EASY: '쉬움 (기초)',
@@ -33,8 +32,6 @@ export function SettingsPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteReason, setDeleteReason] = useState('')
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
-  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
-  const [isCheckingLogout, setIsCheckingLogout] = useState(false)
 
   // 알림 설정 상태
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default')
@@ -182,31 +179,6 @@ export function SettingsPage() {
     setIsEditingProfile(false)
   }
 
-  const handleOpenLogoutDialog = async () => {
-    if (isCheckingLogout) return
-    setIsCheckingLogout(true)
-
-    const solved = await getTodayProblemSolvedStatus()
-    setIsCheckingLogout(false)
-
-    if (solved) {
-      await logout()
-      return
-    }
-
-    setIsLogoutDialogOpen(true)
-  }
-
-  const handleConfirmLogout = async () => {
-    setIsLogoutDialogOpen(false)
-    await logout()
-  }
-
-  const handleGoToToday = () => {
-    setIsLogoutDialogOpen(false)
-    navigate(ROUTES.TODAY)
-  }
-
   const openDeleteDialog = () => {
     setDeleteReason('')
     setDeleteConfirmText('')
@@ -240,12 +212,14 @@ export function SettingsPage() {
     <div className="animate-fade-up flex flex-col items-center pb-20 pt-4">
       {/* 프로필 헤더 - 프리미엄 디자인 */}
       <div className="w-full">
-        <div className="relative overflow-hidden bg-gradient-to-br from-haru-500 via-haru-600 to-haru-700 rounded-xl sm:rounded-2xl shadow-premium-lg min-w-0">
-          {/* 배경 패턴 */}
-          <div className="absolute inset-0 opacity-10 overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 sm:w-48 sm:h-48 bg-white rounded-full -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-full translate-y-1/2 -translate-x-1/2"></div>
-          </div>
+        <div className="relative overflow-hidden bg-gradient-to-br from-haru-500 via-haru-600 to-indigo-700 rounded-xl sm:rounded-2xl shadow-[0_20px_60px_rgba(74,105,255,0.3)] min-w-0 shimmer-sweep">
+          {/* 도트 그리드 */}
+          <div className="absolute inset-0 dot-grid pointer-events-none opacity-70" />
+          {/* 글로우 블롭 */}
+          <div className="absolute -top-10 -right-10 w-44 h-44 bg-white/10 rounded-full blur-[45px]"></div>
+          <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-purple-400/20 rounded-full blur-[35px]"></div>
+          {/* 상단 액센트 라인 */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
 
           <div className="relative px-4 sm:px-6 py-4 sm:py-6 min-w-0">
             {/* 수정 버튼 - 우측 상단 고정 */}
@@ -571,31 +545,6 @@ export function SettingsPage() {
         <section className="space-y-3">
           <h3 className="text-[12px] font-extrabold text-slate-400 uppercase tracking-[0.2em] ml-1">나의 계정</h3>
           <button
-            onClick={handleOpenLogoutDialog}
-            disabled={isCheckingLogout}
-            className="w-full p-5 bg-white rounded-[20px] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-red-200 hover:bg-red-50/20 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7" />
-                </svg>
-              </div>
-              <span className="text-[15px] font-bold text-slate-700 group-hover:text-red-600 transition-colors">
-                {isCheckingLogout ? '확인 중...' : '서비스 로그아웃'}
-              </span>
-            </div>
-            <svg
-              className="w-5 h-5 text-slate-300 group-hover:text-red-300 transition-all"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth={2.5}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-          <button
             onClick={openDeleteDialog}
             className="w-full p-5 bg-white rounded-[20px] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-red-300 hover:bg-red-50/40 transition-all active:scale-[0.98]"
           >
@@ -621,11 +570,6 @@ export function SettingsPage() {
           </button>
         </section>
 
-        <div className="text-center pt-10 opacity-30">
-          <p className="text-[12px] text-slate-400 font-extrabold tracking-[0.3em] uppercase italic">
-            HaruHaru Intelligence v1.0
-          </p>
-        </div>
       </div>
       <Modal isOpen={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)} title="정말 탈퇴하시겠어요?" size="sm">
         <div className="space-y-5">
@@ -691,29 +635,6 @@ export function SettingsPage() {
         </div>
       </Modal>
 
-      <Modal isOpen={isLogoutDialogOpen} onClose={() => setIsLogoutDialogOpen(false)} title="로그아웃하시겠어요?" size="sm">
-        <div className="space-y-5">
-          <p className="text-sm text-slate-600 leading-relaxed">
-            아직 오늘의 문제를 풀지 않았어요. 5분만 투자해도 충분해요.
-          </p>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleGoToToday}
-              className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition-all active:scale-95"
-            >
-              문제 풀기
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmLogout}
-              className="flex-1 px-4 py-3 bg-white border border-slate-300 text-slate-700 font-bold rounded-xl transition-all active:scale-95"
-            >
-              로그아웃
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   )
 }

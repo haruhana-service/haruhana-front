@@ -3,15 +3,17 @@
 /* Base Typography Styles */
 @layer base {
   html {
-    background-color: #F8FAFC;
+    height: 100%;
+    overscroll-behavior: none;
   }
 
   body {
     @apply font-medium text-[15px] leading-relaxed;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    overscroll-behavior-y: none;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -31,6 +33,19 @@
   }
 }
 
+:root {
+  --page-px: clamp(12px, 4vw, 32px);
+  --page-pt: clamp(12px, 2.5vh, 24px);
+  --page-pb: calc(clamp(16px, 8vh, 96px) + env(safe-area-inset-bottom));
+  --page-py-top: calc(clamp(16px, 5vh, 48px) + env(safe-area-inset-top));
+  --page-py-bottom: calc(clamp(16px, 5vh, 48px) + env(safe-area-inset-bottom));
+}
+
+#root {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
 @theme {
   --color-haru-50: #f5f7ff;
   --color-haru-100: #ebf0ff;
@@ -46,9 +61,15 @@
   --animate-fade-in: fadeIn 0.3s ease-out;
   --animate-fade-up: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-slide-up-fade: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slide-down-fade: slideDownFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-modal-in: modalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-modal-out: modalOut 0.18s ease-in forwards;
   --animate-float: float 3s ease-in-out infinite;
   --animate-bounce-soft: bounceSoft 2s infinite;
   --animate-pulse-glow: pulseGlow 2s infinite;
+  --animate-logo-glass: glassSheen 2.4s ease-in-out infinite;
+  --animate-logo-glass-exit: glassSheen 0.45s ease-out 1, logoFlash 0.35s ease-out 1;
+  --animate-page-enter: pageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 
   @keyframes fadeIn {
     0% { opacity: 0; }
@@ -65,6 +86,21 @@
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
 
+  @keyframes slideDownFade {
+    0% { opacity: 0; transform: translateY(-10px) scale(0.98); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes modalIn {
+    0% { opacity: 0; transform: translateY(10px) scale(0.98); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes modalOut {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(6px) scale(0.98); }
+  }
+
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
@@ -79,6 +115,68 @@
     0%, 100% { opacity: 0.5; filter: blur(20px); }
     50% { opacity: 0.8; filter: blur(30px); }
   }
+
+  @keyframes glassSheen {
+    0% { background-position: -120% 0; }
+    100% { background-position: 120% 0; }
+  }
+
+  @keyframes logoFlash {
+    0% { text-shadow: 0 6px 24px rgba(74, 105, 255, 0.25); filter: brightness(1); }
+    60% { text-shadow: 0 8px 28px rgba(255, 255, 255, 0.55); filter: brightness(1.15); }
+    100% { text-shadow: 0 6px 24px rgba(74, 105, 255, 0.25); filter: brightness(1); }
+  }
+
+  @keyframes pageEnter {
+    0% { opacity: 0; transform: translateY(6px) scale(0.995); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes aurora {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  @keyframes grassReveal {
+    0% { opacity: 0; transform: translateY(6px) scale(0.6); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  --animate-aurora: aurora 8s ease infinite;
+  --animate-grass-reveal: grassReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-shimmer: shimmer 2.4s ease-in-out infinite;
+  --animate-float-orb: floatOrb 12s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0% { transform: translateX(-120%) skewX(-15deg); }
+    100% { transform: translateX(320%) skewX(-15deg); }
+  }
+
+  @keyframes floatOrb {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(24px, -18px) scale(1.06); }
+    66% { transform: translate(-16px, 12px) scale(0.94); }
+  }
+}
+
+.logo-glass {
+  position: relative;
+  color: transparent;
+  background-image: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.95) 40%,
+    rgba(255, 255, 255, 0.55) 60%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 6px 24px rgba(74, 105, 255, 0.25);
+}
+
+.logo-glass-exit {
+  animation: var(--animate-logo-glass-exit);
 }
 
 /* Safe Area for mobile devices (iOS notch, home indicator) */
@@ -88,11 +186,41 @@
 
 /* Mesh Gradient Background */
 .mesh-gradient {
-  background-color: #1e1b4b;
-  background-image: 
-    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-    radial-gradient(at 50% 0%, hsla(238,100%,70%,0.15) 0, transparent 50%), 
-    radial-gradient(at 100% 0%, hsla(253,16%,7%,1) 0, transparent 50%);
+  background-color: #12103a;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(253,30%,8%,1) 0, transparent 55%),
+    radial-gradient(at 50% 0%, hsla(238,100%,65%,0.22) 0, transparent 50%),
+    radial-gradient(at 100% 50%, hsla(280,80%,60%,0.15) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(253,30%,8%,1) 0, transparent 55%),
+    radial-gradient(at 0% 100%, hsla(220,90%,60%,0.12) 0, transparent 50%);
+}
+
+/* Dot grid overlay for dark cards */
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Shimmer sweep for cards */
+.shimmer-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.07) 50%, transparent 60%);
+  animation: var(--animate-shimmer);
+  pointer-events: none;
+}
+
+/* Gradient number text */
+.streak-number {
+  background: linear-gradient(135deg, #ffffff 0%, #c7d4ff 60%, #a5b8ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Glass Effect */
@@ -107,6 +235,26 @@
 .stagger-1 { animation-delay: 0.1s; }
 .stagger-2 { animation-delay: 0.2s; }
 .stagger-3 { animation-delay: 0.3s; }
+
+/* Grass (weekly solved) stagger reveal */
+.grass-cell {
+  opacity: 0;
+  animation: grassReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.grass-cell:nth-child(1) { animation-delay: 0.05s; }
+.grass-cell:nth-child(2) { animation-delay: 0.1s; }
+.grass-cell:nth-child(3) { animation-delay: 0.15s; }
+.grass-cell:nth-child(4) { animation-delay: 0.2s; }
+.grass-cell:nth-child(5) { animation-delay: 0.25s; }
+.grass-cell:nth-child(6) { animation-delay: 0.3s; }
+.grass-cell:nth-child(7) { animation-delay: 0.35s; }
+
+/* Aurora background */
+.aurora-bg {
+  background: linear-gradient(270deg, #4a69ff, #7c3aed, #0ea5e9, #4a69ff);
+  background-size: 400% 400%;
+  animation: aurora 8s ease infinite;
+}
 
 /* Keep calendar icon anchored to the right side of admin date input */
 .admin-date-input {

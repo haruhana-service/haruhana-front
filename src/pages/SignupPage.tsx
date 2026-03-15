@@ -21,6 +21,8 @@ const STEPS = [
 export function SignupPage() {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(1)
+  const [stepAnimKey, setStepAnimKey] = useState(0)
+  const [stepAnimDir, setStepAnimDir] = useState<'next' | 'prev'>('next')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCheckingLoginId, setIsCheckingLoginId] = useState(false)
   const [isLoginIdChecked, setIsLoginIdChecked] = useState(false)
@@ -62,7 +64,7 @@ export function SignupPage() {
   const categoryTopicIdValue = watch('categoryTopicId')
   const difficultyValue = watch('difficulty')
 
-  const { isPasswordMismatch, canProceedStep1, isStep3Incomplete, handleCheckNickname } = useSignupState({
+  const { isPasswordMismatch, canProceedStep1, isStep3Incomplete } = useSignupState({
     loginIdValue,
     passwordValue,
     passwordConfirmValue,
@@ -135,7 +137,9 @@ export function SignupPage() {
       }
 
       // 검증 통과
+      setStepAnimDir('next')
       setCurrentStep(prev => prev + 1)
+      setStepAnimKey((prev) => prev + 1)
     } else if (currentStep === 2) {
       // Step 2: 닉네임 검증
       const isValid = await trigger(['nickname'])
@@ -144,7 +148,7 @@ export function SignupPage() {
 
       const normalizedNickname = getValues('nickname').trim()
       if (!isNicknameChecked || checkedNickname !== normalizedNickname) {
-        setApiError('닉네임 중복 확인을 해주세요')
+        setApiError('닉네임 확인 중입니다. 잠시 후 다시 시도해주세요')
         return
       }
 
@@ -153,7 +157,9 @@ export function SignupPage() {
         return
       }
 
+      setStepAnimDir('next')
       setCurrentStep(prev => prev + 1)
+      setStepAnimKey((prev) => prev + 1)
     } else if (currentStep === 3) {
       // Step 3: 학습 설정 검증
       const isValid = await trigger(['categoryTopicId', 'difficulty'])
@@ -166,7 +172,9 @@ export function SignupPage() {
   }
 
   const handlePrev = () => {
+    setStepAnimDir('prev')
     setCurrentStep(prev => prev - 1)
+    setStepAnimKey((prev) => prev + 1)
     setApiError(undefined)
   }
 
@@ -207,7 +215,7 @@ export function SignupPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-haru-50/50 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-0 lg:flex lg:items-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-haru-50/50 px-[var(--page-px)] pt-[var(--page-py-top)] pb-[var(--page-py-bottom)] lg:px-[var(--page-px)] lg:pt-[var(--page-py-top)] lg:pb-[var(--page-py-bottom)] lg:flex lg:items-center">
         <div className="mx-auto w-full max-w-6xl lg:grid lg:grid-cols-[1fr_520px] lg:gap-8">
           <aside className="hidden lg:flex lg:flex-col lg:justify-between rounded-3xl bg-haru-900 text-white p-8 shadow-2xl">
             <div>
@@ -241,7 +249,11 @@ export function SignupPage() {
                   </div>
                 )}
 
-                <SignupStepFields
+                <div
+                  key={stepAnimKey}
+                  className={stepAnimDir === 'prev' ? 'animate-slide-down-fade' : 'animate-fade-up'}
+                >
+                  <SignupStepFields
                   currentStep={currentStep}
                   register={register}
                   errors={errors}
@@ -255,8 +267,8 @@ export function SignupPage() {
                 isNicknameChecked={isNicknameChecked}
                 isNicknameAvailable={isNicknameAvailable}
                   isCheckingNickname={isCheckingNickname}
-                  handleCheckNickname={handleCheckNickname}
                 />
+                </div>
               </form>
             </div>
 

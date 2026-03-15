@@ -16,6 +16,9 @@ export function useTodayProblem(options: UseTodayProblemOptions = {}) {
     queryKey: TODAY_PROBLEM_QUERY_KEY,
     queryFn: getTodayProblem,
     staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
+    retry: 5,
+    retryDelay: (attempt) => Math.min(1500 * (attempt + 1), 5000),
+    refetchOnWindowFocus: true,
     enabled,
   })
 }

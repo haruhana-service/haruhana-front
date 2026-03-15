@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Markdown from 'markdown-to-jsx'
+import confetti from 'canvas-confetti'
 import { useProblemDetail } from '../features/problem/hooks/useProblemDetail'
 import { useSubmitAnswer } from '../features/submission/hooks/useSubmitAnswer'
 import { useUpdateAnswer } from '../features/submission/hooks/useUpdateAnswer'
@@ -348,6 +349,13 @@ export function ProblemDetailPage() {
       const result = await submitAnswerMutation(answer)
       setSubmissionResult(result)
       toast.success('답변이 제출되었습니다.')
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.55 },
+        colors: ['#4a69ff', '#668cff', '#ccd8ff', '#ffffff', '#a78bfa'],
+        scalar: 1.1,
+      })
     } catch (err) {
       if (err && typeof err === 'object' && 'message' in err) {
         setApiError(err.message as string)

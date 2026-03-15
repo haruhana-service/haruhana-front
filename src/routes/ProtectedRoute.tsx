@@ -17,7 +17,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // 로딩 중이면 로딩 표시
   if (isLoading || isLoggingOut) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex min-h-[100dvh] h-screen items-center justify-center">
         <div className="text-lg">로딩 중...</div>
       </div>
     )
@@ -46,7 +46,7 @@ export function PublicRoute({ children }: PublicRouteProps) {
   // 로딩 중이면 로딩 표시
   if (isLoading || isLoggingOut) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex min-h-[100dvh] h-screen items-center justify-center">
         <div className="text-lg">로딩 중...</div>
       </div>
     )

@@ -59,6 +59,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const handleLogout = () => {
       setIsLoggingOut(true)
+      clearAuthTokens()
+      clearAllQueries()
       setUser(null)
       navigate(ROUTES.LOGIN)
       setTimeout(() => setIsLoggingOut(false), 0)
@@ -126,8 +128,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           )}
         </div>
       ), {
-        duration: 5000,
-        position: 'bottom-right',
+        duration: 3000,
+        position: (window.matchMedia('(display-mode: standalone)').matches || window.innerWidth < 768) ? 'top-center' : 'bottom-right',
         unstyled: true,
         style: { padding: 0, background: 'transparent', border: 'none', boxShadow: 'none' },
       })
@@ -195,8 +197,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // 3) 클라이언트 로그아웃 처리
       clearAuthTokens()
-      clearAllQueries()
       setUser(null)
+      clearAllQueries()
       navigate(ROUTES.LOGIN)
     } finally {
       isLoggingOutRef.current = false

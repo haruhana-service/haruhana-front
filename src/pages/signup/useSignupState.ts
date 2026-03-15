@@ -217,6 +217,5 @@ export function useSignupState({
     isPasswordMismatch,
     canProceedStep1,
     isStep3Incomplete,
-    handleCheckNickname,
   }
 }

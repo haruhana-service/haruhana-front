@@ -46,14 +46,17 @@ export function Modal({
 
   // 스크롤 잠금
   useEffect(() => {
+    const scrollContainer = document.querySelector<HTMLElement>('[data-scroll-container="true"]')
+    if (!scrollContainer) return
+
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      scrollContainer.style.overflow = 'hidden'
     } else {
-      document.body.style.overflow = 'unset'
+      scrollContainer.style.overflow = ''
     }
 
     return () => {
-      document.body.style.overflow = 'unset'
+      scrollContainer.style.overflow = ''
     }
   }, [isOpen])
 
