@@ -27,6 +27,9 @@ export function useTilt({ maxTilt = 8, scale = 1.01 }: TiltOptions = {}) {
     if (!el) return
     el.style.transition = 'transform 0.4s ease-out'
     el.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)'
+    el.addEventListener('transitionend', () => {
+      el.style.transition = ''
+    }, { once: true })
   }, [])
 
   return { ref, handleMouseMove, handleMouseLeave }
