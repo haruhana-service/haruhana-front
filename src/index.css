@@ -3,7 +3,6 @@
 /* Base Typography Styles */
 @layer base {
   html {
-    background-color: #F8FAFC;
     height: 100%;
     overscroll-behavior: none;
   }
@@ -46,7 +45,6 @@
 #root {
   height: 100%;
   overscroll-behavior: none;
-  background-color: #F8FAFC;
 }
 
 @theme {
