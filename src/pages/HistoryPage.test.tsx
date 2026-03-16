@@ -6,7 +6,6 @@ import { HistoryPage } from './HistoryPage'
 import * as problemService from '../features/problem/services/problemService'
 import type { DailyProblemResponse } from '../types/models'
 
-// Mock problem service
 vi.mock('../features/problem/services/problemService', () => ({
   getTodayProblem: vi.fn(),
   getProblemDetail: vi.fn(),
@@ -14,7 +13,6 @@ vi.mock('../features/problem/services/problemService', () => ({
   submitSolution: vi.fn(),
 }))
 
-// Mock useNavigate
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
@@ -36,7 +34,6 @@ describe('HistoryPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockNavigate.mockClear()
-    // 기본: 모든 날짜에 문제 없음
     vi.mocked(problemService.getDailyProblem).mockRejectedValue(new Error('No problem'))
   })
 
@@ -54,7 +51,6 @@ describe('HistoryPage', () => {
     const monthText = `${now.getFullYear()}년 ${now.getMonth() + 1}월`
     expect(screen.getByText(monthText)).toBeInTheDocument()
 
-    // 요일 헤더
     for (const day of ['일', '월', '화', '수', '목', '금', '토']) {
       expect(screen.getByText(day)).toBeInTheDocument()
     }
@@ -68,7 +64,6 @@ describe('HistoryPage', () => {
     const currentMonthText = `${now.getFullYear()}년 ${now.getMonth() + 1}월`
     expect(screen.getByText(currentMonthText)).toBeInTheDocument()
 
-    // 이전 달로 이동
     const prevButtons = screen.getAllByRole('button')
     const prevButton = prevButtons.find(btn =>
       btn.querySelector('path[d="M15 19l-7-7 7-7"]')
@@ -86,15 +81,26 @@ describe('HistoryPage', () => {
 
     const now = new Date()
 
+    // First go to previous month (next button is disabled for current month)
+    const buttons = screen.getAllByRole('button')
+    const prevButton = buttons.find(btn =>
+      btn.querySelector('path[d="M15 19l-7-7 7-7"]')
+    )!
+    await user.click(prevButton)
+
+    const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const prevMonthText = `${prevMonth.getFullYear()}년 ${prevMonth.getMonth() + 1}월`
+    expect(screen.getByText(prevMonthText)).toBeInTheDocument()
+
+    // Now next month button should be enabled
     const nextButtons = screen.getAllByRole('button')
     const nextButton = nextButtons.find(btn =>
       btn.querySelector('path[d="M9 5l7 7-7 7"]')
     )!
     await user.click(nextButton)
 
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-    const nextMonthText = `${nextMonth.getFullYear()}년 ${nextMonth.getMonth() + 1}월`
-    expect(screen.getByText(nextMonthText)).toBeInTheDocument()
+    const currentMonthText = `${now.getFullYear()}년 ${now.getMonth() + 1}월`
+    expect(screen.getByText(currentMonthText)).toBeInTheDocument()
   })
 
   it('날짜 클릭 시 해당 날짜의 문제를 표시한다', async () => {
@@ -108,7 +114,6 @@ describe('HistoryPage', () => {
 
     render(<HistoryPage />)
 
-    // 오늘 날짜가 기본 선택되어 있으므로 문제가 표시되어야 함
     await waitFor(() => {
       expect(screen.getByText('Spring IoC 설명하기')).toBeInTheDocument()
     })
@@ -122,7 +127,6 @@ describe('HistoryPage', () => {
       expect(screen.queryByText('로딩 중...')).not.toBeInTheDocument()
     })
 
-    // 오늘 날짜의 문제를 선택 해제 (같은 날짜 다시 클릭)
     const todayDate = new Date().getDate().toString()
     const dateButtons = screen.getAllByRole('button').filter(btn =>
       btn.textContent === todayDate
@@ -197,7 +201,7 @@ describe('HistoryPage', () => {
 
   it('로딩 중에 로딩 메시지를 표시한다', () => {
     vi.mocked(problemService.getDailyProblem).mockImplementation(
-      () => new Promise(() => {}) // never resolves
+      () => new Promise(() => {})
     )
 
     render(<HistoryPage />)

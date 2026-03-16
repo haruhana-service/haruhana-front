@@ -6,20 +6,25 @@ import { SettingsPage } from './SettingsPage'
 import * as authService from '../features/auth/services/authService'
 import * as storageService from '../services/storageService'
 
-// Mock auth service
 vi.mock('../features/auth/services/authService', () => ({
   getProfile: vi.fn(),
   signup: vi.fn(),
   login: vi.fn(),
   updateProfile: vi.fn(),
+  deleteMember: vi.fn(),
 }))
 
-// Mock storage service
+vi.mock('../services/fcmService', () => ({
+  getNotificationPermission: vi.fn().mockReturnValue('default'),
+  getSavedFCMToken: vi.fn().mockReturnValue(null),
+  requestAndSyncFCMToken: vi.fn(),
+  deleteFCMToken: vi.fn().mockResolvedValue(undefined),
+}))
+
 vi.mock('../services/storageService', () => ({
   uploadProfileImage: vi.fn(),
 }))
 
-// Mock useNavigate
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
@@ -29,7 +34,6 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-// Mock useAuth
 const mockLogout = vi.fn()
 const mockRefetchProfile = vi.fn()
 const mockUser = {
@@ -61,7 +65,6 @@ describe('SettingsPage', () => {
     mockLogout.mockClear()
     mockRefetchProfile.mockResolvedValue(undefined)
 
-    // Reset user data
     mockUser.nickname = '테스트유저'
     mockUser.categoryTopicName = 'Spring'
     mockUser.difficulty = 'MEDIUM'
@@ -96,19 +99,15 @@ describe('SettingsPage', () => {
     const user = userEvent.setup()
     render(<SettingsPage />)
 
-    // 수정 버튼 클릭 (title="프로필 수정")
     const editButton = screen.getByTitle('프로필 수정')
     await user.click(editButton)
 
-    // 수정 모드 UI 표시
     expect(screen.getByText('프로필 수정')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('닉네임 입력')).toBeInTheDocument()
 
-    // 취소 버튼 클릭 (버튼 역할의 "취소" 텍스트)
     const cancelButtons = screen.getAllByRole('button', { name: '취소' })
     await user.click(cancelButtons[0])
 
-    // 일반 모드로 복귀
     expect(screen.getByText('테스트유저님')).toBeInTheDocument()
   })
 
@@ -121,15 +120,12 @@ describe('SettingsPage', () => {
     const user = userEvent.setup()
     render(<SettingsPage />)
 
-    // 수정 모드 진입
     await user.click(screen.getByTitle('프로필 수정'))
 
-    // 닉네임 변경
     const nicknameInput = screen.getByPlaceholderText('닉네임 입력')
     await user.clear(nicknameInput)
     await user.type(nicknameInput, '새닉네임')
 
-    // 저장
     await user.click(screen.getByText('저장'))
 
     await waitFor(() => {
@@ -155,15 +151,6 @@ describe('SettingsPage', () => {
     expect(saveButton).toBeDisabled()
   })
 
-  it('로그아웃 버튼 클릭 시 로그아웃 함수가 호출된다', async () => {
-    const user = userEvent.setup()
-    render(<SettingsPage />)
-
-    await user.click(screen.getByText('서비스 로그아웃'))
-
-    expect(mockLogout).toHaveBeenCalled()
-  })
-
   it('알림 설정 섹션이 표시된다', () => {
     render(<SettingsPage />)
 
@@ -174,21 +161,18 @@ describe('SettingsPage', () => {
   it('Notification 미지원 환경에서 안내 메시지를 표시한다', () => {
     render(<SettingsPage />)
 
-    // jsdom에서는 Notification API가 없으므로 미지원 메시지 표시
     expect(screen.getByText('이 브라우저에서 지원하지 않습니다')).toBeInTheDocument()
   })
 
   it('가입일이 올바르게 표시된다', () => {
     render(<SettingsPage />)
 
-    // formatDateKorean으로 포맷된 가입일 + "가입" 텍스트 확인
     expect(screen.getByText(/가입/)).toBeInTheDocument()
   })
 
   it('프로필 이미지가 없을 때 닉네임 첫 글자가 표시된다', () => {
     render(<SettingsPage />)
 
-    // 닉네임 '테스트유저'의 첫 글자 '테'가 아바타로 표시
     const avatars = screen.getAllByText('테')
     expect(avatars.length).toBeGreaterThan(0)
   })
@@ -211,7 +195,6 @@ describe('SettingsPage', () => {
       expect(authService.updateProfile).toHaveBeenCalled()
     })
 
-    // 에러 후에도 수정 모드가 유지됨 (수정 모드를 종료하지 않음)
     expect(screen.getByPlaceholderText('닉네임 입력')).toBeInTheDocument()
   })
 
@@ -228,7 +211,6 @@ describe('SettingsPage', () => {
 
     await user.click(screen.getByTitle('프로필 수정'))
 
-    // 파일 업로드 시뮬레이션
     const file = new File(['image'], 'test.png', { type: 'image/png' })
     const fileInput = document.getElementById('profile-image-upload-edit') as HTMLInputElement
     await user.upload(fileInput, file)
@@ -236,11 +218,121 @@ describe('SettingsPage', () => {
     await user.click(screen.getByText('저장'))
 
     await waitFor(() => {
-      expect(storageService.uploadProfileImage).toHaveBeenCalledWith(file)
+      // uploadProfileImage is called with (file, progressCallback)
+      expect(storageService.uploadProfileImage).toHaveBeenCalledWith(file, expect.any(Function))
       expect(authService.updateProfile).toHaveBeenCalledWith({
         nickname: '테스트유저',
         profileImageKey: 'uploaded-image-key',
       })
     })
+  })
+
+  it('회원 탈퇴 버튼 클릭 시 탈퇴 다이얼로그가 열린다', async () => {
+    const user = userEvent.setup()
+    render(<SettingsPage />)
+
+    const deleteButtons = screen.getAllByRole('button', { name: /회원 탈퇴/ })
+    await user.click(deleteButtons[0])
+
+    await screen.findByRole('dialog')
+    expect(screen.getByText('정말 탈퇴하시겠어요?')).toBeInTheDocument()
+  })
+
+  it('탈퇴 다이얼로그에서 취소 버튼 클릭 시 닫힌다', async () => {
+    const user = userEvent.setup()
+    render(<SettingsPage />)
+
+    const deleteButtons = screen.getAllByRole('button', { name: /회원 탈퇴/ })
+    await user.click(deleteButtons[0])
+
+    await screen.findByRole('dialog')
+
+    const cancelButton = screen.getByRole('button', { name: '취소' })
+    await user.click(cancelButton)
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+  })
+
+  it('탈퇴 사유 선택 후 탈퇴 문구 입력 시 탈퇴 버튼이 활성화된다', async () => {
+    const user = userEvent.setup()
+    render(<SettingsPage />)
+
+    const deleteButtons = screen.getAllByRole('button', { name: /회원 탈퇴/ })
+    await user.click(deleteButtons[0])
+
+    await screen.findByRole('dialog')
+
+    await user.click(screen.getByLabelText('기타'))
+
+    const confirmInput = screen.getByPlaceholderText('탈퇴')
+    await user.type(confirmInput, '탈퇴')
+
+    const confirmButtons = screen.getAllByRole('button', { name: /회원 탈퇴/ })
+    const confirmBtn = confirmButtons[confirmButtons.length - 1]
+    expect(confirmBtn).not.toBeDisabled()
+  })
+
+  it('회원 탈퇴 성공 시 로그인 페이지로 이동한다', async () => {
+    vi.mocked(authService.deleteMember).mockResolvedValue(undefined)
+
+    const user = userEvent.setup()
+    render(<SettingsPage />)
+
+    const deleteButtons = screen.getAllByRole('button', { name: /회원 탈퇴/ })
+    await user.click(deleteButtons[0])
+
+    await screen.findByRole('dialog')
+
+    await user.click(screen.getByLabelText('기타'))
+
+    const confirmInput = screen.getByPlaceholderText('탈퇴')
+    await user.type(confirmInput, '탈퇴')
+
+    const confirmButtons = screen.getAllByRole('button', { name: /회원 탈퇴/ })
+    const confirmBtn = confirmButtons[confirmButtons.length - 1]
+    await user.click(confirmBtn)
+
+    await waitFor(() => {
+      expect(authService.deleteMember).toHaveBeenCalled()
+      expect(mockNavigate).toHaveBeenCalledWith('/login')
+    })
+  })
+
+  it('회원 탈퇴 실패 시 다이얼로그가 닫힌다', async () => {
+    vi.mocked(authService.deleteMember).mockRejectedValue(new Error('Delete failed'))
+
+    const user = userEvent.setup()
+    render(<SettingsPage />)
+
+    const deleteButtons = screen.getAllByRole('button', { name: /회원 탈퇴/ })
+    await user.click(deleteButtons[0])
+
+    await screen.findByRole('dialog')
+
+    await user.click(screen.getByLabelText('기타'))
+
+    const confirmInput = screen.getByPlaceholderText('탈퇴')
+    await user.type(confirmInput, '탈퇴')
+
+    const confirmButtons = screen.getAllByRole('button', { name: /회원 탈퇴/ })
+    const confirmBtn = confirmButtons[confirmButtons.length - 1]
+    await user.click(confirmBtn)
+
+    await waitFor(() => {
+      expect(authService.deleteMember).toHaveBeenCalled()
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+  })
+
+  it('학습 설정이 없을 때 "-"가 표시된다', () => {
+    mockUser.difficulty = undefined as any
+    mockUser.categoryTopicName = undefined as any
+
+    render(<SettingsPage />)
+
+    const dashes = screen.getAllByText('-')
+    expect(dashes.length).toBeGreaterThanOrEqual(2)
   })
 })

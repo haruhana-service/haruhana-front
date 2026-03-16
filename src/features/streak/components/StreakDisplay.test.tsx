@@ -9,6 +9,24 @@ vi.mock('../services/streakService', () => ({
   getStreak: vi.fn(),
 }))
 
+// Mock useAuth to return authenticated state
+vi.mock('../../../hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: {
+      loginId: 'testuser',
+      nickname: 'Test User',
+      role: 'ROLE_MEMBER' as const,
+    },
+    isAuthenticated: true,
+    isLoading: false,
+  }),
+}))
+
+// Mock useCountUp to immediately return target
+vi.mock('../../../hooks/useCountUp', () => ({
+  useCountUp: ({ target }: { target: number }) => target,
+}))
+
 describe('StreakDisplay', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -62,7 +80,7 @@ describe('StreakDisplay', () => {
     })
   })
 
-  it('스트릭이 0인 경우 "아직 스트릭이 없습니다" 메시지를 표시한다', async () => {
+  it('스트릭이 0인 경우 올바르게 표시한다', async () => {
     const mockStreak = {
       currentStreak: 0,
       maxStreak: 0,
@@ -87,7 +105,7 @@ describe('StreakDisplay', () => {
     })
   })
 
-  it('현재 스트릭이 최고 기록과 같을 때 축하 메시지를 표시한다', async () => {
+  it('현재 스트릭이 최고 기록과 같을 때 올바르게 표시한다', async () => {
     const mockStreak = {
       currentStreak: 15,
       maxStreak: 15,
@@ -146,7 +164,6 @@ describe('StreakDisplay', () => {
       expect(screen.getByText('7')).toBeInTheDocument()
     })
 
-    // 반응형 클래스 확인 (예: p-4 sm:p-6, text-4xl sm:text-5xl 등)
     const streakContainer = container.querySelector('[data-testid="streak-container"]')
     expect(streakContainer).toBeInTheDocument()
   })

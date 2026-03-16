@@ -1,8 +1,8 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { CategorySelector } from './CategorySelector'
 import * as categoryHooks from '../../hooks/useCategories'
 
-// Mock useCategories
 vi.mock('../../hooks/useCategories', () => ({
   useCategories: vi.fn(),
 }))
@@ -93,7 +93,7 @@ describe('CategorySelector', () => {
     expect(screen.getByText('카테고리 목록을 불러오지 못했습니다')).toBeInTheDocument()
   })
 
-  it('카테고리 드롭다운을 렌더링한다', () => {
+  it('카테고리 선택 버튼을 렌더링한다', () => {
     mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
@@ -107,13 +107,12 @@ describe('CategorySelector', () => {
       />
     )
 
-    const categorySelect = screen.getByLabelText(/1\. 분야/)
-    expect(categorySelect).toBeInTheDocument()
-    expect(screen.getByText('개발')).toBeInTheDocument()
-    expect(screen.getByText('알고리즘')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '분야를 선택하세요' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '먼저 분야를 선택하세요' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '분류를 먼저 선택하세요' })).toBeDisabled()
   })
 
-  it('그룹 드롭다운은 카테고리 선택 전에는 비활성화된다', () => {
+  it('그룹 버튼은 카테고리 선택 전에 비활성화된다', () => {
     mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
@@ -127,11 +126,10 @@ describe('CategorySelector', () => {
       />
     )
 
-    const groupSelect = screen.getByLabelText(/2\. 분류/)
-    expect(groupSelect).toBeDisabled()
+    expect(screen.getByRole('button', { name: '먼저 분야를 선택하세요' })).toBeDisabled()
   })
 
-  it('토픽 드롭다운은 그룹 선택 전에는 비활성화된다', () => {
+  it('토픽 버튼은 그룹 선택 전에 비활성화된다', () => {
     mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
@@ -145,17 +143,17 @@ describe('CategorySelector', () => {
       />
     )
 
-    const topicSelect = screen.getByLabelText(/3\. 주제/)
-    expect(topicSelect).toBeDisabled()
+    expect(screen.getByRole('button', { name: '분류를 먼저 선택하세요' })).toBeDisabled()
   })
 
-  it('카테고리 선택 시 그룹 드롭다운이 활성화된다', async () => {
+  it('카테고리 선택 시 그룹 버튼이 활성화된다', async () => {
     mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
     })
 
+    const user = userEvent.setup()
     render(
       <CategorySelector
         value={undefined}
@@ -163,20 +161,25 @@ describe('CategorySelector', () => {
       />
     )
 
-    const categorySelect = screen.getByLabelText(/1\. 분야/) as HTMLSelectElement
-    fireEvent.change(categorySelect, { target: { value: '1' } })
+    await user.click(screen.getByRole('button', { name: '분야를 선택하세요' }))
+    const dialog = await screen.findByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: '개발' }))
 
-    const groupSelect = screen.getByLabelText(/2\. 분류/)
-    expect(groupSelect).not.toBeDisabled()
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    }, { timeout: 1000 })
+
+    expect(screen.getByRole('button', { name: '분류를 선택하세요' })).not.toBeDisabled()
   })
 
-  it('그룹 선택 시 토픽 드롭다운이 활성화된다', async () => {
+  it('그룹 선택 시 토픽 버튼이 활성화된다', async () => {
     mockUseCategories({
       data: mockCategoriesData,
       isLoading: false,
       isError: false,
     })
 
+    const user = userEvent.setup()
     render(
       <CategorySelector
         value={undefined}
@@ -184,14 +187,19 @@ describe('CategorySelector', () => {
       />
     )
 
-    const categorySelect = screen.getByLabelText(/1\. 분야/) as HTMLSelectElement
-    fireEvent.change(categorySelect, { target: { value: '1' } })
+    // Select category
+    await user.click(screen.getByRole('button', { name: '분야를 선택하세요' }))
+    const categoryDialog = await screen.findByRole('dialog')
+    await user.click(within(categoryDialog).getByRole('button', { name: '개발' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), { timeout: 1000 })
 
-    const groupSelect = screen.getByLabelText(/2\. 분류/) as HTMLSelectElement
-    fireEvent.change(groupSelect, { target: { value: '10' } })
+    // Select group
+    await user.click(screen.getByRole('button', { name: '분류를 선택하세요' }))
+    const groupDialog = await screen.findByRole('dialog')
+    await user.click(within(groupDialog).getByRole('button', { name: '백엔드' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), { timeout: 1000 })
 
-    const topicSelect = screen.getByLabelText(/3\. 주제/)
-    expect(topicSelect).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: '주제를 선택하세요' })).not.toBeDisabled()
   })
 
   it('토픽 선택 시 onChange를 호출한다', async () => {
@@ -201,6 +209,7 @@ describe('CategorySelector', () => {
       isError: false,
     })
 
+    const user = userEvent.setup()
     render(
       <CategorySelector
         value={undefined}
@@ -208,14 +217,19 @@ describe('CategorySelector', () => {
       />
     )
 
-    const categorySelect = screen.getByLabelText(/1\. 분야/) as HTMLSelectElement
-    fireEvent.change(categorySelect, { target: { value: '1' } })
+    await user.click(screen.getByRole('button', { name: '분야를 선택하세요' }))
+    const categoryDialog = await screen.findByRole('dialog')
+    await user.click(within(categoryDialog).getByRole('button', { name: '개발' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), { timeout: 1000 })
 
-    const groupSelect = screen.getByLabelText(/2\. 분류/) as HTMLSelectElement
-    fireEvent.change(groupSelect, { target: { value: '10' } })
+    await user.click(screen.getByRole('button', { name: '분류를 선택하세요' }))
+    const groupDialog = await screen.findByRole('dialog')
+    await user.click(within(groupDialog).getByRole('button', { name: '백엔드' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), { timeout: 1000 })
 
-    const topicSelect = screen.getByLabelText(/3\. 주제/) as HTMLSelectElement
-    fireEvent.change(topicSelect, { target: { value: '100' } })
+    await user.click(screen.getByRole('button', { name: '주제를 선택하세요' }))
+    const topicDialog = await screen.findByRole('dialog')
+    await user.click(within(topicDialog).getByRole('button', { name: 'Spring' }))
 
     expect(mockOnChange).toHaveBeenCalledWith(100)
   })
@@ -245,15 +259,7 @@ describe('CategorySelector', () => {
       isError: false,
     })
 
-    const { rerender } = render(
-      <CategorySelector
-        value={undefined}
-        onChange={mockOnChange}
-      />
-    )
-
-    // 토픽 ID 100을 전달 (Spring, 개발 > 백엔드에 속함)
-    rerender(
+    render(
       <CategorySelector
         value={100}
         onChange={mockOnChange}
@@ -261,11 +267,9 @@ describe('CategorySelector', () => {
     )
 
     await waitFor(() => {
-      const categorySelect = screen.getByLabelText(/1\. 분야/) as HTMLSelectElement
-      expect(categorySelect.value).toBe('1')
-
-      const groupSelect = screen.getByLabelText(/2\. 분류/) as HTMLSelectElement
-      expect(groupSelect.value).toBe('10')
+      expect(screen.getByRole('button', { name: '개발' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: '백엔드' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Spring' })).toBeInTheDocument()
     })
   })
 
@@ -276,6 +280,7 @@ describe('CategorySelector', () => {
       isError: false,
     })
 
+    const user = userEvent.setup()
     render(
       <CategorySelector
         value={undefined}
@@ -283,11 +288,19 @@ describe('CategorySelector', () => {
       />
     )
 
-    const categorySelect = screen.getByLabelText(/1\. 분야/) as HTMLSelectElement
-    fireEvent.change(categorySelect, { target: { value: '1' } })
+    await user.click(screen.getByRole('button', { name: '분야를 선택하세요' }))
+    const dialog = await screen.findByRole('dialog')
 
-    expect(screen.getByText('백엔드')).toBeInTheDocument()
-    expect(screen.getByText('프론트엔드')).toBeInTheDocument()
+    // Both groups should be shown when category dialog is open
+    await user.click(within(dialog).getByRole('button', { name: '개발' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), { timeout: 1000 })
+
+    // Click group button to open group dialog
+    await user.click(screen.getByRole('button', { name: '분류를 선택하세요' }))
+    const groupDialog = await screen.findByRole('dialog')
+
+    expect(within(groupDialog).getByText('백엔드')).toBeInTheDocument()
+    expect(within(groupDialog).getByText('프론트엔드')).toBeInTheDocument()
   })
 
   it('전체 선택 흐름을 완료할 수 있다', async () => {
@@ -297,6 +310,7 @@ describe('CategorySelector', () => {
       isError: false,
     })
 
+    const user = userEvent.setup()
     render(
       <CategorySelector
         value={undefined}
@@ -304,20 +318,25 @@ describe('CategorySelector', () => {
       />
     )
 
-    // 1단계: 카테고리 선택
-    const categorySelect = screen.getByLabelText(/1\. 분야/) as HTMLSelectElement
-    fireEvent.change(categorySelect, { target: { value: '1' } })
-    expect(mockOnChange).toHaveBeenCalledWith(0) // 카테고리 변경 시
+    // 1단계: 카테고리 선택 → onChange(0) 호출
+    await user.click(screen.getByRole('button', { name: '분야를 선택하세요' }))
+    const categoryDialog = await screen.findByRole('dialog')
+    await user.click(within(categoryDialog).getByRole('button', { name: '개발' }))
+    expect(mockOnChange).toHaveBeenCalledWith(0)
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), { timeout: 1000 })
 
-    // 2단계: 그룹 선택
-    const groupSelect = screen.getByLabelText(/2\. 분류/) as HTMLSelectElement
-    fireEvent.change(groupSelect, { target: { value: '10' } })
-    expect(mockOnChange).toHaveBeenCalledWith(0) // 그룹 변경 시
+    // 2단계: 그룹 선택 → onChange(0) 호출
+    await user.click(screen.getByRole('button', { name: '분류를 선택하세요' }))
+    const groupDialog = await screen.findByRole('dialog')
+    await user.click(within(groupDialog).getByRole('button', { name: '백엔드' }))
+    expect(mockOnChange).toHaveBeenCalledWith(0)
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), { timeout: 1000 })
 
-    // 3단계: 토픽 선택
+    // 3단계: 토픽 선택 → onChange(100) 호출
     mockOnChange.mockClear()
-    const topicSelect = screen.getByLabelText(/3\. 주제/) as HTMLSelectElement
-    fireEvent.change(topicSelect, { target: { value: '100' } })
+    await user.click(screen.getByRole('button', { name: '주제를 선택하세요' }))
+    const topicDialog = await screen.findByRole('dialog')
+    await user.click(within(topicDialog).getByRole('button', { name: 'Spring' }))
     expect(mockOnChange).toHaveBeenCalledWith(100)
   })
 })
