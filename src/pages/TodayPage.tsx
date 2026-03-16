@@ -37,14 +37,18 @@ function getReminderModalKey(loginId: string): string {
   return `haruharu_reminder_modal_shown_date_${loginId}`
 }
 
+function getTodayKST(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date())
+}
+
 function wasReminderModalShownToday(loginId: string): boolean {
   const shownDate = localStorage.getItem(getReminderModalKey(loginId))
   if (!shownDate) return false
-  return shownDate === new Date().toISOString().split('T')[0]
+  return shownDate === getTodayKST()
 }
 
 function markReminderModalShown(loginId: string): void {
-  localStorage.setItem(getReminderModalKey(loginId), new Date().toISOString().split('T')[0])
+  localStorage.setItem(getReminderModalKey(loginId), getTodayKST())
 }
 
 export function TodayPage() {
