@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { ROUTES } from '../constants'
+import { getStatistics } from '../services/adminStatsService'
 
 // ============================================
 // Admin Dashboard
@@ -35,6 +37,10 @@ const adminMenus = [
 
 export function AdminDashboard() {
   const navigate = useNavigate()
+  const { data: stats } = useQuery({
+    queryKey: ['admin-statistics'],
+    queryFn: getStatistics,
+  })
 
   return (
     <div className="space-y-8 p-4 sm:p-6">
@@ -42,6 +48,21 @@ export function AdminDashboard() {
         <h1 className="text-2xl font-black tracking-tight text-slate-900">관리자 대시보드</h1>
         <p className="mt-1 text-sm text-slate-500">HaruHaru 관리 시스템</p>
       </div>
+
+      {stats && (
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: '전체 사용자', value: stats.totalMemberCount },
+            { label: '오늘 문제 수', value: stats.todayProblemCount },
+            { label: '오늘 제때 제출', value: stats.todayOnTimeSubmissionCount },
+          ].map((item) => (
+            <div key={item.label} className="rounded-lg border border-slate-200 bg-white p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{item.label}</p>
+              <p className="mt-2 text-2xl font-black text-slate-900">{item.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2">
         {adminMenus.map((menu) => (

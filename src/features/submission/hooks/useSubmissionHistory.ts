@@ -8,8 +8,9 @@ import type { DailyProblemResponse } from '../../../types/models'
  * @param month - 조회할 월 (Date 객체)
  */
 export function useSubmissionHistory(month: Date) {
+  const today = format(new Date(), 'yyyy-MM-dd')
   return useQuery({
-    queryKey: ['submission-history', format(month, 'yyyy-MM')],
+    queryKey: ['submission-history', format(month, 'yyyy-MM'), today],
     queryFn: async () => {
       // 해당 월의 모든 날짜를 가져옴
       const start = startOfMonth(month)

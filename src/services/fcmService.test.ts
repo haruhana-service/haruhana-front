@@ -62,14 +62,15 @@ describe('deleteFCMToken', () => {
     expect(localStorage.getItem('haruharu_fcm_token')).toBeNull()
   })
 
-  it('로컬 디바이스 토큰이 없으면 오류를 던진다', async () => {
+  it('로컬 디바이스 토큰이 없으면 deleteDeviceToken을 호출하지 않는다', async () => {
     const { deleteFCMToken } = await import('./fcmService')
 
     mockGetFirebaseMessaging.mockReturnValue(null)
     mockDeleteDeviceToken.mockResolvedValue(undefined)
     localStorage.removeItem('haruharu_fcm_token')
 
-    await expect(deleteFCMToken()).rejects.toThrow('Device token missing')
+    // Does NOT throw even when device token is missing (error is caught internally)
+    await expect(deleteFCMToken()).resolves.toBeUndefined()
 
     expect(mockDeleteToken).not.toHaveBeenCalled()
     expect(mockDeleteDeviceToken).not.toHaveBeenCalled()

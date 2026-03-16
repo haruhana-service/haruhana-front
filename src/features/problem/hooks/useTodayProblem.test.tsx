@@ -75,7 +75,7 @@ describe('useTodayProblem', () => {
     const error = new Error('문제를 불러올 수 없습니다')
     vi.mocked(problemService.getTodayProblem).mockRejectedValue(error)
 
-    const { result } = renderHook(() => useTodayProblem(), { wrapper })
+    const { result } = renderHook(() => useTodayProblem({ retry: false, retryDelay: 0 }), { wrapper })
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true)
@@ -131,7 +131,7 @@ describe('useTodayProblem', () => {
     const error = new Error('오늘 할당된 문제가 없습니다')
     vi.mocked(problemService.getTodayProblem).mockRejectedValue(error)
 
-    const { result } = renderHook(() => useTodayProblem(), { wrapper })
+    const { result } = renderHook(() => useTodayProblem({ retry: false, retryDelay: 0 }), { wrapper })
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true)

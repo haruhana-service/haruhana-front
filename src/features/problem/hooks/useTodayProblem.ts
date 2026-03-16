@@ -8,16 +8,22 @@ import { TODAY_PROBLEM_QUERY_KEY } from '../utils/todayProblem'
  */
 interface UseTodayProblemOptions {
   enabled?: boolean
+  retry?: number | boolean
+  retryDelay?: number | ((attempt: number) => number)
 }
 
 export function useTodayProblem(options: UseTodayProblemOptions = {}) {
-  const { enabled = true } = options
+  const {
+    enabled = true,
+    retry = 5,
+    retryDelay = (attempt) => Math.min(1500 * (attempt + 1), 5000),
+  } = options
   return useQuery({
     queryKey: TODAY_PROBLEM_QUERY_KEY,
     queryFn: getTodayProblem,
     staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
-    retry: 5,
-    retryDelay: (attempt) => Math.min(1500 * (attempt + 1), 5000),
+    retry,
+    retryDelay,
     refetchOnWindowFocus: true,
     enabled,
   })
