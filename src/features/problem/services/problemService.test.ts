@@ -86,10 +86,10 @@ describe('problemService', () => {
       const mockSubmission = { id: 1, answer: 'test', isOnTime: true }
       vi.mocked(api.post).mockResolvedValue({ data: { data: mockSubmission } })
 
-      const result = await problemService.submitSolution(1, { answer: 'test' })
+      const result = await problemService.submitSolution(1, { userAnswer: 'test' })
 
       expect(result).toEqual(mockSubmission)
-      expect(api.post).toHaveBeenCalledWith('/v1/daily-problem/1/submissions', { answer: 'test' })
+      expect(api.post).toHaveBeenCalledWith('/v1/daily-problem/1/submissions', { userAnswer: 'test' })
     })
   })
 

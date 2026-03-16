@@ -34,6 +34,8 @@ describe('authService', () => {
         loginId: 'testuser',
         password: 'password123',
         nickname: '테스트유저',
+        categoryTopicId: 1,
+        difficulty: 'EASY',
       })
 
       expect(result).toBe(1)
@@ -134,9 +136,9 @@ describe('authService', () => {
     it('학습 설정 업데이트 API를 호출한다', async () => {
       vi.mocked(api.patch).mockResolvedValue({})
 
-      await authService.updatePreference({ difficulty: 'HARD', topicId: 1 })
+      await authService.updatePreference({ difficulty: 'HARD', categoryTopicId: 1 })
 
-      expect(api.patch).toHaveBeenCalledWith('/v1/members/preferences', { difficulty: 'HARD', topicId: 1 })
+      expect(api.patch).toHaveBeenCalledWith('/v1/members/preferences', { difficulty: 'HARD', categoryTopicId: 1 })
     })
   })
 })
