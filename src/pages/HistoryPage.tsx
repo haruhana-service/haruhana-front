@@ -22,7 +22,7 @@ export function HistoryPage() {
   const [slideDirection, setSlideDirection] = useState<number>(1) // 1 = forward, -1 = back
 
   // API 연동: 월별 제출 기록 조회
-  const { data: problemsMap, isLoading } = useSubmissionHistory(currentMonth)
+  const { data: problemsMap, isLoading, isFetching } = useSubmissionHistory(currentMonth)
 
   // 선택된 날짜의 문제
   const problem = selectedDate && problemsMap ? problemsMap.get(selectedDate) : null
@@ -176,7 +176,7 @@ export function HistoryPage() {
         </div>
 
         <div className="pb-2">
-          {isLoading ? (
+          {isLoading || isFetching ? (
             <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-slate-100">
               <p className="text-[13px] font-medium">로딩 중...</p>
             </div>
