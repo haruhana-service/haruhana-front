@@ -39,6 +39,7 @@ export function useSubmissionHistory(month: Date) {
 
       return problemsMap
     },
-    staleTime: 1000 * 60 * 5, // 5분간 fresh
+    staleTime: 0, // 항상 최신 데이터 fetch
+    refetchOnMount: 'always', // 마운트 시 항상 refetch
   })
 }
