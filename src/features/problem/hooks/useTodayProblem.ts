@@ -21,10 +21,11 @@ export function useTodayProblem(options: UseTodayProblemOptions = {}) {
   return useQuery({
     queryKey: TODAY_PROBLEM_QUERY_KEY,
     queryFn: getTodayProblem,
-    staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
+    staleTime: 0, // 항상 stale 처리 (자정 경계에서 오래된 데이터 방지)
     retry,
     retryDelay,
-    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always', // 백그라운드 복귀 시 항상 최신 데이터 가져오기
     enabled,
   })
 }

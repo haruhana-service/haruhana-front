@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
@@ -7,12 +7,33 @@ import { AppRoutes } from './routes'
 import { queryClient } from './services/queryClient'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
+function getDateString(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date())
+}
+
 export function App() {
   const [toasterPosition] = useState<'top-center' | 'bottom-right'>(() => {
     const isPWA = window.matchMedia('(display-mode: standalone)').matches
     const isMobile = window.innerWidth < 768
     return isPWA || isMobile ? 'top-center' : 'bottom-right'
   })
+
+  // 백그라운드 복귀 시 날짜가 변경되었으면 모든 쿼리 무효화
+  const lastDateRef = useRef(getDateString())
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const currentDate = getDateString()
+        if (currentDate !== lastDateRef.current) {
+          lastDateRef.current = currentDate
+          // 날짜가 바뀌었으면 모든 쿼리를 무효화하여 최신 데이터 보장
+          queryClient.invalidateQueries()
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
 
   useEffect(() => {
     const findScrollableAncestor = (start: HTMLElement | null) => {

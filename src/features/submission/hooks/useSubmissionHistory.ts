@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, min } from 'date-fns'
 import { getDailyProblem } from '../../problem/services/problemService'
 import type { DailyProblemResponse } from '../../../types/models'
 
@@ -8,13 +8,12 @@ import type { DailyProblemResponse } from '../../../types/models'
  * @param month - 조회할 월 (Date 객체)
  */
 export function useSubmissionHistory(month: Date) {
-  const today = format(new Date(), 'yyyy-MM-dd')
   return useQuery({
-    queryKey: ['submission-history', format(month, 'yyyy-MM'), today],
+    queryKey: ['submission-history', format(month, 'yyyy-MM')],
     queryFn: async () => {
-      // 해당 월의 모든 날짜를 가져옴
       const start = startOfMonth(month)
-      const end = endOfMonth(month)
+      // 미래 날짜는 요청하지 않음 (불필요한 실패 요청 방지)
+      const end = min([endOfMonth(month), new Date()])
       const days = eachDayOfInterval({ start, end })
 
       // 각 날짜별로 문제 조회 (병렬로 처리)
@@ -39,7 +38,8 @@ export function useSubmissionHistory(month: Date) {
 
       return problemsMap
     },
-    staleTime: 0, // 항상 최신 데이터 fetch
-    refetchOnMount: 'always', // 마운트 시 항상 refetch
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   })
 }

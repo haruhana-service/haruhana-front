@@ -15,6 +15,8 @@ export function useProblemDetail(dailyProblemId: number | null) {
       return getProblemDetail(dailyProblemId)
     },
     enabled: !!dailyProblemId, // dailyProblemId가 있을 때만 쿼리 실행
-    staleTime: 1000 * 60 * 5, // 5분간 fresh 상태 유지
+    staleTime: 0, // 항상 최신 데이터 보장 (제출 상태 변경 반영)
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   })
 }
