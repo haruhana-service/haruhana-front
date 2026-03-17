@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Card } from '../components/ui/Card'
 import { useSubmissionHistory } from '../features/submission/hooks/useSubmissionHistory'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../hooks/useAuth'
 
 const DIFFICULTY_LABELS: Record<string, string> = {
@@ -20,6 +21,22 @@ export function HistoryPage() {
     format(new Date(), 'yyyy-MM-dd')
   )
   const [slideDirection, setSlideDirection] = useState<number>(1) // 1 = forward, -1 = back
+  const queryClient = useQueryClient()
+
+  // 백그라운드에서 복귀 시 날짜 업데이트 및 데이터 재조회
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const today = format(new Date(), 'yyyy-MM-dd')
+        const todayMonth = new Date()
+        setSelectedDate(today)
+        setCurrentMonth(todayMonth)
+        queryClient.invalidateQueries({ queryKey: ['submission-history'] })
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [queryClient])
 
   // API 연동: 월별 제출 기록 조회
   const { data: problemsMap, isLoading, isFetching } = useSubmissionHistory(currentMonth)
@@ -176,7 +193,7 @@ export function HistoryPage() {
         </div>
 
         <div className="pb-2">
-          {isLoading || isFetching ? (
+          {isLoading || (isFetching && !problem) ? (
             <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-slate-100">
               <p className="text-[13px] font-medium">로딩 중...</p>
             </div>

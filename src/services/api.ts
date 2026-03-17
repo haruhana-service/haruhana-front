@@ -37,6 +37,27 @@ api.interceptors.request.use(
 )
 
 // ============================================
+// Token Refresh Queue (동시 401 레이스 컨디션 방지)
+// ============================================
+
+let isRefreshing = false
+let failedQueue: Array<{
+  resolve: (token: string) => void
+  reject: (error: unknown) => void
+}> = []
+
+function processQueue(error: unknown, token: string | null = null) {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve(token!)
+    }
+  })
+  failedQueue = []
+}
+
+// ============================================
 // Response Interceptor (에러 처리 및 토큰 갱신)
 // ============================================
 
@@ -75,6 +96,20 @@ api.interceptors.response.use(
         return Promise.reject(apiError)
       }
 
+      // 이미 토큰 갱신 중이면 큐에 대기 (동시 갱신 요청 방지)
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        }).then((token) => {
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${token}`
+          }
+          return api(originalRequest)
+        })
+      }
+
+      isRefreshing = true
+
       try {
         // 토큰 갱신 API 호출
         const { data } = await axios.post(
@@ -95,6 +130,9 @@ api.interceptors.response.use(
           localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken)
         }
 
+        // 대기 중인 요청들에 새 토큰 전달
+        processQueue(null, newAccessToken)
+
         // 원래 요청에 새 토큰 적용
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
@@ -103,6 +141,9 @@ api.interceptors.response.use(
         // 원래 요청 재시도
         return api(originalRequest)
       } catch (refreshError) {
+        // 대기 중인 요청들에 에러 전달
+        processQueue(refreshError, null)
+
         // 토큰 갱신 실패 - 로그아웃 처리
         localStorage.removeItem(TOKEN_KEY)
         localStorage.removeItem(REFRESH_TOKEN_KEY)
@@ -111,6 +152,8 @@ api.interceptors.response.use(
         window.dispatchEvent(new Event('auth:logout'))
 
         return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
       }
     }
 

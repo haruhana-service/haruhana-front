@@ -24,7 +24,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const navigate = useNavigate()
   const isLoggingOutRef = useRef(false)
-  const lastSyncedLoginIdRef = useRef<string | null>(null)
 
   // 프로필 조회
   const fetchProfile = async (isInitialLoad = false): Promise<MemberProfileResponse | null> => {
@@ -140,19 +139,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [user, navigate])
 
-  // 로그인 상태 복원/전환 시 FCM 토큰 동기화
-  useEffect(() => {
-    if (!user) {
-      lastSyncedLoginIdRef.current = null
-      return
-    }
-    if (lastSyncedLoginIdRef.current === user.loginId) return
-    lastSyncedLoginIdRef.current = user.loginId
-    requestAndSyncFCMToken({ forceSync: true }).catch((error) => {
-      console.error('[Auth] FCM sync failed:', error)
-    })
-  }, [user])
-
   // 로그인 처리
   const login = async (tokenResponse: TokenResponse) => {
     try {
@@ -160,6 +146,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setAuthTokens(accessToken, refreshToken)
 
       const profile = await fetchProfile()
+
+      // 로그인 시에만 FCM 토큰 동기화
+      requestAndSyncFCMToken({ forceSync: true }).catch((error) => {
+        console.error('[Auth] FCM sync failed:', error)
+      })
 
       if (profile?.role === 'ROLE_ADMIN') {
         navigate(ROUTES.ADMIN_DASHBOARD)
