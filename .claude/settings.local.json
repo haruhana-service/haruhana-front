@@ -19,7 +19,9 @@
       "Bash(ls:*)",
       "Bash(CI=true pnpm install:*)",
       "Bash(pnpm lint:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "WebFetch(domain:api-staging.haruharu.online)",
+      "Bash(python3:*)"
     ]
   }
 }

@@ -41,8 +41,8 @@ export function HistoryPage() {
   // API 연동: 월별 제출 기록 조회
   const { data: problemsMap, isLoading, isFetching } = useSubmissionHistory(currentMonth)
 
-  // 선택된 날짜의 문제
-  const problem = selectedDate && problemsMap ? problemsMap.get(selectedDate) : null
+  // 선택된 날짜의 문제들
+  const problems = selectedDate && problemsMap ? problemsMap.get(selectedDate) : null
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
@@ -144,8 +144,9 @@ export function HistoryPage() {
             const isToday = dateStr === today
 
             const problemData = problemsMap?.get(dateStr)
-            const hasProblem = !!problemData
-            const isSolved = problemData?.isSolved ?? false
+            const hasProblem = !!(problemData && problemData.length > 0)
+            const isSolved = problemData ? problemData.every(p => p.isSolved) : false
+            const isPartiallySolved = problemData ? problemData.some(p => p.isSolved) && !isSolved : false
 
             if (isBeforeJoin) {
               return (
@@ -166,12 +167,12 @@ export function HistoryPage() {
                   ${isSelected ? 'bg-haru-500 text-white shadow-lg shadow-haru-500/30 font-bold' :
                     isToday ? 'bg-haru-50 text-haru-700 font-extrabold ring-2 ring-haru-500' :
                     'hover:bg-slate-50 text-slate-700 font-semibold'}
-                  ${hasProblem && !isSelected && !isToday ? (isSolved ? 'text-haru-600 font-bold' : 'text-slate-500') : ''}
+                  ${hasProblem && !isSelected && !isToday ? (isSolved ? 'text-haru-600 font-bold' : isPartiallySolved ? 'text-yellow-600 font-bold' : 'text-slate-500') : ''}
                 `}
               >
                 {date.getDate()}
                 {hasProblem && !isSelected && (
-                  <div className={`w-1 h-1 rounded-full mt-0.5 ${isSolved ? 'bg-haru-500' : 'bg-slate-200'}`}></div>
+                  <div className={`w-1 h-1 rounded-full mt-0.5 ${isSolved ? 'bg-haru-500' : isPartiallySolved ? 'bg-yellow-500' : 'bg-slate-200'}`}></div>
                 )}
               </button>
             )
@@ -193,44 +194,47 @@ export function HistoryPage() {
         </div>
 
         <div className="pb-2">
-          {isLoading || (isFetching && !problem) ? (
+          {isLoading || (isFetching && !problems) ? (
             <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-slate-100">
               <p className="text-[13px] font-medium">로딩 중...</p>
             </div>
-          ) : !problem ? (
+          ) : !problems || problems.length === 0 ? (
             <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-slate-100">
               <p className="text-[13px] font-medium">
                 {selectedDate ? '해당 날짜에 문제가 없습니다.' : '기록이 없습니다.'}
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
-              <div
-                className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-2 cursor-pointer hover:border-haru-300 hover:shadow-md transition-all active:scale-[0.98]"
-                onClick={() => handleItemClick(problem.id)}
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                      <span className="bg-haru-50 text-haru-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                        {problem.categoryTopic}
-                      </span>
-                      <span className="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                        {DIFFICULTY_LABELS[problem.difficulty] || problem.difficulty}
-                      </span>
-                      {problem.isSolved ? (
-                        <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded">✓ 완료</span>
-                      ) : (
-                        <span className="px-2 py-0.5 bg-slate-100 text-slate-400 text-[10px] font-bold rounded">미완료</span>
-                      )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {problems.map((problem) => (
+                <div
+                  key={problem.id}
+                  className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-2 cursor-pointer hover:border-haru-300 hover:shadow-md transition-all active:scale-[0.98]"
+                  onClick={() => handleItemClick(problem.id)}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                        <span className="bg-haru-50 text-haru-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                          {problem.categoryTopic}
+                        </span>
+                        <span className="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                          {DIFFICULTY_LABELS[problem.difficulty] || problem.difficulty}
+                        </span>
+                        {problem.isSolved ? (
+                          <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded">✓ 완료</span>
+                        ) : (
+                          <span className="px-2 py-0.5 bg-slate-100 text-slate-400 text-[10px] font-bold rounded">미완료</span>
+                        )}
+                      </div>
+                      <h3 className="font-bold text-slate-800 text-[13px] line-clamp-2">{problem.title}</h3>
                     </div>
-                    <h3 className="font-bold text-slate-800 text-[13px] truncate">{problem.title}</h3>
+                    <svg className="w-4 h-4 text-slate-300 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
-                  <svg className="w-4 h-4 text-slate-300 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
                 </div>
-              </div>
+              ))}
             </div>
           )}
         </div>

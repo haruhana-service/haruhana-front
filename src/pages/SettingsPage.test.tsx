@@ -40,10 +40,9 @@ const mockUser = {
   loginId: 'testuser',
   nickname: '테스트유저',
   createdAt: '2025-01-01T00:00:00',
-  categoryTopicName: 'Spring',
-  difficulty: 'MEDIUM',
+  memberPreferences: [{ preferenceId: 1, categoryTopicName: 'Spring', difficulty: 'MEDIUM' }],
   role: 'ROLE_MEMBER' as const,
-  profileImageUrl: undefined,
+  profileImageUrl: undefined as string | undefined,
 }
 
 vi.mock('../hooks/useAuth', () => ({
@@ -66,8 +65,7 @@ describe('SettingsPage', () => {
     mockRefetchProfile.mockResolvedValue(undefined)
 
     mockUser.nickname = '테스트유저'
-    mockUser.categoryTopicName = 'Spring'
-    mockUser.difficulty = 'MEDIUM'
+    mockUser.memberPreferences = [{ preferenceId: 1, categoryTopicName: 'Spring', difficulty: 'MEDIUM' }]
     mockUser.profileImageUrl = undefined
   })
 
@@ -78,21 +76,24 @@ describe('SettingsPage', () => {
     expect(screen.getByText('학습자 프로필')).toBeInTheDocument()
   })
 
-  it('현재 학습 설정이 표시된다', () => {
+  it('학습 설정 목록이 표시된다', () => {
     render(<SettingsPage />)
 
-    expect(screen.getByText('현재 학습 설정')).toBeInTheDocument()
-    expect(screen.getByText('보통 (심화)')).toBeInTheDocument()
+    expect(screen.getByText(/학습 설정/)).toBeInTheDocument()
     expect(screen.getByText('Spring')).toBeInTheDocument()
+    expect(screen.getByText('보통')).toBeInTheDocument()
   })
 
-  it('설정 변경 버튼 클릭 시 설정 편집 페이지로 이동한다', async () => {
+  it('학습 설정 수정 버튼 클릭 시 편집 페이지로 이동한다', async () => {
     const user = userEvent.setup()
     render(<SettingsPage />)
 
-    await user.click(screen.getByText('변경'))
+    await user.click(screen.getByRole('button', { name: '수정' }))
 
-    expect(mockNavigate).toHaveBeenCalledWith('/settings/preference')
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/settings/preference/1',
+      expect.objectContaining({ state: expect.any(Object) })
+    )
   })
 
   it('프로필 수정 모드를 열고 닫을 수 있다', async () => {
@@ -326,13 +327,11 @@ describe('SettingsPage', () => {
     })
   })
 
-  it('학습 설정이 없을 때 "-"가 표시된다', () => {
-    mockUser.difficulty = undefined as any
-    mockUser.categoryTopicName = undefined as any
+  it('학습 설정이 없을 때 안내 메시지가 표시된다', () => {
+    mockUser.memberPreferences = []
 
     render(<SettingsPage />)
 
-    const dashes = screen.getAllByText('-')
-    expect(dashes.length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText('학습 설정이 없습니다')).toBeInTheDocument()
   })
 })

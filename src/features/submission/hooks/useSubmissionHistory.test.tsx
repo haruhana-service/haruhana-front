@@ -29,19 +29,19 @@ describe('useSubmissionHistory', () => {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   }
 
-  const mockProblem: DailyProblemResponse = {
+  const mockProblems: DailyProblemResponse[] = [{
     id: 1,
     difficulty: 'MEDIUM',
     categoryTopic: 'Spring',
     title: '테스트 문제',
     isSolved: true,
-  }
+  }]
 
   it('특정 월의 모든 날짜에 대한 문제를 조회한다', async () => {
     // 2026년 2월 (28일까지)
     const testMonth = new Date(2026, 1, 1) // 2월은 인덱스 1
     
-    vi.mocked(problemService.getDailyProblem).mockResolvedValue(mockProblem)
+    vi.mocked(problemService.getDailyProblem).mockResolvedValue(mockProblems)
 
     const { result } = renderHook(() => useSubmissionHistory(testMonth), { wrapper })
 
@@ -57,16 +57,16 @@ describe('useSubmissionHistory', () => {
     // 각 날짜에 대해 문제 데이터가 있는지 확인
     const firstDate = '2026-02-01'
     expect(result.current.data?.has(firstDate)).toBe(true)
-    expect(result.current.data?.get(firstDate)).toEqual(mockProblem)
+    expect(result.current.data?.get(firstDate)).toEqual(mockProblems)
   })
 
-  it('문제가 없는 날짜는 null로 처리한다', async () => {
+  it('문제가 없는 날짜는 빈 배열로 처리한다', async () => {
     const testMonth = new Date(2026, 1, 1)
     
     // 일부 날짜는 성공, 일부는 에러
     vi.mocked(problemService.getDailyProblem).mockImplementation((date?: string) => {
       if (date === '2026-02-01') {
-        return Promise.resolve(mockProblem)
+        return Promise.resolve(mockProblems)
       }
       return Promise.reject(new Error('문제 없음'))
     })
@@ -78,32 +78,32 @@ describe('useSubmissionHistory', () => {
     })
 
     // 2월 1일은 문제 있음
-    expect(result.current.data?.get('2026-02-01')).toEqual(mockProblem)
+    expect(result.current.data?.get('2026-02-01')).toEqual(mockProblems)
     
-    // 2월 2일은 문제 없음 (null)
-    expect(result.current.data?.get('2026-02-02')).toBeNull()
+    // 2월 2일은 문제 없음 (빈 배열)
+    expect(result.current.data?.get('2026-02-02')).toEqual([])
   })
 
   it('풀이 완료 여부를 정확히 반영한다', async () => {
     const testMonth = new Date(2026, 1, 1)
     
-    const solvedProblem: DailyProblemResponse = {
-      ...mockProblem,
+    const solvedProblems: DailyProblemResponse[] = [{
+      ...mockProblems[0],
       isSolved: true,
-    }
+    }]
     
-    const unsolvedProblem: DailyProblemResponse = {
-      ...mockProblem,
+    const unsolvedProblems: DailyProblemResponse[] = [{
+      ...mockProblems[0],
       id: 2,
       isSolved: false,
-    }
+    }]
 
     vi.mocked(problemService.getDailyProblem).mockImplementation((date?: string) => {
       if (date === '2026-02-01') {
-        return Promise.resolve(solvedProblem)
+        return Promise.resolve(solvedProblems)
       }
       if (date === '2026-02-02') {
-        return Promise.resolve(unsolvedProblem)
+        return Promise.resolve(unsolvedProblems)
       }
       return Promise.reject(new Error('문제 없음'))
     })
@@ -115,16 +115,16 @@ describe('useSubmissionHistory', () => {
     })
 
     // 풀이 완료
-    expect(result.current.data?.get('2026-02-01')?.isSolved).toBe(true)
+    expect(result.current.data?.get('2026-02-01')?.[0]?.isSolved).toBe(true)
     
     // 미완료
-    expect(result.current.data?.get('2026-02-02')?.isSolved).toBe(false)
+    expect(result.current.data?.get('2026-02-02')?.[0]?.isSolved).toBe(false)
   })
 
   it('캐싱을 통해 같은 월 조회 시 API 호출을 줄인다', async () => {
     const testMonth = new Date(2026, 1, 1)
     
-    vi.mocked(problemService.getDailyProblem).mockResolvedValue(mockProblem)
+    vi.mocked(problemService.getDailyProblem).mockResolvedValue(mockProblems)
 
     const { result, rerender } = renderHook(() => useSubmissionHistory(testMonth), { wrapper })
 
@@ -150,7 +150,7 @@ describe('useSubmissionHistory', () => {
     const februaryMonth = new Date(2026, 1, 1)
     const marchMonth = new Date(2026, 2, 1)
     
-    vi.mocked(problemService.getDailyProblem).mockResolvedValue(mockProblem)
+    vi.mocked(problemService.getDailyProblem).mockResolvedValue(mockProblems)
 
     const { result, rerender } = renderHook(
       ({ month }) => useSubmissionHistory(month),

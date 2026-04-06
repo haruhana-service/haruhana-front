@@ -115,8 +115,7 @@ describe('LoginPage', () => {
       loginId: 'testuser',
       nickname: 'Test User',
       createdAt: '2026-01-01T00:00:00Z',
-      categoryTopicName: 'Spring',
-      difficulty: 'MEDIUM',
+      memberPreferences: [{ preferenceId: 1, categoryTopicName: 'Spring', difficulty: 'MEDIUM' }],
       role: 'ROLE_MEMBER' as const,
     }
 

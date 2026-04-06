@@ -16,6 +16,7 @@ const HistoryPage = lazy(() => import('../pages/HistoryPage').then(m => ({ defau
 const SettingsPage = lazy(() => import('../pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const ProblemDetailPage = lazy(() => import('../pages/ProblemDetailPage').then(m => ({ default: m.ProblemDetailPage })))
 const PreferenceEditPage = lazy(() => import('../pages/PreferenceEditPage').then(m => ({ default: m.PreferenceEditPage })))
+const PreferenceAddPage = lazy(() => import('../pages/PreferenceAddPage').then(m => ({ default: m.PreferenceAddPage })))
 const ProfileEditPage = lazy(() => import('../pages/ProfileEditPage').then(m => ({ default: m.ProfileEditPage })))
 
 // Admin pages
@@ -115,7 +116,19 @@ export function AppRoutes() {
             }
           />
 
-      {/* Preference Edit - NO TabBar (modal-like page) */}
+      {/* Preference Add - NO TabBar */}
+          <Route
+            path={ROUTES.PREFERENCE_ADD}
+            element={
+              <ProtectedRoute>
+                <ViewportScroll>
+                  <PreferenceAddPage />
+                </ViewportScroll>
+              </ProtectedRoute>
+            }
+          />
+
+      {/* Preference Edit - NO TabBar */}
           <Route
             path={ROUTES.PREFERENCE_EDIT}
             element={

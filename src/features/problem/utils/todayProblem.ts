@@ -11,7 +11,8 @@ export async function getTodayProblemSolvedStatus(): Promise<boolean | null> {
       queryFn: getTodayProblem,
       staleTime: 0,
     })
-    return data.isSolved
+    // 모든 문제가 풀렸는지 확인
+    return data.length > 0 ? data.every(p => p.isSolved) : null
   } catch {
     return null
   }

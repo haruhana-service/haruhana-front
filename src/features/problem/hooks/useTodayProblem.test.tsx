@@ -29,17 +29,27 @@ describe('useTodayProblem', () => {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   }
 
-  const mockTodayProblem: TodayProblemResponse = {
-    id: 1,
-    title: 'Spring의 IoC란 무엇인가요?',
-    description: 'Spring Framework의 핵심 개념인 IoC에 대해 설명해주세요.',
-    difficulty: 'MEDIUM',
-    categoryTopicName: 'Spring',
-    isSolved: false,
-  }
+  const mockTodayProblems: TodayProblemResponse[] = [
+    {
+      id: 1,
+      title: 'Spring의 IoC란 무엇인가요?',
+      description: 'Spring Framework의 핵심 개념인 IoC에 대해 설명해주세요.',
+      difficulty: 'MEDIUM',
+      categoryTopicName: 'Spring',
+      isSolved: false,
+    },
+    {
+      id: 2,
+      title: 'Java의 Stream API란?',
+      description: 'Java 8의 Stream API에 대해 설명해주세요.',
+      difficulty: 'EASY',
+      categoryTopicName: 'Java',
+      isSolved: false,
+    },
+  ]
 
   it('오늘의 문제를 성공적으로 조회한다', async () => {
-    vi.mocked(problemService.getTodayProblem).mockResolvedValue(mockTodayProblem)
+    vi.mocked(problemService.getTodayProblem).mockResolvedValue(mockTodayProblems)
 
     const { result } = renderHook(() => useTodayProblem(), { wrapper })
 
@@ -50,17 +60,23 @@ describe('useTodayProblem', () => {
       expect(result.current.isSuccess).toBe(true)
     })
 
-    expect(result.current.data).toEqual(mockTodayProblem)
+    expect(result.current.data).toEqual(mockTodayProblems)
     expect(result.current.error).toBeNull()
   })
 
   it('풀이 완료 여부를 정확히 반영한다', async () => {
-    const solvedProblem: TodayProblemResponse = {
-      ...mockTodayProblem,
-      isSolved: true,
-    }
+    const solvedProblems: TodayProblemResponse[] = [
+      {
+        ...mockTodayProblems[0],
+        isSolved: true,
+      },
+      {
+        ...mockTodayProblems[1],
+        isSolved: true,
+      },
+    ]
 
-    vi.mocked(problemService.getTodayProblem).mockResolvedValue(solvedProblem)
+    vi.mocked(problemService.getTodayProblem).mockResolvedValue(solvedProblems)
 
     const { result } = renderHook(() => useTodayProblem(), { wrapper })
 
@@ -68,7 +84,8 @@ describe('useTodayProblem', () => {
       expect(result.current.isSuccess).toBe(true)
     })
 
-    expect(result.current.data?.isSolved).toBe(true)
+    expect(result.current.data?.[0]?.isSolved).toBe(true)
+    expect(result.current.data?.[1]?.isSolved).toBe(true)
   })
 
   it('API 에러 시 에러 상태를 반환한다', async () => {
@@ -86,13 +103,15 @@ describe('useTodayProblem', () => {
   })
 
   it('난이도별로 다른 문제를 반환한다', async () => {
-    const easyProblem: TodayProblemResponse = {
-      ...mockTodayProblem,
-      difficulty: 'EASY',
-      title: '쉬운 문제',
-    }
+    const easyProblems: TodayProblemResponse[] = [
+      {
+        ...mockTodayProblems[0],
+        difficulty: 'EASY',
+        title: '쉬운 문제',
+      },
+    ]
 
-    vi.mocked(problemService.getTodayProblem).mockResolvedValue(easyProblem)
+    vi.mocked(problemService.getTodayProblem).mockResolvedValue(easyProblems)
 
     const { result } = renderHook(() => useTodayProblem(), { wrapper })
 
@@ -100,12 +119,12 @@ describe('useTodayProblem', () => {
       expect(result.current.isSuccess).toBe(true)
     })
 
-    expect(result.current.data?.difficulty).toBe('EASY')
-    expect(result.current.data?.title).toBe('쉬운 문제')
+    expect(result.current.data?.[0]?.difficulty).toBe('EASY')
+    expect(result.current.data?.[0]?.title).toBe('쉬운 문제')
   })
 
   it('캐싱을 통해 중복 API 호출을 방지한다', async () => {
-    vi.mocked(problemService.getTodayProblem).mockResolvedValue(mockTodayProblem)
+    vi.mocked(problemService.getTodayProblem).mockResolvedValue(mockTodayProblems)
 
     const { result, rerender } = renderHook(() => useTodayProblem(), { wrapper })
 
@@ -141,12 +160,14 @@ describe('useTodayProblem', () => {
   })
 
   it('카테고리 주제 정보를 포함한다', async () => {
-    const problemWithTopic: TodayProblemResponse = {
-      ...mockTodayProblem,
-      categoryTopicName: 'React Hooks',
-    }
+    const problemsWithTopic: TodayProblemResponse[] = [
+      {
+        ...mockTodayProblems[0],
+        categoryTopicName: 'React Hooks',
+      },
+    ]
 
-    vi.mocked(problemService.getTodayProblem).mockResolvedValue(problemWithTopic)
+    vi.mocked(problemService.getTodayProblem).mockResolvedValue(problemsWithTopic)
 
     const { result } = renderHook(() => useTodayProblem(), { wrapper })
 
@@ -154,6 +175,6 @@ describe('useTodayProblem', () => {
       expect(result.current.isSuccess).toBe(true)
     })
 
-    expect(result.current.data?.categoryTopicName).toBe('React Hooks')
+    expect(result.current.data?.[0]?.categoryTopicName).toBe('React Hooks')
   })
 })

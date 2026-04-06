@@ -16,8 +16,7 @@ const mockProfile = {
   loginId: 'testuser',
   nickname: '테스트유저',
   createdAt: '2025-01-01T00:00:00',
-  categoryTopicName: 'Spring',
-  difficulty: 'MEDIUM' as const,
+  memberPreferences: [{ preferenceId: 1, categoryTopicName: 'Spring', difficulty: 'MEDIUM' }],
   role: 'ROLE_MEMBER' as const,
 }
 
@@ -133,12 +132,22 @@ describe('authService', () => {
   })
 
   describe('updatePreference', () => {
-    it('학습 설정 업데이트 API를 호출한다', async () => {
+    it('특정 학습 설정 업데이트 API를 호출한다', async () => {
       vi.mocked(api.patch).mockResolvedValue({})
 
-      await authService.updatePreference({ difficulty: 'HARD', categoryTopicId: 1 })
+      await authService.updatePreference(42, { difficulty: 'HARD', categoryTopicId: 1 })
 
-      expect(api.patch).toHaveBeenCalledWith('/v1/members/preferences', { difficulty: 'HARD', categoryTopicId: 1 })
+      expect(api.patch).toHaveBeenCalledWith('/v1/members/preferences/42', { difficulty: 'HARD', categoryTopicId: 1 })
+    })
+  })
+
+  describe('appendPreference', () => {
+    it('학습 설정 추가 API를 호출한다', async () => {
+      vi.mocked(api.post).mockResolvedValue({})
+
+      await authService.appendPreference({ difficulty: 'EASY', categoryTopicId: 2 })
+
+      expect(api.post).toHaveBeenCalledWith('/v1/members/preferences', { difficulty: 'EASY', categoryTopicId: 2 })
     })
   })
 })

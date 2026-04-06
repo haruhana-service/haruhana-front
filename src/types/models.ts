@@ -37,19 +37,29 @@ export interface TokenReissueRequest {
 // Member (회원)
 // ============================================
 
+export interface MemberPreferenceResponse {
+  preferenceId: number
+  categoryTopicName: string
+  difficulty: string
+}
+
 export interface MemberProfileResponse {
   loginId: string
   nickname: string
   createdAt: string // date-time
-  categoryTopicName: string
-  difficulty: string
   role: UserRole // 사용자 역할: ADMIN, MEMBER, GUEST
   profileImageUrl?: string // 조회용 Presigned URL
+  memberPreferences: MemberPreferenceResponse[] // 최대 5개
 }
 
 export interface ProfileUpdateRequest {
   nickname: string
   profileImageKey?: string // 선택사항
+}
+
+export interface PreferenceAppendRequest {
+  categoryTopicId: number
+  difficulty: Difficulty
 }
 
 export interface PreferenceUpdateRequest {
@@ -141,6 +151,21 @@ export interface DailyProblemDetailResponse {
 export interface ProblemPreferenceUpdateRequest {
   categoryTopicId: number
   difficulty: Difficulty
+}
+
+// ============================================
+// Feedback (AI 채점)
+// ============================================
+
+export type FeedbackGrade = 'EXCELLENT' | 'GOOD' | 'FAIR' | 'POOR'
+
+export interface FeedbackResponse {
+  feedbackId: number
+  grade: FeedbackGrade
+  strengths: string  // 잘한 점
+  weaknesses: string // 부족한 점
+  suggestion: string // 개선 방향
+  gradedAt: string   // date-time
 }
 
 // ============================================

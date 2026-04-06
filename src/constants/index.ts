@@ -26,7 +26,8 @@ export const ROUTES = {
   PROBLEM_DETAIL: '/problem/:id',
   HISTORY: '/history',
   SETTINGS: '/settings',
-  PREFERENCE_EDIT: '/settings/preference',
+  PREFERENCE_EDIT: '/settings/preference/:preferenceId',
+  PREFERENCE_ADD: '/settings/preference/add',
   PROFILE_EDIT: '/settings/profile',
   // Admin Routes
   ADMIN_DASHBOARD: '/admin',

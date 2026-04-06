@@ -108,7 +108,7 @@ describe('HistoryPage', () => {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
     vi.mocked(problemService.getDailyProblem).mockImplementation(async (date?: string) => {
-      if (date === todayStr) return mockProblem
+      if (date === todayStr) return [mockProblem]
       throw new Error('No problem')
     })
 
@@ -146,7 +146,7 @@ describe('HistoryPage', () => {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
     vi.mocked(problemService.getDailyProblem).mockImplementation(async (date?: string) => {
-      if (date === todayStr) return mockProblem
+      if (date === todayStr) return [mockProblem]
       throw new Error('No problem')
     })
 
@@ -167,7 +167,7 @@ describe('HistoryPage', () => {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
     vi.mocked(problemService.getDailyProblem).mockImplementation(async (date?: string) => {
-      if (date === todayStr) return mockProblem
+      if (date === todayStr) return [mockProblem]
       throw new Error('No problem')
     })
 
@@ -188,7 +188,7 @@ describe('HistoryPage', () => {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
     vi.mocked(problemService.getDailyProblem).mockImplementation(async (date?: string) => {
-      if (date === todayStr) return unsolvedProblem
+      if (date === todayStr) return [unsolvedProblem]
       throw new Error('No problem')
     })
 

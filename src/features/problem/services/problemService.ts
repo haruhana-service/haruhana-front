@@ -6,7 +6,6 @@ import type {
   SubmitSolutionRequest,
   SubmissionResponse,
   StreakResponse,
-  ProblemPreferenceUpdateRequest,
 } from '../../../types/models'
 
 // ============================================
@@ -14,21 +13,21 @@ import type {
 // ============================================
 
 /**
- * 오늘의 문제 조회
+ * 오늘의 문제 조회 (여러 카테고리 지원)
  * GET /v1/daily-problem/today
  */
-export async function getTodayProblem(): Promise<TodayProblemResponse> {
-  const response = await api.get<{ data: TodayProblemResponse }>('/v1/daily-problem/today')
+export async function getTodayProblem(): Promise<TodayProblemResponse[]> {
+  const response = await api.get<{ data: TodayProblemResponse[] }>('/v1/daily-problem/today')
   return response.data.data
 }
 
 /**
- * 날짜별 문제 미리보기
+ * 날짜별 문제 미리보기 (여러 카테고리 지원)
  * GET /v1/daily-problem
  */
-export async function getDailyProblem(date?: string): Promise<DailyProblemResponse> {
+export async function getDailyProblem(date?: string): Promise<DailyProblemResponse[]> {
   const params = date ? { date } : {}
-  const response = await api.get<{ data: DailyProblemResponse }>('/v1/daily-problem', { params })
+  const response = await api.get<{ data: DailyProblemResponse[] }>('/v1/daily-problem', { params })
   return response.data.data
 }
 
@@ -69,14 +68,3 @@ export async function getStreak(): Promise<StreakResponse> {
   return response.data.data
 }
 
-// ============================================
-// Problem Preference API Service
-// ============================================
-
-/**
- * 문제 설정 변경
- * PATCH /v1/members/preferences
- */
-export async function updateProblemPreference(data: ProblemPreferenceUpdateRequest): Promise<void> {
-  await api.patch('/v1/members/preferences', data)
-}

@@ -53,29 +53,32 @@ function markReminderModalShown(loginId: string): void {
 
 export function TodayPage() {
   const { user, isAuthenticated } = useAuth()
-  const { data: problem, isLoading: problemLoading, error, refetch, isRefetching } = useTodayProblem({ enabled: isAuthenticated })
+  const { data: problems, isLoading: problemLoading, error, refetch, isRefetching } = useTodayProblem({ enabled: isAuthenticated })
   const { data: streak, isLoading: streakLoading } = useStreak({ enabled: isAuthenticated })
   const navigate = useNavigate()
   const [isReminderOpen, setIsReminderOpen] = useState(false)
 
-  const handleProblemClick = useCallback(() => {
-    if (problem) {
-      navigate(`/problem/${problem.id}`)
-    }
-  }, [problem, navigate])
+  const handleProblemClick = useCallback((problemId: number) => {
+    navigate(`/problem/${problemId}`)
+  }, [navigate])
+
+  // 풀지 않은 문제가 하나라도 있는지 체크
+  const hasUnsolvedProblems = useMemo(() => {
+    return problems?.some(p => !p.isSolved) || false
+  }, [problems])
 
   useEffect(() => {
-    if (!problem || problem.isSolved) return
+    if (!hasUnsolvedProblems) return
     if (!user?.loginId) return
     // localStorage에 사용자+날짜 기준으로 저장 → 계정마다 독립적으로 하루에 한 번만 표시
     if (wasReminderModalShownToday(user.loginId)) return
 
     markReminderModalShown(user.loginId)
     setIsReminderOpen(true)
-  }, [problem, user?.loginId])
+  }, [hasUnsolvedProblems, user?.loginId])
 
   useEffect(() => {
-    if (!problem || problem.isSolved) return
+    if (!hasUnsolvedProblems) return
 
     const canNotifyNow = () => {
       const lastAt = Number(localStorage.getItem(REMINDER_LAST_AT_KEY) || 0)
@@ -108,7 +111,7 @@ export function TodayPage() {
     return () => {
       window.clearInterval(intervalId)
     }
-  }, [problem])
+  }, [hasUnsolvedProblems])
 
   const level = useMemo(() => getStreakLevel(streak?.currentStreak || 0), [streak?.currentStreak])
   const animatedStreak = useCountUp({ target: streak?.currentStreak || 0, duration: 1000, delay: 300 })
@@ -206,91 +209,145 @@ export function TodayPage() {
       </Card>
 
       {/* 학습 정보 필 - 컴팩트 스타일 */}
-      {user?.categoryTopicName && user?.difficulty && (
-        <div className="flex gap-2.5 animate-fade-up stagger-2 px-1">
-          <div className="flex-1 flex items-center gap-3 bg-gradient-to-br from-white to-haru-50/60 px-5 py-4 rounded-2xl border border-haru-100/60 shadow-[0_4px_20px_rgba(74,105,255,0.07)]">
-            <div className="w-2 h-2 rounded-full bg-gradient-to-br from-haru-400 to-haru-600 shadow-[0_0_6px_rgba(74,105,255,0.5)]"></div>
-            <div className="flex flex-col">
-              <span className="text-[9px] font-extrabold text-haru-400/80 uppercase tracking-widest leading-none mb-1.5">TOPIC</span>
-              <span className="text-[13px] font-bold text-slate-800 truncate max-w-[100px]">{user.categoryTopicName}</span>
+      {user?.memberPreferences && user.memberPreferences.length > 0 && (() => {
+        const primary = user.memberPreferences[0]
+        const extraCount = user.memberPreferences.length - 1
+        return (
+          <div className="flex gap-2.5 animate-fade-up stagger-2 px-1">
+            <div className="flex-1 flex items-center gap-3 bg-gradient-to-br from-white to-haru-50/60 px-5 py-4 rounded-2xl border border-haru-100/60 shadow-[0_4px_20px_rgba(74,105,255,0.07)]">
+              <div className="w-2 h-2 rounded-full bg-gradient-to-br from-haru-400 to-haru-600 shadow-[0_0_6px_rgba(74,105,255,0.5)]"></div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[9px] font-extrabold text-haru-400/80 uppercase tracking-widest leading-none mb-1.5">TOPIC</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[13px] font-bold text-slate-800 truncate max-w-[80px]">{primary.categoryTopicName}</span>
+                  {extraCount > 0 && (
+                    <span className="text-[10px] font-black text-haru-500 bg-haru-50 px-1.5 py-0.5 rounded-md shrink-0">+{extraCount}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 flex items-center gap-3 bg-gradient-to-br from-white to-slate-50/60 px-5 py-4 rounded-2xl border border-slate-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-haru-50 to-haru-100/50 border border-haru-100 flex items-center justify-center shadow-inner">
+                <span className="text-[10px] font-extrabold text-haru-500">LV</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1.5">LEVEL</span>
+                <span className="text-[13px] font-bold text-slate-800">{DIFFICULTY_LABELS[primary.difficulty] || primary.difficulty}</span>
+              </div>
             </div>
           </div>
-          <div className="flex-1 flex items-center gap-3 bg-gradient-to-br from-white to-slate-50/60 px-5 py-4 rounded-2xl border border-slate-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-haru-50 to-haru-100/50 border border-haru-100 flex items-center justify-center shadow-inner">
-              <span className="text-[10px] font-extrabold text-haru-500">LV</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-1.5">LEVEL</span>
-              <span className="text-[13px] font-bold text-slate-800">{DIFFICULTY_LABELS[user.difficulty] || user.difficulty}</span>
-            </div>
-          </div>
+        )
+      })()}
+
+      {/* 오늘의 문제 카드들 */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1 animate-fade-up stagger-3">
+          <h3 className="text-lg font-extrabold text-slate-800">오늘의 챌린지</h3>
+          {problems && problems.length > 0 && (
+            <span className="text-xs font-bold text-slate-400">{problems.filter(p => p.isSolved).length}/{problems.length} 완료</span>
+          )}
         </div>
-      )}
 
-      {/* 오늘의 문제 카드 */}
-      <Card
-        title="오늘의 챌린지"
-        subtitle="매일 조금씩, 당신의 성장을 돕습니다"
-        className="animate-fade-up stagger-3 border border-slate-100/80 bg-gradient-to-br from-white via-white to-haru-50/30 relative overflow-hidden group/card shadow-[0_8px_40px_rgba(74,105,255,0.06)]"
-      >
-        {/* 상단 그라디언트 라인 */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-haru-400/50 to-transparent" />
-        {/* 배경 서클 장식 */}
-        <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-haru-400/5 rounded-full blur-[30px] pointer-events-none" />
         {problemLoading ? (
-          <div className="py-16 flex flex-col items-center justify-center space-y-4">
-            <div className="relative w-12 h-12">
-              <div className="absolute inset-0 border-[4px] border-slate-50 rounded-full"></div>
-              <div className="absolute inset-0 border-[4px] border-haru-500 border-t-transparent rounded-full animate-spin"></div>
+          <Card className="animate-fade-up stagger-3 border border-slate-100/80 bg-gradient-to-br from-white via-white to-haru-50/30">
+            <div className="py-16 flex flex-col items-center justify-center space-y-4">
+              <div className="relative w-12 h-12">
+                <div className="absolute inset-0 border-[4px] border-slate-50 rounded-full"></div>
+                <div className="absolute inset-0 border-[4px] border-haru-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+              <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.2em] animate-pulse">Loading Next Goal...</p>
             </div>
-            <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.2em] animate-pulse">Loading Next Goal...</p>
-          </div>
+          </Card>
         ) : error ? (
-          <div className="py-10 text-center bg-red-50/50 rounded-3xl border-2 border-dashed border-red-100">
-            <div className="flex flex-col items-center gap-3">
-              <span className="text-3xl">⚠️</span>
-              <p className="text-slate-600 text-sm font-bold">챌린지 불러오기 실패</p>
-              <p className="text-slate-400 text-xs font-medium">네트워크 오류가 발생했습니다. 다시 시도해주세요.</p>
-              <button
-                type="button"
-                onClick={() => refetch()}
-                disabled={isRefetching}
-                className="mt-1 px-4 py-2 rounded-xl bg-haru-500 text-white text-xs font-bold hover:bg-haru-600 active:scale-95 transition-all disabled:opacity-60"
+          <Card className="animate-fade-up stagger-3 border border-slate-100/80 bg-gradient-to-br from-white via-white to-haru-50/30">
+            <div className="py-10 text-center bg-red-50/50 rounded-3xl border-2 border-dashed border-red-100">
+              <div className="flex flex-col items-center gap-3">
+                <span className="text-3xl">⚠️</span>
+                <p className="text-slate-600 text-sm font-bold">챌린지 불러오기 실패</p>
+                <p className="text-slate-400 text-xs font-medium">네트워크 오류가 발생했습니다. 다시 시도해주세요.</p>
+                <button
+                  type="button"
+                  onClick={() => refetch()}
+                  disabled={isRefetching}
+                  className="mt-1 px-4 py-2 rounded-xl bg-haru-500 text-white text-xs font-bold hover:bg-haru-600 active:scale-95 transition-all disabled:opacity-60"
+                >
+                  {isRefetching ? '재시도 중...' : '다시 시도'}
+                </button>
+              </div>
+            </div>
+          </Card>
+        ) : problems && problems.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-up stagger-3">
+            {problems.map((problem, index) => (
+              <Card
+                key={problem.id}
+                className={`border border-slate-100/80 bg-gradient-to-br from-white via-white to-haru-50/30 relative overflow-hidden group/card shadow-[0_8px_40px_rgba(74,105,255,0.06)] hover:shadow-[0_12px_50px_rgba(74,105,255,0.12)] transition-shadow ${index > 1 ? 'animate-fade-up' : ''}`}
+                style={index > 1 ? { animationDelay: `${(index - 2) * 100}ms` } : undefined}
               >
-                {isRefetching ? '재시도 중...' : '다시 시도'}
-              </button>
-            </div>
-          </div>
-        ) : problem ? (
-          <div className="space-y-6 animate-fade-in relative z-10">
-            <div className="space-y-3">
-              <h4 className="text-[22px] font-extrabold text-slate-900 leading-tight tracking-tight">
-                {problem.title}
-              </h4>
-              <p className="text-slate-500 text-[14px] leading-relaxed font-medium line-clamp-2">
-                {problem.description}
-              </p>
-            </div>
+                {/* 상단 그라디언트 라인 */}
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-haru-400/50 to-transparent" />
+                {/* 배경 서클 장식 */}
+                <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-haru-400/5 rounded-full blur-[30px] pointer-events-none" />
+                
+                <div className="space-y-4 animate-fade-in relative z-10">
+                  {/* 헤더: 카테고리 + 난이도 */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-haru-600 bg-haru-50 px-2.5 py-1 rounded-lg truncate max-w-[60%]">
+                      {problem.categoryTopicName}
+                    </span>
+                    <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded-md ${
+                      problem.difficulty === 'EASY' ? 'bg-green-100 text-green-700' :
+                      problem.difficulty === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>
+                      {DIFFICULTY_LABELS[problem.difficulty] || problem.difficulty}
+                    </span>
+                  </div>
 
-            <div className="pt-1">
-              {problem.isSolved ? (
-                <Button fullWidth variant="secondary" onClick={handleProblemClick} className="h-[56px] rounded-2xl bg-green-50 border border-slate-200 text-slate-700 text-[15px] font-semibold">
-                  제출 기록 확인
-                </Button>
-              ) : (
-                <Button fullWidth onClick={handleProblemClick} className="h-[56px] rounded-2xl bg-haru-600 hover:bg-haru-700 text-white shadow-lg shadow-haru-600/15 active:scale-[0.98] group/btn">
-                  <span className="text-[15px] font-bold">챌린지 시작하기</span>
-                  <svg className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                </Button>
-              )}
-            </div>
+                  {/* 제목 + 설명 */}
+                  <div className="space-y-2">
+                    <h4 className="text-[17px] font-extrabold text-slate-900 leading-tight tracking-tight line-clamp-2">
+                      {problem.title}
+                    </h4>
+                    <p className="text-slate-500 text-[13px] leading-relaxed font-medium line-clamp-2">
+                      {problem.description}
+                    </p>
+                  </div>
+
+                  {/* 액션 버튼 */}
+                  <div className="pt-1">
+                    {problem.isSolved ? (
+                      <Button 
+                        fullWidth 
+                        variant="secondary" 
+                        onClick={() => handleProblemClick(problem.id)} 
+                        className="h-[48px] rounded-xl bg-green-50 border border-slate-200 text-slate-700 text-[14px] font-semibold hover:bg-green-100"
+                      >
+                        제출 기록 확인
+                      </Button>
+                    ) : (
+                      <Button 
+                        fullWidth 
+                        onClick={() => handleProblemClick(problem.id)} 
+                        className="h-[48px] rounded-xl bg-haru-600 hover:bg-haru-700 text-white shadow-lg shadow-haru-600/15 active:scale-[0.98] group/btn"
+                      >
+                        <span className="text-[14px] font-bold">챌린지 시작</span>
+                        <svg className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         ) : (
-          <div className="py-10 text-center bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
-            <p className="text-slate-500 text-sm font-semibold">챌린지를 준비 중입니다.</p>
-          </div>
+          <Card className="animate-fade-up stagger-3 border border-slate-100/80 bg-gradient-to-br from-white via-white to-haru-50/30">
+            <div className="py-10 text-center bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
+              <p className="text-slate-500 text-sm font-semibold">챌린지를 준비 중입니다.</p>
+            </div>
+          </Card>
         )}
-      </Card>
+      </div>
 
       </div>
       <Modal isOpen={isReminderOpen} onClose={() => setIsReminderOpen(false)} title="아직 오늘의 문제를 풀지 않았어요">
@@ -313,7 +370,11 @@ export function TodayPage() {
               type="button"
               onClick={() => {
                 setIsReminderOpen(false)
-                handleProblemClick()
+                // 첫 번째 풀지 않은 문제로 이동
+                const firstUnsolved = problems?.find(p => !p.isSolved)
+                if (firstUnsolved) {
+                  handleProblemClick(firstUnsolved.id)
+                }
               }}
               className="flex-1 h-12 rounded-xl text-sm font-bold shadow-lg shadow-haru-100 active:scale-95"
             >

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -7,12 +7,10 @@ import { useAuth } from '../hooks/useAuth'
 import { DifficultySelector } from '../components/problem/DifficultySelector'
 import { CategorySelector } from '../components/problem/CategorySelector'
 import { Button } from '../components/ui/Button'
-import { Card } from '../components/ui/Card'
-import { updatePreference } from '../features/auth/services/authService'
+import { appendPreference } from '../features/auth/services/authService'
 import { isApiError } from '../services/api'
 import { ROUTES } from '../constants'
 import { toast } from 'sonner'
-import type { Difficulty } from '../types/models'
 
 const preferenceSchema = z.object({
   categoryTopicId: z.number({ message: '카테고리를 선택해주세요' }),
@@ -21,19 +19,13 @@ const preferenceSchema = z.object({
 
 type PreferenceFormData = z.infer<typeof preferenceSchema>
 
-interface LocationState {
-  categoryTopicName?: string
-  difficulty?: string
-}
-
-export function PreferenceEditPage() {
+export function PreferenceAddPage() {
   const navigate = useNavigate()
-  const { preferenceId } = useParams<{ preferenceId: string }>()
-  const location = useLocation()
-  const state = location.state as LocationState | null
-  const { refetchProfile } = useAuth()
+  const { refetchProfile, user } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState<string>()
+
+  const currentCount = user?.memberPreferences?.length ?? 0
 
   const {
     control,
@@ -41,34 +33,30 @@ export function PreferenceEditPage() {
     formState: { errors },
   } = useForm<PreferenceFormData>({
     resolver: zodResolver(preferenceSchema),
-    defaultValues: {
-      difficulty: (state?.difficulty as Difficulty) ?? undefined,
-    },
   })
 
   const onSubmit = async (data: PreferenceFormData) => {
-    if (!preferenceId) return
     try {
       setIsSubmitting(true)
       setApiError(undefined)
 
-      await updatePreference(Number(preferenceId), {
+      await appendPreference({
         categoryTopicId: data.categoryTopicId,
         difficulty: data.difficulty,
       })
 
       await refetchProfile()
 
-      toast.success('학습 설정이 변경되었습니다. 다음 날 00:00부터 적용됩니다.')
+      toast.success('학습 설정이 추가되었습니다. 지금 바로 적용됩니다.')
       navigate(ROUTES.SETTINGS)
     } catch (error) {
-      console.error('Preference update failed:', error)
+      console.error('Preference append failed:', error)
       if (isApiError(error)) {
         setApiError(error.message)
       } else {
-        setApiError('설정 변경 중 오류가 발생했습니다')
+        setApiError('설정 추가 중 오류가 발생했습니다')
       }
-      toast.error('설정 변경에 실패했습니다.')
+      toast.error('설정 추가에 실패했습니다.')
     } finally {
       setIsSubmitting(false)
     }
@@ -88,35 +76,14 @@ export function PreferenceEditPage() {
           <span className="text-sm font-bold">뒤로 가기</span>
         </button>
 
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-2">학습 설정 변경</h1>
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-2">학습 설정 추가</h1>
         <p className="text-slate-500 text-sm font-medium leading-relaxed">
-          변경된 설정은 <span className="font-black text-haru-600">다음 날 00:00부터</span> 적용됩니다
+          새로운 학습 주제를 추가합니다.{' '}
+          <span className="font-black text-haru-600">{currentCount}/5</span> 개 사용 중
         </p>
       </div>
 
-      {/* Current Settings */}
-      {state?.categoryTopicName && (
-        <Card className="mb-5 border-amber-100 bg-amber-50/30">
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-xs font-black text-amber-900 uppercase tracking-widest mb-1">현재 설정</p>
-              <p className="text-sm font-medium text-amber-800 leading-relaxed">
-                <span className="font-black">{state.categoryTopicName}</span> ·{' '}
-                {state.difficulty === 'EASY' && '쉬움 (기초)'}
-                {state.difficulty === 'MEDIUM' && '보통 (심화)'}
-                {state.difficulty === 'HARD' && '어려움 (전문가)'}
-              </p>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Edit Form */}
+      {/* Add Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {apiError && (
           <div className="rounded-xl bg-red-50 border border-red-200 p-4">
@@ -146,7 +113,7 @@ export function PreferenceEditPage() {
 
         <div className="pt-3 space-y-3">
           <Button type="submit" disabled={isSubmitting} fullWidth size="lg" className="h-12 rounded-xl">
-            {isSubmitting ? '저장 중...' : '설정 저장'}
+            {isSubmitting ? '추가 중...' : '학습 설정 추가'}
           </Button>
 
           <Button
@@ -162,21 +129,21 @@ export function PreferenceEditPage() {
         </div>
       </form>
 
-      {/* Additional Info */}
+      {/* Info */}
       <div className="mt-8 p-5 bg-slate-50 rounded-2xl border border-slate-100">
         <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">알아두세요</h3>
         <ul className="space-y-2 text-sm text-slate-600 leading-relaxed">
           <li className="flex items-start gap-2">
             <span className="text-haru-500 mt-0.5">•</span>
-            <span>설정 변경은 즉시 저장되지만, 실제 적용은 익일 00:00부터입니다</span>
+            <span>학습 설정은 최대 5개까지 추가할 수 있습니다</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-haru-500 mt-0.5">•</span>
-            <span>오늘 문제는 현재 설정을 기준으로 제공됩니다</span>
+            <span>추가된 설정은 바로 문제 출제에 반영됩니다</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-haru-500 mt-0.5">•</span>
-            <span>난이도와 주제는 언제든 변경할 수 있습니다</span>
+            <span>각 설정마다 난이도를 다르게 지정할 수 있습니다</span>
           </li>
         </ul>
       </div>

@@ -11,10 +11,12 @@ import { getNotificationPermission, requestAndSyncFCMToken, deleteFCMToken, getS
 import { Modal } from '../components/ui/Modal'
 
 const DIFFICULTY_LABELS: Record<string, string> = {
-  EASY: '쉬움 (기초)',
-  MEDIUM: '보통 (심화)',
-  HARD: '어려움 (전문가)',
+  EASY: '쉬움',
+  MEDIUM: '보통',
+  HARD: '어려움',
 }
+
+const MAX_PREFERENCES = 5
 
 export function SettingsPage() {
   const { user, logout, refetchProfile } = useAuth()
@@ -425,54 +427,86 @@ export function SettingsPage() {
           <div className="flex items-center justify-between ml-1 pr-1">
             <h3 className="text-[12px] font-extrabold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
               <span className="w-1 h-4 bg-haru-600 rounded-full"></span>
-              현재 학습 설정
+              학습 설정
+              <span className="text-haru-500 font-black">
+                {user?.memberPreferences?.length ?? 0}/{MAX_PREFERENCES}
+              </span>
             </h3>
-            <button
-              onClick={() => navigate(ROUTES.PREFERENCE_EDIT)}
-              className="text-[12px] font-bold text-haru-600 hover:text-haru-700 transition-colors tracking-wide"
-            >
-              변경
-            </button>
+            {(user?.memberPreferences?.length ?? 0) < MAX_PREFERENCES && (
+              <button
+                onClick={() => navigate(ROUTES.PREFERENCE_ADD)}
+                className="inline-flex items-center gap-1 text-[12px] font-bold text-haru-600 hover:text-haru-700 transition-colors tracking-wide"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                </svg>
+                추가
+              </button>
+            )}
           </div>
 
-          <Card className="!p-0 border-slate-200 overflow-hidden shadow-sm">
-            <div className="divide-y divide-slate-100">
-              <div className="p-4 flex justify-between items-center group transition-colors hover:bg-slate-50/50">
-                <div>
-                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">현재 난이도</p>
-                  <p className="font-bold text-slate-800 text-[15px]">
-                    {user?.difficulty ? DIFFICULTY_LABELS[user.difficulty] || user.difficulty : '-'}
-                  </p>
-                </div>
-                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-haru-600 shadow-sm">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div className="p-4 flex justify-between items-center group transition-colors hover:bg-slate-50/50">
-                <div>
-                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">학습 주제</p>
-                  <p className="font-bold text-slate-800 text-[15px]">{user?.categoryTopicName || '-'}</p>
-                </div>
-                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-haru-600 shadow-sm">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                </div>
-              </div>
+          {user?.memberPreferences && user.memberPreferences.length > 0 ? (
+            <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden -mx-px px-px">
+              {user.memberPreferences.map((pref, idx) => {
+                const diffColor =
+                  pref.difficulty === 'EASY'
+                    ? 'bg-emerald-50 text-emerald-600'
+                    : pref.difficulty === 'HARD'
+                      ? 'bg-red-50 text-red-600'
+                      : 'bg-amber-50 text-amber-600'
+                return (
+                  <div
+                    key={pref.preferenceId}
+                    className="flex-none w-[140px] bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-2.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-haru-400 tracking-wider">
+                        #{idx + 1}
+                      </span>
+                      <button
+                        aria-label="수정"
+                        title="수정"
+                        onClick={() =>
+                          navigate(
+                            ROUTES.PREFERENCE_EDIT.replace(':preferenceId', String(pref.preferenceId)),
+                            {
+                              state: {
+                                categoryTopicName: pref.categoryTopicName,
+                                difficulty: pref.difficulty,
+                              },
+                            }
+                          )
+                        }
+                        className="text-slate-300 hover:text-haru-500 transition-colors"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="font-bold text-slate-800 text-[13px] truncate leading-tight">
+                      {pref.categoryTopicName}
+                    </p>
+                    <span className={`self-start text-[10px] font-bold px-2.5 py-0.5 rounded-full ${diffColor}`}>
+                      {pref.difficulty ? DIFFICULTY_LABELS[pref.difficulty] || pref.difficulty : '-'}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
-          </Card>
+          ) : (
+            <Card className="!p-0 border-slate-200 overflow-hidden shadow-sm">
+              <div className="p-6 text-center">
+                <p className="text-sm text-slate-400 font-medium">학습 설정이 없습니다</p>
+                <button
+                  onClick={() => navigate(ROUTES.PREFERENCE_ADD)}
+                  className="mt-2 text-sm font-bold text-haru-600 hover:text-haru-700 transition-colors"
+                >
+                  + 첫 번째 설정 추가하기
+                </button>
+              </div>
+            </Card>
+          )}
         </section>
 
         {/* 알림 설정 섹션 */}

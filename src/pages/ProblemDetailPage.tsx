@@ -5,9 +5,10 @@ import confetti from 'canvas-confetti'
 import { useProblemDetail } from '../features/problem/hooks/useProblemDetail'
 import { useSubmitAnswer } from '../features/submission/hooks/useSubmitAnswer'
 import { useUpdateAnswer } from '../features/submission/hooks/useUpdateAnswer'
+import { useSubmissionFeedback } from '../features/submission/hooks/useSubmissionFeedback'
 import { Button } from '../components/ui/Button'
 import { toast } from 'sonner'
-import type { SubmissionResponse } from '../types/models'
+import type { SubmissionResponse, FeedbackGrade } from '../types/models'
 
 interface ChildrenProps {
   children: ReactNode
@@ -24,6 +25,15 @@ interface CodeProps {
 }
 
 const MIN_ANSWER_LENGTH = 10
+
+const GRADE_CONFIG: Record<FeedbackGrade, { label: string; bg: string; text: string; border: string }> = {
+  EXCELLENT: { label: '우수', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
+  GOOD:      { label: '양호', bg: 'bg-blue-50',    text: 'text-blue-700',    border: 'border-blue-200'    },
+  FAIR:      { label: '보통', bg: 'bg-amber-50',   text: 'text-amber-700',   border: 'border-amber-200'   },
+  POOR:      { label: '미흡', bg: 'bg-red-50',     text: 'text-red-700',     border: 'border-red-200'     },
+}
+
+const submissionCacheKey = (problemId: number) => `haruharu:submission:${problemId}`
 
 // Markdown 렌더러 옵션
 const markdownOptions = {
@@ -174,162 +184,32 @@ const markdownOptions = {
   },
 }
 
-// Dark 모드 마크다운 옵션
 const darkMarkdownOptions = {
   overrides: {
-    h1: {
-      component: ({ children }: ChildrenProps) => (
-        <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 mt-5 sm:mt-6 text-haru-200">
-          {children}
-        </h1>
-      ),
+    h1: { component: ({ children }: ChildrenProps) => <h1 className="text-base font-bold mb-2 mt-4 first:mt-0 text-indigo-300">{children}</h1> },
+    h2: { component: ({ children }: ChildrenProps) => <h2 className="text-[15px] font-bold mb-2 mt-4 first:mt-0 text-indigo-300">{children}</h2> },
+    h3: { component: ({ children }: ChildrenProps) => <h3 className="text-sm font-bold mb-1.5 mt-3 first:mt-0 text-indigo-300">{children}</h3> },
+    h4: { component: ({ children }: ChildrenProps) => <h4 className="text-sm font-bold mb-1.5 mt-2 first:mt-0 text-indigo-300">{children}</h4> },
+    p:  { component: ({ children }: ChildrenProps) => <p className="text-[14px] leading-[1.75] mb-3 last:mb-0 text-white/85">{children}</p> },
+    strong: { component: ({ children }: ChildrenProps) => <strong className="font-bold text-white">{children}</strong> },
+    em: { component: ({ children }: ChildrenProps) => <em className="italic text-white/75">{children}</em> },
+    ul: { component: ({ children }: ChildrenProps) => <ul className="list-disc list-outside ml-5 mb-3 space-y-1">{children}</ul> },
+    ol: { component: ({ children }: ChildrenProps) => <ol className="list-decimal list-outside ml-5 mb-3 space-y-1">{children}</ol> },
+    li: { component: ({ children }: ChildrenProps) => <li className="text-[14px] text-white/85 leading-relaxed">{children}</li> },
+    code: { component: ({ children, inline }: CodeProps) => inline
+      ? <code className="bg-white/10 text-indigo-200 px-1.5 py-0.5 rounded text-[13px] font-mono">{children}</code>
+      : <code className="text-[13px] font-mono">{children}</code>
     },
-    h2: {
-      component: ({ children }: ChildrenProps) => (
-        <h2 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 mt-4 sm:mt-5 text-haru-200">
-          {children}
-        </h2>
-      ),
-    },
-    h3: {
-      component: ({ children }: ChildrenProps) => (
-        <h3 className="text-base sm:text-lg font-bold mb-2 mt-3 sm:mt-4 text-haru-300">
-          {children}
-        </h3>
-      ),
-    },
-    h4: {
-      component: ({ children }: ChildrenProps) => (
-        <h4 className="text-sm sm:text-base font-bold mb-2 mt-2 sm:mt-3 text-haru-300">
-          {children}
-        </h4>
-      ),
-    },
-    p: {
-      component: ({ children }: ChildrenProps) => (
-        <p className="mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base text-haru-100">
-          {children}
-        </p>
-      ),
-    },
-    ul: {
-      component: ({ children }: ChildrenProps) => (
-        <ul className="list-disc list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-haru-100">
-          {children}
-        </ul>
-      ),
-    },
-    ol: {
-      component: ({ children }: ChildrenProps) => (
-        <ol className="list-decimal list-outside ml-5 sm:ml-6 mb-3 sm:mb-4 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-haru-100">
-          {children}
-        </ol>
-      ),
-    },
-    li: {
-      component: ({ children }: ChildrenProps) => (
-        <li className="leading-relaxed marker:text-haru-400">{children}</li>
-      ),
-    },
-    code: {
-      component: ({ children, inline }: CodeProps) => {
-        if (inline) {
-          return (
-            <code className="px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono bg-slate-700 text-haru-200 border border-slate-600">
-              {children}
-            </code>
-          )
-        }
-        return (
-          <code className="text-xs sm:text-sm">{children}</code>
-        )
-      },
-    },
-    pre: {
-      component: ({ children }: ChildrenProps) => (
-        <pre className="p-3 sm:p-4 rounded-lg sm:rounded-xl overflow-x-auto mb-3 sm:mb-4 border bg-slate-900 border-slate-700">
-          {children}
-        </pre>
-      ),
-    },
-    blockquote: {
-      component: ({ children }: ChildrenProps) => (
-        <blockquote className="border-l-4 pl-3 sm:pl-4 py-2 my-3 sm:my-4 italic text-sm sm:text-base border-haru-400 bg-slate-800/50 text-haru-100">
-          {children}
-        </blockquote>
-      ),
-    },
-    a: {
-      component: ({ children, href }: LinkProps) => (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium underline decoration-2 underline-offset-2 transition-colors text-sm sm:text-base break-words text-haru-300 hover:text-haru-200 decoration-haru-400/50"
-        >
-          {children}
-        </a>
-      ),
-    },
-    hr: {
-      component: () => <hr className="my-4 sm:my-6 border-t border-slate-700" />,
-    },
-    table: {
-      component: ({ children }: ChildrenProps) => (
-        <div className="overflow-x-auto mb-3 sm:mb-4 -mx-2 sm:mx-0">
-          <table className="min-w-full border-collapse text-xs sm:text-sm border-slate-700">
-            {children}
-          </table>
-        </div>
-      ),
-    },
-    thead: {
-      component: ({ children }: ChildrenProps) => (
-        <thead className="bg-slate-800">{children}</thead>
-      ),
-    },
-    tbody: {
-      component: ({ children }: ChildrenProps) => (
-        <tbody className="divide-slate-700">{children}</tbody>
-      ),
-    },
-    tr: {
-      component: ({ children }: ChildrenProps) => (
-        <tr className="border-b border-slate-700">{children}</tr>
-      ),
-    },
-    th: {
-      component: ({ children }: ChildrenProps) => (
-        <th className="px-2 sm:px-4 py-1.5 sm:py-2 text-left font-semibold text-haru-200">
-          {children}
-        </th>
-      ),
-    },
-    td: {
-      component: ({ children }: ChildrenProps) => (
-        <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-haru-100">{children}</td>
-      ),
-    },
-    strong: {
-      component: ({ children }: ChildrenProps) => (
-        <strong className="font-bold text-white">{children}</strong>
-      ),
-    },
-    em: {
-      component: ({ children }: ChildrenProps) => (
-        <em className="text-white/90">{children}</em>
-      ),
-    },
+    pre: { component: ({ children }: ChildrenProps) => <pre className="bg-white/5 border border-white/10 rounded-lg p-3 mb-3 overflow-x-auto">{children}</pre> },
+    blockquote: { component: ({ children }: ChildrenProps) => <blockquote className="border-l-4 border-indigo-400/50 pl-4 py-1 my-3 italic text-white/60">{children}</blockquote> },
+    hr: { component: () => <hr className="my-4 border-t border-white/10" /> },
+    a: { component: ({ children, href }: LinkProps) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-300 underline decoration-indigo-400/50 hover:text-indigo-200">{children}</a> },
   },
 }
 
 // Memoized Markdown renderers - prevent re-parsing on every keystroke
 const ProblemDescription = memo(({ description }: { description: string }) => (
   <Markdown options={markdownOptions}>{description}</Markdown>
-))
-
-const AiAnswerMarkdown = memo(({ content }: { content: string }) => (
-  <Markdown options={darkMarkdownOptions}>{content}</Markdown>
 ))
 
 export function ProblemDetailPage() {
@@ -346,6 +226,17 @@ export function ProblemDetailPage() {
   const [submissionResult, setSubmissionResult] = useState<SubmissionResponse | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'ai-answer' | 'feedback'>('ai-answer')
+
+  // 피드백 폴링: 현재 세션 제출 결과 또는 localStorage 캐시에서 submissionId 조회
+  const [feedbackSubmissionId, setFeedbackSubmissionId] = useState<number | null>(() => {
+    if (!problemId) return null
+    const cached = localStorage.getItem(submissionCacheKey(problemId))
+    return cached ? Number(cached) : null
+  })
+  const { feedback, isPolling, isTimeout } = useSubmissionFeedback(
+    submissionResult?.submissionId ?? feedbackSubmissionId
+  )
 
   const handleBack = useCallback(() => {
     navigate('/today')
@@ -359,6 +250,10 @@ export function ProblemDetailPage() {
     try {
       const result = await submitAnswerMutation(answer)
       setSubmissionResult(result)
+      if (problemId) {
+        localStorage.setItem(submissionCacheKey(problemId), String(result.submissionId))
+        setFeedbackSubmissionId(result.submissionId)
+      }
       toast.success('답변이 제출되었습니다.')
       confetti({
         particleCount: 120,
@@ -391,7 +286,11 @@ export function ProblemDetailPage() {
     setIsSubmitting(true)
     setApiError(null)
     try {
-      await updateAnswerMutation(editAnswer)
+      const result = await updateAnswerMutation(editAnswer)
+      if (problemId) {
+        localStorage.setItem(submissionCacheKey(problemId), String(result.submissionId))
+        setFeedbackSubmissionId(result.submissionId)
+      }
       setIsEditing(false)
       toast.success('답변이 수정되었습니다.')
     } catch (err) {
@@ -408,9 +307,9 @@ export function ProblemDetailPage() {
 
   // 제출 후 결과에서 사용할 데이터
   const userAnswer = submissionResult?.userAnswer || problem?.userAnswer
-  const aiAnswer = submissionResult?.aiAnswer || problem?.aiAnswer
   const submittedAt = submissionResult?.submittedAt || problem?.submittedAt
   const isSolved = !!submissionResult || !!problem?.userAnswer
+  const aiAnswer = submissionResult?.aiAnswer || problem?.aiAnswer
 
   const getDifficultyKorean = (d: string) => {
     const map: Record<string, string> = { EASY: '쉬움', MEDIUM: '보통', HARD: '어려움' }
@@ -531,91 +430,242 @@ export function ProblemDetailPage() {
 
           {/* === 제출 완료 상태 === */}
           {isSolved && (
-            <div className="space-y-6 animate-fade-in pt-2">
+            <div className="space-y-5 animate-fade-in pt-2">
 
-              {/* 제출한 답변 카드 */}
-              <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-5 relative">
-                <div className="flex justify-between items-center mb-5">
-                  <h3 className="text-lg font-black text-slate-800">제출한 답변</h3>
-                  {!isEditing && (
-                    <button
-                      onClick={handleEditStart}
-                      className="p-1 text-slate-300 hover:text-indigo-500 transition-colors"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
+              {/* 답변 & 피드백 통합 카드 */}
+              <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm overflow-hidden">
+                {/* 제출한 답변 섹션 */}
+                <div className="p-5 border-b border-slate-100">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-black text-slate-800">제출한 답변</h3>
+                    {!isEditing && (
+                      <button
+                        onClick={handleEditStart}
+                        className="p-1.5 text-slate-300 hover:text-indigo-500 transition-colors rounded-lg hover:bg-indigo-50"
+                        aria-label="답변 수정"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+
+                  {isEditing ? (
+                    <div className="space-y-3">
+                      {apiError && (
+                        <div className="rounded-xl bg-red-50 border border-red-200 p-3">
+                          <p className="text-xs text-red-700 font-medium">{apiError}</p>
+                        </div>
+                      )}
+                      <textarea
+                        value={editAnswer}
+                        onChange={(e) => setEditAnswer(e.target.value)}
+                        className="w-full h-40 p-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-indigo-400 focus:bg-white outline-none resize-none text-sm transition-all font-medium leading-[1.6]"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsEditing(false)}
+                          className="flex-1 rounded-xl"
+                        >
+                          취소
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleEditSubmit}
+                          disabled={editAnswer.length < MIN_ANSWER_LENGTH || isSubmitting}
+                          className="flex-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white"
+                        >
+                          {isSubmitting ? '수정 중...' : '수정 완료'}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-slate-600 text-sm leading-[1.8] font-medium mb-4 whitespace-pre-wrap">
+                        {userAnswer}
+                      </p>
+                      {submittedAt && (
+                        <div className="text-xs font-bold text-slate-300">
+                          제출 시간: {new Date(submittedAt).toLocaleString('ko-KR', {
+                            year: 'numeric', month: '2-digit', day: '2-digit',
+                            hour: '2-digit', minute: '2-digit'
+                          })}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
-                {isEditing ? (
-                  <div className="space-y-3">
-                    {apiError && (
-                      <div className="rounded-xl bg-red-50 border border-red-200 p-3">
-                        <p className="text-xs text-red-700 font-medium">{apiError}</p>
-                      </div>
-                    )}
-                    <textarea
-                      value={editAnswer}
-                      onChange={(e) => setEditAnswer(e.target.value)}
-                      className="w-full h-40 p-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-indigo-400 focus:bg-white outline-none resize-none text-sm transition-all font-medium leading-[1.6]"
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsEditing(false)}
-                        className="flex-1 rounded-xl"
-                      >
-                        취소
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={handleEditSubmit}
-                        disabled={editAnswer.length < MIN_ANSWER_LENGTH || isSubmitting}
-                        className="flex-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white"
-                      >
-                        {isSubmitting ? '수정 중...' : '수정 완료'}
-                      </Button>
-                    </div>
+                {/* AI 답변 & 피드백 탭 섹션 */}
+                <div className="bg-gradient-to-br from-slate-50 to-white">
+                  {/* 탭 헤더 */}
+                  <div className="flex border-b border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('ai-answer')}
+                      className={`flex-1 py-3.5 text-sm font-bold border-b-2 -mb-px transition-colors ${
+                        activeTab === 'ai-answer'
+                          ? 'border-indigo-500 text-indigo-600'
+                          : 'border-transparent text-slate-400 hover:text-slate-600'
+                      }`}
+                    >
+                      AI 모범 답안
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('feedback')}
+                      className={`flex-1 py-3.5 text-sm font-bold border-b-2 -mb-px transition-colors flex items-center justify-center gap-1.5 ${
+                        activeTab === 'feedback'
+                          ? 'border-indigo-500 text-indigo-600'
+                          : 'border-transparent text-slate-400 hover:text-slate-600'
+                      }`}
+                    >
+                      AI 피드백
+                      {isPolling && !feedback && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                      )}
+                      {feedback && (
+                        <div className={`text-[10px] font-black px-1.5 py-0.5 rounded ${GRADE_CONFIG[feedback.grade].bg} ${GRADE_CONFIG[feedback.grade].text}`}>
+                          {GRADE_CONFIG[feedback.grade].label}
+                        </div>
+                      )}
+                    </button>
                   </div>
-                ) : (
-                  <>
-                    <p className="text-slate-600 text-sm leading-[1.6] font-medium mb-5 whitespace-pre-wrap">
-                      {userAnswer}
-                    </p>
-                    {submittedAt && (
-                      <div className="text-xs font-bold text-slate-300">
-                        제출 시간: {new Date(submittedAt).toLocaleString('ko-KR', {
-                          year: 'numeric', month: '2-digit', day: '2-digit',
-                          hour: '2-digit', minute: '2-digit'
-                        })}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
 
-              {/* AI 멘토의 조언 */}
-              {aiAnswer && (
-                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 shadow-2xl border border-slate-700/50">
-                  <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-slate-700/50">
-                    <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-haru-500/20 border border-haru-500/30">
-                      <svg className="w-4 h-4 text-haru-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-sm tracking-tight text-haru-200">AI 멘토의 조언</h3>
-                      <p className="text-[11px] text-slate-400 mt-0.5">문제 풀이에 도움이 되는 피드백입니다</p>
-                    </div>
-                  </div>
-                  <div className="prose prose-invert max-w-none text-white/80 [&_p]:text-[16px] [&_p]:leading-[1.9] [&_p]:mb-5 last:[&_p]:mb-0 [&_h2]:mt-4 [&_h2]:mb-4 [&_h2]:leading-tight [&_h3]:mt-3 [&_h3]:mb-3">
-                    <AiAnswerMarkdown content={aiAnswer} />
+                  <div className="p-5">
+                    {/* AI 모범 답안 탭 */}
+                    {activeTab === 'ai-answer' && (
+                      <div className="animate-fade-in">
+                        {aiAnswer ? (
+                          <div className="bg-[#1a2035] rounded-xl overflow-hidden shadow-lg">
+                            {/* 헤더 */}
+                            <div className="flex items-center gap-3 px-5 pt-5 pb-4">
+                              <div className="w-9 h-9 bg-indigo-500/20 rounded-xl flex items-center justify-center shrink-0">
+                                <svg className="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-black text-white tracking-tight">AI 멘토의 조언</h3>
+                                <p className="text-[11px] text-white/50 font-medium mt-0.5">문제 풀이에 도움이 되는 피드백입니다</p>
+                              </div>
+                            </div>
+                            <div className="mx-5 h-px bg-white/10" />
+                            {/* 내용 */}
+                            <div className="px-5 py-4">
+                              <Markdown options={darkMarkdownOptions}>{aiAnswer}</Markdown>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-400 text-center py-4">AI 답변 정보가 없습니다.</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* AI 피드백 탭 */}
+                    {activeTab === 'feedback' && (
+                      <div className="animate-fade-in">
+                        {isPolling && !feedback && (
+                          <div className="mesh-gradient text-white rounded-xl p-5 shadow-lg">
+                            <div className="flex items-center gap-4">
+                              <div className="relative w-9 h-9 shrink-0">
+                                <div className="absolute inset-0 border-[3px] border-white/30 rounded-full" />
+                                <div className="absolute inset-0 border-[3px] border-white border-t-transparent rounded-full animate-spin" />
+                              </div>
+                              <div>
+                                <p className="font-black text-sm tracking-tight">AI 채점 중...</p>
+                                <p className="text-white/70 text-[12px] font-medium mt-0.5">잠시만 기다려 주세요</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {isTimeout && !feedback && (
+                          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                            <p className="text-amber-800 font-bold text-sm">
+                              채점에 시간이 오래 걸리고 있어요. 잠시 후 페이지를 새로고침해 주세요.
+                            </p>
+                          </div>
+                        )}
+
+                        {feedback && (() => {
+                          const gradeConfig = GRADE_CONFIG[feedback.grade]
+                          return (
+                            <div className="space-y-4">
+                              {/* 등급 헤더 */}
+                              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                    </svg>
+                                  </div>
+                                  <h3 className="font-black text-sm tracking-tight text-slate-800">AI 멘토 피드백</h3>
+                                </div>
+                                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border font-black text-xs ${gradeConfig.bg} ${gradeConfig.text} ${gradeConfig.border}`}>
+                                  <span>{gradeConfig.label}</span>
+                                  <span className="text-[10px] opacity-60">({feedback.grade})</span>
+                                </div>
+                              </div>
+
+                              {/* 피드백 내용 */}
+                              <div className="space-y-3">
+                                {/* 잘한 점 */}
+                                <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-100">
+                                  <div className="flex items-center gap-2 mb-2.5">
+                                    <div className="w-5 h-5 rounded-md bg-emerald-500 flex items-center justify-center shrink-0">
+                                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    </div>
+                                    <h4 className="text-xs font-black text-emerald-700 tracking-wide">잘한 점</h4>
+                                  </div>
+                                  <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-wrap pl-7">
+                                    {feedback.strengths}
+                                  </p>
+                                </div>
+
+                                {/* 부족한 점 */}
+                                <div className="bg-amber-50/50 rounded-xl p-4 border border-amber-100">
+                                  <div className="flex items-center gap-2 mb-2.5">
+                                    <div className="w-5 h-5 rounded-md bg-amber-500 flex items-center justify-center shrink-0">
+                                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                      </svg>
+                                    </div>
+                                    <h4 className="text-xs font-black text-amber-700 tracking-wide">부족한 점</h4>
+                                  </div>
+                                  <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-wrap pl-7">
+                                    {feedback.weaknesses}
+                                  </p>
+                                </div>
+
+                                {/* 개선 방향 */}
+                                <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100">
+                                  <div className="flex items-center gap-2 mb-2.5">
+                                    <div className="w-5 h-5 rounded-md bg-blue-500 flex items-center justify-center shrink-0">
+                                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                      </svg>
+                                    </div>
+                                    <h4 className="text-xs font-black text-blue-700 tracking-wide">개선 방향</h4>
+                                  </div>
+                                  <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-wrap pl-7">
+                                    {feedback.suggestion}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
+              </div>
 
               {/* 대시보드로 돌아가기 */}
               <Button

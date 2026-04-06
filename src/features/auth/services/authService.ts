@@ -6,6 +6,7 @@ import type {
   TokenReissueRequest,
   MemberProfileResponse,
   ProfileUpdateRequest,
+  PreferenceAppendRequest,
   PreferenceUpdateRequest,
   ApiResponseLong,
   ApiResponse,
@@ -120,9 +121,17 @@ export async function updateProfile(data: ProfileUpdateRequest): Promise<MemberP
 }
 
 /**
- * 내 학습 설정 수정
- * PATCH /v1/members/preferences
+ * 학습 설정 추가 (최대 5개)
+ * POST /v1/members/preferences
  */
-export async function updatePreference(data: PreferenceUpdateRequest): Promise<void> {
-  await api.patch('/v1/members/preferences', data)
+export async function appendPreference(data: PreferenceAppendRequest): Promise<void> {
+  await api.post('/v1/members/preferences', data)
+}
+
+/**
+ * 학습 설정 수정
+ * PATCH /v1/members/preferences/{preferenceId}
+ */
+export async function updatePreference(preferenceId: number, data: PreferenceUpdateRequest): Promise<void> {
+  await api.patch(`/v1/members/preferences/${preferenceId}`, data)
 }
