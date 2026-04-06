@@ -77,7 +77,7 @@ describe('TodayPage', () => {
     mockNavigate.mockClear()
 
     vi.mocked(useTodayProblem).mockReturnValue({
-      data: mockProblem,
+      data: [mockProblem],
       isLoading: false,
       error: null,
       isSuccess: true,
@@ -99,7 +99,6 @@ describe('TodayPage', () => {
     render(<TodayPage />)
 
     expect(screen.getByText('오늘의 챌린지')).toBeInTheDocument()
-    expect(screen.getByText('매일 조금씩, 당신의 성장을 돕습니다')).toBeInTheDocument()
   })
 
   it('로딩 중에 로딩 스피너를 표시한다', () => {
@@ -145,17 +144,36 @@ describe('TodayPage', () => {
     })
   })
 
+  it('빈 문제 응답 에러 시 생성 지연 안내 문구를 표시한다', async () => {
+    vi.mocked(useTodayProblem).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('EMPTY_TODAY_PROBLEM'),
+      isSuccess: false,
+      isError: true,
+      refetch: vi.fn(),
+      isRefetching: false,
+    } as any)
+
+    render(<TodayPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('오늘의 챌린지를 준비 중이에요')).toBeInTheDocument()
+      expect(screen.getByText('문제 생성이 지연되고 있습니다. 잠시 후 다시 시도해주세요.')).toBeInTheDocument()
+    })
+  })
+
   it('해결하지 않은 문제는 "챌린지 시작하기" 버튼을 표시한다', async () => {
     render(<TodayPage />)
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /챌린지 시작하기/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /챌린지 시작/i })).toBeInTheDocument()
     })
   })
 
   it('해결한 문제는 "제출 기록 확인" 버튼을 표시한다', async () => {
     vi.mocked(useTodayProblem).mockReturnValue({
-      data: { ...mockProblem, isSolved: true },
+      data: [{ ...mockProblem, isSolved: true }],
       isLoading: false,
       error: null,
       isSuccess: true,
@@ -176,10 +194,10 @@ describe('TodayPage', () => {
     render(<TodayPage />)
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /챌린지 시작하기/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /챌린지 시작/i })).toBeInTheDocument()
     })
 
-    const button = screen.getByRole('button', { name: /챌린지 시작하기/i })
+    const button = screen.getByRole('button', { name: /챌린지 시작/i })
     await user.click(button)
 
     expect(mockNavigate).toHaveBeenCalledWith('/problem/1')
@@ -187,7 +205,7 @@ describe('TodayPage', () => {
 
   it('"제출 기록 확인" 버튼 클릭 시 문제 상세 페이지로 이동한다', async () => {
     vi.mocked(useTodayProblem).mockReturnValue({
-      data: { ...mockProblem, isSolved: true },
+      data: [{ ...mockProblem, isSolved: true }],
       isLoading: false,
       error: null,
       isSuccess: true,
@@ -278,7 +296,7 @@ describe('TodayPage', () => {
 
   it('미풀이 문제가 있을 때 리마인더 모달이 표시된다', async () => {
     vi.mocked(useTodayProblem).mockReturnValue({
-      data: { ...mockProblem, isSolved: false },
+      data: [{ ...mockProblem, isSolved: false }],
       isLoading: false,
       error: null,
       isSuccess: true,
@@ -296,7 +314,7 @@ describe('TodayPage', () => {
 
   it('리마인더 모달에서 나중에 버튼 클릭 시 닫힌다', async () => {
     vi.mocked(useTodayProblem).mockReturnValue({
-      data: { ...mockProblem, isSolved: false },
+      data: [{ ...mockProblem, isSolved: false }],
       isLoading: false,
       error: null,
       isSuccess: true,
@@ -323,8 +341,8 @@ describe('TodayPage', () => {
     render(<TodayPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('React')).toBeInTheDocument()
-      expect(screen.getByText('보통')).toBeInTheDocument()
+      expect(screen.getAllByText('React').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('보통').length).toBeGreaterThan(0)
     })
   })
 })

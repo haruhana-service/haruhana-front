@@ -116,6 +116,7 @@ export function TodayPage() {
   const level = useMemo(() => getStreakLevel(streak?.currentStreak || 0), [streak?.currentStreak])
   const animatedStreak = useCountUp({ target: streak?.currentStreak || 0, duration: 1000, delay: 300 })
   const tilt = useTilt({ maxTilt: 6, scale: 1.015 })
+  const isEmptyTodayProblemError = error instanceof Error && error.message === 'EMPTY_TODAY_PROBLEM'
 
   return (
     <>
@@ -263,8 +264,14 @@ export function TodayPage() {
             <div className="py-10 text-center bg-red-50/50 rounded-3xl border-2 border-dashed border-red-100">
               <div className="flex flex-col items-center gap-3">
                 <span className="text-3xl">⚠️</span>
-                <p className="text-slate-600 text-sm font-bold">챌린지 불러오기 실패</p>
-                <p className="text-slate-400 text-xs font-medium">네트워크 오류가 발생했습니다. 다시 시도해주세요.</p>
+                <p className="text-slate-600 text-sm font-bold">
+                  {isEmptyTodayProblemError ? '오늘의 챌린지를 준비 중이에요' : '챌린지 불러오기 실패'}
+                </p>
+                <p className="text-slate-400 text-xs font-medium">
+                  {isEmptyTodayProblemError
+                    ? '문제 생성이 지연되고 있습니다. 잠시 후 다시 시도해주세요.'
+                    : '네트워크 오류가 발생했습니다. 다시 시도해주세요.'}
+                </p>
                 <button
                   type="button"
                   onClick={() => refetch()}

@@ -159,6 +159,34 @@ describe('useTodayProblem', () => {
     expect(result.current.data).toBeUndefined()
   })
 
+  it('빈 배열 응답이면 재시도 후 성공한다', async () => {
+    vi.mocked(problemService.getTodayProblem)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(mockTodayProblems)
+
+    const { result } = renderHook(() => useTodayProblem({ retry: 2, retryDelay: 0 }), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true)
+    })
+
+    expect(result.current.data).toEqual(mockTodayProblems)
+    expect(vi.mocked(problemService.getTodayProblem)).toHaveBeenCalledTimes(2)
+  })
+
+  it('빈 배열이 계속 오면 재시도 횟수 소진 후 에러가 된다', async () => {
+    vi.mocked(problemService.getTodayProblem).mockResolvedValue([])
+
+    const { result } = renderHook(() => useTodayProblem({ retry: 2, retryDelay: 0 }), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isError).toBe(true)
+    })
+
+    expect(result.current.data).toBeUndefined()
+    expect(vi.mocked(problemService.getTodayProblem)).toHaveBeenCalledTimes(3)
+  })
+
   it('카테고리 주제 정보를 포함한다', async () => {
     const problemsWithTopic: TodayProblemResponse[] = [
       {

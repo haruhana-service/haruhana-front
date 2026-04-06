@@ -26,7 +26,7 @@ describe('getTodayProblemSolvedStatus', () => {
   })
 
   it('문제를 풀었으면 true를 반환한다', async () => {
-    vi.mocked(queryClient.fetchQuery).mockResolvedValue({ isSolved: true })
+    vi.mocked(queryClient.fetchQuery).mockResolvedValue([{ isSolved: true }])
 
     const result = await getTodayProblemSolvedStatus()
 
@@ -34,7 +34,7 @@ describe('getTodayProblemSolvedStatus', () => {
   })
 
   it('문제를 풀지 않았으면 false를 반환한다', async () => {
-    vi.mocked(queryClient.fetchQuery).mockResolvedValue({ isSolved: false })
+    vi.mocked(queryClient.fetchQuery).mockResolvedValue([{ isSolved: false }])
 
     const result = await getTodayProblemSolvedStatus()
 
@@ -50,7 +50,7 @@ describe('getTodayProblemSolvedStatus', () => {
   })
 
   it('fetchQuery를 올바른 쿼리 키로 호출한다', async () => {
-    vi.mocked(queryClient.fetchQuery).mockResolvedValue({ isSolved: false })
+    vi.mocked(queryClient.fetchQuery).mockResolvedValue([{ isSolved: false }])
 
     await getTodayProblemSolvedStatus()
 
